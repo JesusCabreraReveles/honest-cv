@@ -24,7 +24,7 @@ Generador de CVs honestos y aptos para ATS, con servidor MCP, CLI y skill de Cla
 
 - Python ≥ 3.11.
 - Empaquetado con `uv`; se distribuye por PyPI y se ejecuta con `uvx honest-cv`.
-- SDK oficial de MCP (`mcp`, FastMCP) con transporte stdio.
+- SDK oficial de MCP (`mcp` 2.x, `MCPServer`, antes FastMCP) con transporte stdio. La confirmación humana usa elicitation mediante `Resolve`/`Elicit`.
 - pydantic, PyYAML, python-docx, pypdf y pdfminer.six.
 - Motor de PDF: Typst (wheel `typst` de pip), con Carlito empaquetada. Ver `docs/spike-pdf-engine.md`.
 

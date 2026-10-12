@@ -7,9 +7,9 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from honest_cv import __version__
+from honest_cv import __version__, store
 from honest_cv.build import FORMATS, build_cv
-from honest_cv.model import LANGS, ProfileError, load
+from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, load
 from honest_cv.score import Gap, Keyword, Status, score_job
 from honest_cv.verify import Report, verify_pdf
 
@@ -56,6 +56,45 @@ def cmd_verify(args: argparse.Namespace) -> int:
     return status
 
 
+def cmd_init(args: argparse.Namespace) -> int:
+    for path in store.init_profile(args.profile):
+        print(path)
+    print("Fill these in, or let your MCP client interview you. Keep real profiles out of git.")
+    return 0
+
+
+def cmd_skill(args: argparse.Namespace) -> int:
+    current = load(args.profile).inventory.get(args.name)
+    old, new = (current.level if current else Level.NONE), Level(args.level)
+    confirmed = False
+    if LEVEL_RANK[new] > LEVEL_RANK[old]:
+        if not sys.stdin.isatty():
+            print("error: raising a level needs an interactive confirmation", file=sys.stderr)
+            return 1
+        print(f"Upgrade {args.name}: {old} -> {new}\nEvidence: {args.evidence}")
+        confirmed = input("Is this true, and can you defend it in an interview? [y/N] ").strip().lower() in ("y", "yes", "s", "si", "sí")
+        if not confirmed:
+            print("Not saved.")
+            return 1
+    skill = store.upsert_skill(
+        args.profile, args.name, new, evidence=args.evidence, confirmed=confirmed,
+        years=args.years, last_used=args.last_used, aliases=args.alias, notes=args.notes,
+    )
+    print(f"Saved {skill.name}: {skill.level}")
+    return 0
+
+
+def cmd_serve(args: argparse.Namespace) -> int:
+    import os
+
+    from honest_cv.server import main as serve
+
+    if args.profile:
+        os.environ["HONEST_CV_PROFILE"] = args.profile
+    serve()
+    return 0
+
+
 def _split(values: list[str] | None) -> list[str]:
     return [t.strip() for v in values or [] for t in v.split(",") if t.strip()]
 
@@ -98,6 +137,25 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command")
+
+    p = sub.add_parser("serve", help="run the MCP server over stdio")
+    p.add_argument("--profile", help="default profile folder for every tool (or set HONEST_CV_PROFILE)")
+    p.set_defaults(func=cmd_serve)
+
+    p = sub.add_parser("init", help="create a profile folder with commented YAML templates")
+    p.add_argument("profile")
+    p.set_defaults(func=cmd_init)
+
+    p = sub.add_parser("skill", help="add or change a skill; raising a level asks you to confirm")
+    p.add_argument("profile")
+    p.add_argument("name")
+    p.add_argument("level", choices=[lvl.value for lvl in Level])
+    p.add_argument("--evidence")
+    p.add_argument("--years", type=float)
+    p.add_argument("--last-used", type=int)
+    p.add_argument("--alias", action="append")
+    p.add_argument("--notes")
+    p.set_defaults(func=cmd_skill)
 
     p = sub.add_parser("build", help="render PDF and DOCX for one or more variants")
     p.add_argument("profile", help="profile folder (profile.yaml, bullets.yaml, skills.yaml, variants.yaml)")

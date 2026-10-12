@@ -1,0 +1,17 @@
+# One variant per type of role you apply to. A variant can extend another and
+# override only what changes.
+variants: {}
+#  backend:
+#    title: {en: Senior Backend Engineer, es: Ingeniero Backend Senior}
+#    summary: {en: ..., es: ...}
+#    competencies: [Distributed Systems, Java, Kafka]
+#    impact: [acme_latency]
+#    roles:
+#      acme: [acme_latency]
+#    skills:
+#      - label: {en: Languages, es: Lenguajes}
+#        skills: [Java, Rust]
+#    max_pages: 2
+#  platform:
+#    extends: backend
+#    title: {en: Platform Engineer, es: Ingeniero de Plataforma}

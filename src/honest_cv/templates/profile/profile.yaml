@@ -1,0 +1,25 @@
+# Who you are and where you worked. Texts can be one string, or one per language:
+#   title: {en: Backend Engineer, es: Ingeniera Backend}
+contact:
+  name: Your Name
+  email: you@example.com
+  # phone: "+1 555 0100"
+  # location: {en: "City, Country (remote)", es: "Ciudad, País (remoto)"}
+  links: []
+
+roles: []
+# - id: acme                      # short id; bullets point to it
+#   title: {en: Senior Engineer, es: Ingeniero Senior}
+#   company: Acme
+#   start: "2020"
+#   end: "2024"                   # leave out for "Present"
+#   context: {en: One line about the product or scale., es: Una línea sobre el producto o la escala.}
+
+education: []
+# - institution: Some University
+#   degree: {en: B.Sc. Computer Science, es: Licenciatura en Ciencias de la Computación}
+#   start: "2010"
+#   end: "2014"
+
+certifications: []
+# languages: {en: "Spanish (native), English (C1)", es: "Español (nativo), inglés (C1)"}

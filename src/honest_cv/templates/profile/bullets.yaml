@@ -1,0 +1,10 @@
+# Your pool of achievements. Variants pick bullets from here by id.
+# Use real numbers you can defend in an interview.
+bullets: []
+# - id: acme_latency
+#   role: acme                    # leave out for bullets used only in "impact"
+#   tags: [performance, java]
+#   metrics: ["p99 -40%"]
+#   text:
+#     en: Cut p99 latency 40% by ...
+#     es: Reduje 40% la latencia p99 al ...
