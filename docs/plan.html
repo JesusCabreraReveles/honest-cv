@@ -1,0 +1,202 @@
+<title>Plan honest-cv</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: una columna de lectura (~68ch) con fichas técnicas por bloque; tablas con scroll propio */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --fg:#1b2230; --muted:#5a6475; --line:#d9dde5;
+  --accent:#2f5d8a; --accent-soft:#e3ecf5; --ochre:#9a6a12; --ochre-soft:#f6ecd8;
+  --ok:#2e7d4f; --ok-soft:#e2f2e8;
+  --f-display:"Schibsted Grotesk",system-ui,sans-serif;
+  --f-body:"Source Sans 3",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161d; --surface:#1a2029; --fg:#e4e8ef; --muted:#9aa4b4; --line:#2c3441;
+  --accent:#7fb0e0; --accent-soft:#1d2c3d; --ochre:#e0b35a; --ochre-soft:#2e2615;
+  --ok:#6cc893; --ok-soft:#183024; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161d; --surface:#1a2029; --fg:#e4e8ef; --muted:#9aa4b4; --line:#2c3441;
+  --accent:#7fb0e0; --accent-soft:#1d2c3d; --ochre:#e0b35a; --ochre-soft:#2e2615;
+  --ok:#6cc893; --ok-soft:#183024; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:17px/1.6 var(--f-body);padding:40px 16px 64px}
+main{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:2.1rem;font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.45rem;font-weight:700;margin-top:12px}
+h3{font-size:1.1rem;font-weight:700}
+p,ul,ol{margin:0}
+ul,ol{padding-left:1.25em;display:flex;flex-direction:column;gap:4px}
+.eyebrow{font:600 .75rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);font-size:1.08rem;max-width:62ch}
+.stack{display:flex;flex-direction:column;gap:12px}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px;overflow-x:auto;font:13.5px/1.55 var(--f-mono);margin:0}
+pre code{background:none;padding:0}
+a{color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.card.chosen{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+.pill{font:600 .72rem var(--f-mono);letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.go{background:var(--ok-soft);color:var(--ok)}
+.pill.next{background:var(--accent-soft);color:var(--accent)}
+.pill.later{background:var(--ochre-soft);color:var(--ochre)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;border-top:1px solid var(--line);padding-top:14px}
+.facts div{display:flex;flex-direction:column;gap:2px}
+.facts dt{font:600 .7rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;font-weight:600}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.95rem}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--line)}
+th{font:600 .72rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+.note{border-left:3px solid var(--ochre);background:var(--ochre-soft);padding:12px 16px;border-radius:0 6px 6px 0}
+.muted{color:var(--muted)}
+footer{color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);padding-top:16px}
+</style>
+<main>
+<header class="stack">
+  <span class="eyebrow">Plan y alcance · v0.1 · oct 2026</span>
+  <h1>Plan honest-cv</h1>
+  <p class="lede">Un servidor MCP, una CLI y una skill de Claude Code que convierten tu experiencia real en CVs aptos para ATS, adaptados a cada tipo de puesto, sin inventar nada.</p>
+</header>
+
+<section class="stack">
+  <h2>Objetivo</h2>
+  <p>Publicar en unas 2 semanas una v0.1 que cualquier persona pueda instalar en una línea y usar desde Claude Code o Cursor. Debe resolver tres cosas:</p>
+  <ol>
+    <li><b>Inventario honesto:</b> una entrevista guiada registra cada skill con su nivel de evidencia y sus años.</li>
+    <li><b>Variantes por puesto:</b> genera PDF y DOCX aptos para ATS desde una sola fuente de datos.</li>
+    <li><b>Análisis contra una vacante:</b> mide la cobertura y explica qué falta y por qué.</li>
+  </ol>
+  <p class="muted">Una meta secundaria pesa igual: que el repo sea tu mejor demostración de diseño MCP, agentes con guardrails y herramientas internas para desarrolladores.</p>
+</section>
+
+<section class="stack">
+  <h2>Qué lo hace distinto</h2>
+  <ul>
+    <li><b>La honestidad la aplica el sistema.</b> Cada skill lleva un nivel: <code>P</code> (producción), <code>L</code> (proyecto propio), <code>F</code> (familiaridad) o <code>X</code> (no la tiene). Una <code>F</code> sale etiquetada como "Familiarity" y una <code>X</code> nunca aparece. El agente no puede subir de nivel una skill sin que la persona lo confirme.</li>
+    <li><b>El análisis de brechas usa tu propio inventario.</b> No basta con decir "te falta Spring JDBC". La herramienta distingue tres casos: la tienes en <code>P</code> pero no está en este CV, la tienes en <code>F</code>, o no la tienes.</li>
+    <li><b>El servidor no necesita API key.</b> Es determinista. El LLM del cliente (Claude o Cursor) extrae las palabras clave de la vacante y conduce la entrevista, y el servidor valida, genera y mide.</li>
+    <li><b>Las garantías de ATS se comprueban.</b> Una sola columna, sin ligaduras, orden de lectura igual al del DOM y texto que se puede extraer. Cada build se verifica con pypdf y pdfminer.</li>
+  </ul>
+</section>
+
+<section class="stack">
+  <h2>Alcance de la v0.1</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Entra</th><th>Detalle</th></tr></thead>
+    <tbody>
+      <tr><td>Modelo de datos</td><td>Archivos YAML validados con pydantic: perfil, pool de bullets con id y tags, inventario de skills y plan de variantes. Admite EN y ES.</td></tr>
+      <tr><td>Render</td><td>Una plantilla clásica de una columna a PDF, más DOCX con python-docx. <code>fit_pages</code> ajusta la densidad al máximo de páginas.</td></tr>
+      <tr><td>Verificación</td><td>Extracción de texto, revisión del orden de lectura, ligaduras y número de páginas.</td></tr>
+      <tr><td>Score y brechas</td><td>Cobertura de palabras clave con sinónimos (por ejemplo k8s y Kubernetes) y brechas clasificadas por nivel del inventario.</td></tr>
+      <tr><td>Servidor MCP</td><td>Las herramientas y prompts de la siguiente sección, con transporte stdio.</td></tr>
+      <tr><td>CLI</td><td><code>honest-cv init</code>, <code>build</code>, <code>verify</code> y <code>score</code>.</td></tr>
+      <tr><td>Skill</td><td><code>SKILL.md</code> para Claude Code, que orquesta la entrevista y la adaptación a una vacante.</td></tr>
+      <tr><td>Ejemplo</td><td>Un perfil ficticio completo ("Ada Example") con una vacante de muestra. No incluye ningún dato tuyo.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Fuera de la v0.1</th><th>Cuándo</th></tr></thead>
+    <tbody>
+      <tr><td>Importar y exportar JSON Resume</td><td>v0.2: da compatibilidad con el ecosistema existente</td></tr>
+      <tr><td>Importar el PDF de LinkedIn</td><td>v0.2</td></tr>
+      <tr><td>Carta de presentación por vacante</td><td>v0.2</td></tr>
+      <tr><td>Más plantillas</td><td>v0.3, con contribuciones de la comunidad</td></tr>
+      <tr><td>Interfaz web o servicio hospedado</td><td>No previsto: rompe la promesa de que los datos se quedan en local</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="stack">
+  <h2>Herramientas y prompts MCP</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Nombre</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td>init_profile</td><td>Crea la carpeta del perfil con plantillas YAML vacías</td></tr>
+      <tr><td>get_inventory</td><td>Devuelve las skills con nivel, años y evidencia</td></tr>
+      <tr><td>set_skill</td><td>Agrega o cambia una skill. Subir de nivel exige el campo <code>evidence</code></td></tr>
+      <tr><td>add_bullet</td><td>Agrega un logro al pool, con rol, tags y métricas</td></tr>
+      <tr><td>list_variants</td><td>Lista las variantes definidas y sus bullets</td></tr>
+      <tr><td>build_cv</td><td>Genera un PDF o DOCX para una variante y un idioma, y lo verifica</td></tr>
+      <tr><td>verify_pdf</td><td>Revisa que el archivo sea apto para ATS y devuelve el texto extraído</td></tr>
+      <tr><td>score_job</td><td>Recibe la vacante y las palabras clave que extrajo el cliente, y devuelve cobertura por variante</td></tr>
+      <tr><td>gap_report</td><td>Clasifica lo que falta: está en el inventario pero no en el CV, es familiaridad, o no la tiene</td></tr>
+      <tr><td>prompt: interview</td><td>Entrevista guiada para llenar el inventario y los bullets</td></tr>
+      <tr><td>prompt: tailor_for_job</td><td>Score, brechas, ajuste de la variante y rebuild, en un solo flujo</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="stack">
+  <h2>Estructura del repo</h2>
+<pre><code>honest-cv/
+├── src/honest_cv/
+│   ├── model.py        # esquemas pydantic: Profile, Skill, Bullet, Variant
+│   ├── render/         # html.py, pdf.py, docx.py, templates/classic.html
+│   ├── verify.py       # extracción y revisiones ATS
+│   ├── score.py        # cobertura, sinónimos, brechas
+│   ├── server.py       # servidor MCP (herramientas y prompts)
+│   └── cli.py
+├── examples/ada/       # perfil ficticio y vacante de muestra
+├── skills/honest-cv/SKILL.md
+├── tests/
+├── .github/workflows/ci.yml
+└── README.md · LICENSE (MIT) · CONTRIBUTING.md</code></pre>
+</section>
+
+<section class="stack">
+  <h2>Calendario</h2>
+  <p class="muted">Calculado a 2–3 horas por día, en paralelo con las postulaciones.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Día</th><th>Entregable</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Nombre definitivo, repo y spike del motor PDF (Typst o Chrome)</td></tr>
+      <tr><td>2–3</td><td>Esquemas pydantic, carga de YAML y render de HTML, PDF y DOCX</td></tr>
+      <tr><td>4</td><td><code>verify.py</code> y <code>score.py</code> con sinónimos y brechas</td></tr>
+      <tr><td>5</td><td>Servidor MCP con las herramientas y prueba en Claude Code</td></tr>
+      <tr><td>6</td><td>Prompts <code>interview</code> y <code>tailor_for_job</code>, y SKILL.md</td></tr>
+      <tr><td>7</td><td>Perfil de ejemplo, tests y CI</td></tr>
+      <tr><td>8</td><td>README con GIF y configuración para Claude Code, Cursor y Desktop</td></tr>
+      <tr><td>9</td><td>Publicación en PyPI (<code>uvx honest-cv</code>) y en los directorios de MCP</td></tr>
+      <tr><td>10</td><td>Lanzamiento: Show HN, Reddit, LinkedIn y un artículo</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="stack">
+  <h2>Decisiones abiertas</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Decisión</th><th>Opciones</th><th>Recomendación</th></tr></thead>
+    <tbody>
+      <tr><td>Nombre</td><td>honest-cv, truecv, cvsmith (los tres están libres en PyPI al 11 oct)</td><td>honest-cv: dice la propuesta en el nombre</td></tr>
+      <tr><td>Motor PDF</td><td>Chrome headless (lo que ya funciona) o Typst (wheel de pip, sin dependencias del sistema)</td><td>Hacer un spike de Typst el día 1. Si el texto extraído sale limpio, usar Typst, porque permite instalar en una línea. Si no, Chrome</td></tr>
+      <tr><td>Idioma del repo</td><td>Inglés o español</td><td>README en inglés para el alcance, con <code>README.es.md</code> y soporte de CV en ES desde la v0.1</td></tr>
+      <tr><td>Licencia</td><td>MIT o Apache-2.0</td><td>MIT</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="stack">
+  <h2>Riesgos</h2>
+  <ul>
+    <li><b>Fuga de datos personales:</b> usar un repo nuevo, poner <code>profiles/</code> en <code>.gitignore</code> y usar solo el perfil ficticio en tests y demos.</li>
+    <li><b>Dependencia de Chrome:</b> puede romper la instalación en una línea. Se mitiga con el spike de Typst.</li>
+    <li><b>Competencia establecida:</b> no se compite en plantillas bonitas. El argumento es MCP, honestidad y brechas.</li>
+    <li><b>Que se alargue:</b> todo lo que no está en la tabla "Entra" espera a la v0.2.</li>
+  </ul>
+</section>
+
+<section class="stack">
+  <h2>Cómo saber si funcionó</h2>
+  <ul>
+    <li>El autor lo usa para sus propias postulaciones.</li>
+    <li>Está publicado en PyPI, en el registro de MCP y en awesome-mcp-servers.</li>
+    <li>Meta realista: 100–300 estrellas el primer mes. Puede ser más si el lanzamiento pega en HN o Reddit.</li>
+      </ul>
+</section>
+
+<footer>Decisiones tomadas el 11 oct 2026: honest-cv, spike de Typst, README en inglés, MIT. Versión canónica: docs/PLAN.md.</footer>
+</main>

@@ -1,0 +1,11 @@
+# Perfiles reales: NUNCA al repo. Solo examples/ (ficticio) se versiona.
+profiles/
+out/
+*.pdf
+*.docx
+!examples/**/*.pdf
+.venv/
+__pycache__/
+*.egg-info/
+dist/
+.DS_Store
