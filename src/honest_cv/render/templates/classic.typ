@@ -25,6 +25,10 @@
 #show heading.where(level: 1): set text(size: size * 1.9, weight: "bold")
 #show heading.where(level: 2): it => block(above: section-gap + 1mm, below: 1.2mm, text(size: size * 1.2, weight: "bold", it.body))
 
+// Never break inside "CI/CD", "event-driven" or "Node.js/React": a split term
+// extracts as two tokens and stops matching the keyword.
+#show regex("[\w.+#]+(?:[/-][\w.+#]+)+"): it => box(it)
+
 #let line-of(items) = items.join(" · ")
 
 = #d.name

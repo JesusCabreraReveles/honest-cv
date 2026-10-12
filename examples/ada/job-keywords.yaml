@@ -1,0 +1,4 @@
+# The keywords an MCP client would extract from job-post.md. Used by the tests and the demo:
+#   honest-cv score examples/ada -k "$(...)"  — see README.
+required: [Kubernetes, AWS, Terraform, CI/CD, OpenTelemetry, Prometheus, Grafana, Go, Python, Kafka]
+preferred: [gRPC, Rust, Scala, SRE]

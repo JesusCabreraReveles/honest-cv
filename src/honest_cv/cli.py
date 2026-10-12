@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from honest_cv import __version__, store
 from honest_cv.build import FORMATS, build_cv
-from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, load
+from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, load
 from honest_cv.score import Gap, Keyword, Status, score_job
 from honest_cv.verify import Report, verify_pdf
 
@@ -188,7 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return args.func(args)
     except (ProfileError, ValidationError, ValueError) as e:
-        print(f"error: {e}", file=sys.stderr)
+        print(f"error: {explain(e)}", file=sys.stderr)
         return 1
 
 

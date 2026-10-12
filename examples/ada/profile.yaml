@@ -12,21 +12,27 @@ roles:
     company: Fictional Fintech
     start: "2020"
     context:
-      en: Payments platform processing 2M transactions per day.
-      es: Plataforma de pagos que procesa 2M de transacciones al día.
+      en: Payments platform processing 2M transactions per day across 4 countries.
+      es: Plataforma de pagos que procesa 2M de transacciones al día en 4 países.
   - id: bank
-    title: {en: Backend Engineer, es: Ingeniera Backend}
+    title: {en: Senior Backend Engineer, es: Ingeniera Backend Senior}
     company: Example Bank
-    start: "2014"
+    start: "2016"
     end: "2020"
+  - id: startup
+    title: {en: Software Engineer, es: Ingeniera de Software}
+    company: Tiny Logistics Co.
+    start: "2013"
+    end: "2016"
 
 education:
   - institution: Universidad Ficticia
     degree: {en: B.Sc. Computer Engineering, es: Ingeniería en Computación}
-    start: "2009"
-    end: "2014"
+    start: "2008"
+    end: "2013"
 
 certifications:
   - AWS Certified Solutions Architect – Associate
+  - Certified Kubernetes Application Developer (CKAD)
 
 languages: {en: "Spanish (native), English (C1)", es: "Español (nativo), inglés (C1)"}

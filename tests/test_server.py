@@ -122,7 +122,7 @@ async def test_build_verify_and_score(profile, tmp_path):
         _, report = await call(c, "verify_pdf", path=pdf["path"], max_pages=1)
         assert report["ok"] and "Ada Example" in report["text"]
         _, scores = await call(c, "score_job", profile=profile, keywords=["k8s", "Scala"], preferred=["Rust"])
-        assert {s["variant"] for s in scores["scores"]} == {"backend", "platform"}
+        assert {s["variant"] for s in scores["scores"]} == {"backend", "platform", "leadership"}
         _, gaps = await call(c, "gap_report", profile=profile, variant="backend", keywords=["Scala", "Rust"])
     assert [g["keyword"] for g in gaps["not_in_inventory"]] == ["Scala"]
     assert [g["keyword"] for g in gaps["familiarity_only"]] == ["Rust"]

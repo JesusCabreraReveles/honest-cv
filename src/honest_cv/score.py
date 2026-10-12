@@ -72,7 +72,7 @@ class Status(StrEnum):
 
 
 class Gap(StrEnum):
-    IN_INVENTORY_NOT_IN_CV = "in_inventory_not_in_cv"  # you have it at P or L
+    IN_INVENTORY_NOT_IN_CV = "in_inventory_not_in_cv"  # a P/L skill, or your bullet pool shows it
     FAMILIARITY_ONLY = "familiarity_only"  # you have it at F
     NOT_IN_INVENTORY = "not_in_inventory"  # X, or never recorded
 
@@ -190,6 +190,10 @@ def score_variant(source: Source, variant: str, lang: Lang, keywords: list[Keywo
             r.gap = Gap.FAMILIARITY_ONLY
         else:
             r.gap = _classify(skill)
+            # Not a recorded skill, but the person's own bullets show it (e.g. "CI/CD").
+            # An explicit X stays a gap: the person said they don't have it.
+            if skill is None and any(_bullet_mentions(b, names, lang) for b in source.bullets):
+                r.gap = Gap.IN_INVENTORY_NOT_IN_CV
         if r.status is Status.MISSING and r.gap is Gap.IN_INVENTORY_NOT_IN_CV:
             r.unused_bullets = [
                 b.id
@@ -210,9 +214,11 @@ def _classify(skill: Skill | None) -> Gap:
 
 
 def _bullet_mentions(bullet, names: list[str], lang: Lang) -> bool:
+    # Tags are labels, not prose: compare them whole and ignoring case.
+    if {t.casefold() for t in bullet.tags} & {n.casefold() for n in names}:
+        return True
     text = bullet.text if isinstance(bullet.text, str) else bullet.text.get(lang, "")
-    haystack = f"{text}\n{' '.join(bullet.tags)}"
-    return _match(names, haystack) is not None
+    return _match(names, text) is not None
 
 
 def _coverage(results: list[KeywordResult]) -> float:

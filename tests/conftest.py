@@ -17,7 +17,7 @@ def ada():
 @pytest.fixture
 def ada_raw():
     """The Ada files as dicts, to build broken variants in tests."""
-    return {name: yaml.safe_load((ADA / f"{name}.yaml").read_text()) for name in ("profile", "bullets", "skills", "variants")}
+    return {name: yaml.safe_load((ADA / f"{name}.yaml").read_text(encoding="utf-8")) for name in ("profile", "bullets", "skills", "variants")}
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def make_source(tmp_path, ada_raw):
         raw = copy.deepcopy(ada_raw)
         mutate(raw)
         for name, data in raw.items():
-            (tmp_path / f"{name}.yaml").write_text(yaml.safe_dump(data, allow_unicode=True))
+            (tmp_path / f"{name}.yaml").write_text(yaml.safe_dump(data, allow_unicode=True), encoding="utf-8")
         return load(tmp_path)
 
     return _make

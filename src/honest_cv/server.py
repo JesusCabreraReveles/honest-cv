@@ -24,7 +24,7 @@ from pydantic import BaseModel, ValidationError
 from honest_cv import __version__, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
-from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, Source, load
+from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, Source, explain, load
 from honest_cv.verify import verify_pdf as verify
 
 INSTRUCTIONS = """\
@@ -68,7 +68,7 @@ def _tool_errors(fn):
         except ToolError:
             raise
         except (ValidationError, ValueError, FileNotFoundError) as e:
-            raise ToolError(str(e)) from e
+            raise ToolError(explain(e)) from e
 
     return wrapper
 
@@ -273,7 +273,8 @@ def gap_report(
     lang: Lang = "en",
 ) -> dict:
     """Missing keywords grouped by what can honestly be done:
-    in_inventory_not_in_cv (the person has it at P/L: add it, see unused_bullets),
+    in_inventory_not_in_cv (a P/L skill or a pool bullet shows it: add it, see unused_bullets;
+    if that list is empty, the term only needs to appear in the summary or competencies),
     familiarity_only (only claim it as familiarity), not_in_inventory (do not claim it)."""
     groups = score_mod.gap_report(_load(profile), variant, lang, _keywords(keywords, preferred))
     return {k: [r.__dict__ for r in v] for k, v in groups.items()}

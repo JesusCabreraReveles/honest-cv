@@ -1,5 +1,7 @@
 import pytest
+import yaml
 
+from tests.conftest import ADA
 from honest_cv.score import Gap, Keyword, Status, _pattern, gap_report, score_job, score_variant, spellings
 
 
@@ -51,7 +53,7 @@ def test_in_inventory_not_in_cv_points_to_unused_bullets(make_source):
     def mutate(raw):
         v = raw["variants"]["variants"]["backend"]
         v["roles"]["bank"] = ["bk_obs"]
-        v["skills"] = [g for g in v["skills"] if g["label"]["en"] != "Platforms"]
+        v["skills"] = [g for g in v["skills"] if g["label"]["en"] != "Frameworks"]
 
     source = make_source(mutate)
     r = by_keyword(score_variant(source, "backend", "en", [Keyword("SpringBoot")]))["SpringBoot"]
@@ -66,14 +68,41 @@ def test_required_and_overall_coverage(ada):
     assert s.required_coverage == 0.5 and s.coverage == 0.5
 
 
-def test_score_job_ranks_variants(make_source):
-    def mutate(raw):
-        raw["variants"]["variants"]["platform"]["skills"] = [{"label": "Languages", "skills": ["Java"]}]
+def job_keywords():
+    data = yaml.safe_load((ADA / "job-keywords.yaml").read_text(encoding="utf-8"))
+    return [Keyword(k) for k in data["required"]] + [Keyword(k, required=False) for k in data["preferred"]]
 
-    source = make_source(mutate)
-    scores = score_job(source, [Keyword("PostgreSQL"), Keyword("Java")])
-    assert [s.variant for s in scores] == ["backend", "platform"]
-    assert scores[0].coverage > scores[1].coverage
+
+def test_sample_job_ranks_platform_first(ada):
+    scores = score_job(ada, job_keywords())
+    assert scores[0].variant == "platform"
+    assert scores[0].required_coverage > scores[-1].required_coverage
+
+
+def test_sample_job_shows_every_kind_of_gap(ada):
+    groups = gap_report(ada, "backend", "en", job_keywords())
+    assert {r.keyword for r in groups["in_inventory_not_in_cv"]} == {"CI/CD", "gRPC", "SRE"}
+    assert {r.keyword for r in groups["familiarity_only"]} == {"Rust"}
+    assert {r.keyword for r in groups["not_in_inventory"]} == {"Terraform", "Prometheus", "Scala"}
+
+
+def test_bullet_pool_counts_as_evidence(ada):
+    r = by_keyword(score_variant(ada, "backend", "en", [Keyword("CI/CD")]))["CI/CD"]
+    assert r.gap is Gap.IN_INVENTORY_NOT_IN_CV and r.skill is None and r.unused_bullets == ["ft_ci"]
+
+
+def test_tags_match_ignoring_case(ada):
+    # "SRE" is short, so prose matching is case-sensitive, but the tag "sre" still counts.
+    r = by_keyword(score_variant(ada, "backend", "en", [Keyword("SRE")]))["SRE"]
+    assert r.gap is Gap.IN_INVENTORY_NOT_IN_CV
+
+
+def test_x_skill_stays_a_gap_even_if_a_bullet_mentions_it(make_source):
+    def mutate(raw):
+        raw["bullets"]["bullets"].append({"id": "x_scala", "role": "fintech", "tags": ["scala"], "text": "Read Scala code."})
+
+    r = by_keyword(score_variant(make_source(mutate), "backend", "en", [Keyword("Scala")]))["Scala"]
+    assert r.gap is Gap.NOT_IN_INVENTORY
 
 
 def test_gap_report_groups(ada):

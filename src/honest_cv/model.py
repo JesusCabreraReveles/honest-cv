@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 Lang = Literal["en", "es"]
 LANGS: tuple[Lang, ...] = ("en", "es")
@@ -257,6 +257,19 @@ class Source(Strict):
                     raise ProfileError(
                         f"variant '{v.id}': skill '{name}' is not in the inventory"
                     )
+
+
+def explain(error: Exception) -> str:
+    """The error text, plus a hint for the most common YAML slip."""
+    text = str(error)
+    if isinstance(error, ValidationError):
+        split = [e for e in error.errors() if e["type"] == "extra_forbidden" and " " in str(e["loc"][-1])]
+        if split:
+            text += (
+                "\nHint: a comma inside {...} splits a value in two. "
+                'Put text with commas in quotes, e.g. evidence: "EKS, RDS and MSK".'
+            )
+    return text
 
 
 def _check_unique(values: list[str], what: str) -> None:

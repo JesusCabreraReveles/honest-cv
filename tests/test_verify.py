@@ -24,7 +24,7 @@ def test_example_passes_every_check(ada, lang):
 
 def compile_typst(tmp_path, body: str, ligatures: bool = False) -> bytes:
     src = tmp_path / "t.typ"
-    src.write_text(f'#set page(paper: "us-letter")\n#set text(font: "Carlito", ligatures: {str(ligatures).lower()})\n{body}')
+    src.write_text(f'#set page(paper: "us-letter")\n#set text(font: "Carlito", ligatures: {str(ligatures).lower()})\n{body}', encoding="utf-8")
     return typst.compile(str(src), font_paths=[str(FONTS)], ignore_system_fonts=True)
 
 

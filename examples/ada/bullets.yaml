@@ -1,28 +1,78 @@
+# Ada Example is fictional.
 bullets:
+  # --- impact: not tied to a role ---
   - id: imp_k8s
-    tags: [kubernetes, cost]
-    metrics: ["31%"]
+    tags: [kubernetes, cost, platform]
+    metrics: ["-31% cost"]
     text:
       en: Cut infrastructure cost 31% by moving 40 services to Kubernetes with no customer-facing downtime.
       es: Reduje 31% el costo de infraestructura al migrar 40 servicios a Kubernetes sin interrupciones para el cliente.
+  - id: imp_ledger
+    tags: [postgresql, payments, reliability]
+    metrics: ["0 unexplained differences"]
+    text:
+      en: Designed the double-entry ledger that has closed every month since 2022 with zero unexplained differences.
+      es: Diseñé el libro mayor de partida doble que cierra cada mes desde 2022 sin diferencias sin explicar.
+  - id: imp_team
+    tags: [leadership, mentoring]
+    metrics: ["4 promotions"]
+    text:
+      en: Mentored 6 engineers, 4 of whom were promoted, and set up the architecture review used by 6 teams.
+      es: Mentoré a 6 ingenieros, 4 de ellos ascendidos, y armé la revisión de arquitectura que usan 6 equipos.
+
+  # --- Fictional Fintech ---
   - id: ft_kafka
     role: fintech
-    tags: [kafka, java, reliability]
+    tags: [kafka, java, event-driven]
     text:
       en: Designed an affiliate reconciliation flow on Kafka with exactly-once processing and first-in-first-out ordering.
       es: Diseñé un flujo de conciliación de afiliados sobre Kafka con procesamiento exactly-once y orden FIFO.
   - id: ft_k8s
     role: fintech
-    tags: [kubernetes, platform]
+    tags: [kubernetes, platform, docker]
     text:
       en: Led the migration of 40 services to Kubernetes and defined the deployment standards adopted by 6 teams.
       es: Lideré la migración de 40 servicios a Kubernetes y definí los estándares de despliegue que adoptaron 6 equipos.
+  - id: ft_ledger
+    role: fintech
+    tags: [postgresql, java, payments]
+    text:
+      en: Built the double-entry ledger in Java and PostgreSQL, handling 2M postings per day with idempotent writes.
+      es: Construí el libro mayor de partida doble en Java y PostgreSQL, con 2M de asientos al día y escrituras idempotentes.
+  - id: ft_ci
+    role: fintech
+    tags: [github actions, ci/cd, platform]
+    metrics: ["40 -> 8 min"]
+    text:
+      en: Rebuilt the CI/CD pipelines on GitHub Actions, cutting the time from merge to production from 40 to 8 minutes.
+      es: Rehice los pipelines de CI/CD en GitHub Actions y reduje de 40 a 8 minutos el tiempo de merge a producción.
+  - id: ft_oncall
+    role: fintech
+    tags: [observability, opentelemetry, grafana, sre]
+    metrics: ["MTTR 45 -> 12 min"]
+    text:
+      en: Introduced OpenTelemetry tracing, Grafana dashboards and SLOs, bringing mean time to recovery from 45 to 12 minutes.
+      es: Introduje trazas con OpenTelemetry, tableros en Grafana y SLOs, y bajé el tiempo medio de recuperación de 45 a 12 minutos.
+  - id: ft_grpc
+    role: fintech
+    tags: [grpc, go]
+    text:
+      en: Wrote an internal gRPC service in Go for FX rate lookups, used by 9 services at p99 under 5 ms.
+      es: Escribí un servicio gRPC interno en Go para consultar tipos de cambio, que usan 9 servicios con p99 menor a 5 ms.
   - id: ft_mentor
     role: fintech
-    tags: [leadership]
+    tags: [leadership, mentoring, architecture]
     text:
       en: Mentored 6 engineers and introduced fit-for-purpose architecture reviews based on ADRs.
       es: Mentoré a 6 ingenieros e introduje revisiones de arquitectura basadas en ADRs.
+  - id: ft_hiring
+    role: fintech
+    tags: [leadership, hiring]
+    text:
+      en: Redesigned the backend hiring loop around a paid take-home exercise; ran 60+ interviews.
+      es: Rediseñé el proceso de contratación backend con un ejercicio pagado para casa; hice más de 60 entrevistas.
+
+  # --- Example Bank ---
   - id: bk_api
     role: bank
     tags: [java, spring, performance]
@@ -35,3 +85,29 @@ bullets:
     text:
       en: Added tracing and dashboards to a legacy monolith, cutting incident diagnosis time in half.
       es: Agregué trazas y tableros a un monolito legado y reduje a la mitad el tiempo de diagnóstico de incidentes.
+  - id: bk_oracle
+    role: bank
+    tags: [postgresql, oracle, migration]
+    text:
+      en: Moved 300 tables from Oracle to PostgreSQL with dual writes and a 2-week shadow period, with no data loss.
+      es: Migré 300 tablas de Oracle a PostgreSQL con escritura dual y 2 semanas en sombra, sin pérdida de datos.
+  - id: bk_batch
+    role: bank
+    tags: [kafka, event-driven, java]
+    text:
+      en: Replaced a nightly batch with Kafka events, so card limits update in seconds instead of the next morning.
+      es: Reemplacé un batch nocturno con eventos en Kafka, y los límites de tarjeta se actualizan en segundos y no al día siguiente.
+
+  # --- Tiny Logistics Co. ---
+  - id: st_routes
+    role: startup
+    tags: [python, algorithms]
+    text:
+      en: Wrote the route planner in Python that cut average delivery distance 18% for 120 drivers.
+      es: Escribí en Python el planificador de rutas que redujo 18% la distancia promedio de entrega para 120 choferes.
+  - id: st_api
+    role: startup
+    tags: [python, django, rest]
+    text:
+      en: Built the REST API in Django behind the driver app, from first commit to 20k daily requests.
+      es: Construí la API REST en Django detrás de la app de choferes, desde el primer commit hasta 20k peticiones diarias.

@@ -2,20 +2,20 @@ import pytest
 from pydantic import ValidationError
 
 from honest_cv import document
-from honest_cv.model import MissingTranslation, ProfileError, load
+from honest_cv.model import MissingTranslation, ProfileError, explain, load
 
 
 def test_loads_example(ada):
     assert ada.profile.contact.name == "Ada Example"
-    assert set(ada.variants) == {"backend", "platform"}
+    assert set(ada.variants) == {"backend", "platform", "leadership"}
 
 
 def test_extends_overrides_and_merges_roles(ada):
-    base, child = ada.resolve("backend"), ada.resolve("platform")
-    assert child.title != base.title
-    assert child.summary == base.summary
-    assert child.roles["fintech"] == ["ft_k8s", "ft_kafka"]
-    assert child.roles["bank"] == base.roles["bank"]
+    base, child = ada.resolve("backend"), ada.resolve("leadership")
+    assert child.title != base.title and child.summary != base.summary
+    assert child.skills == base.skills  # not set in the child: inherited
+    assert child.roles["fintech"][0] == "ft_mentor"  # set in the child: replaced
+    assert child.roles["bank"] == base.roles["bank"]  # other roles: merged from the parent
 
 
 def test_extends_cycle(make_source):
@@ -79,3 +79,11 @@ def test_missing_translation(make_source):
 def test_missing_profile(tmp_path):
     with pytest.raises(ProfileError, match="missing profile.yaml"):
         load(tmp_path)
+
+
+def test_comma_in_flow_mapping_gets_a_hint(tmp_path):
+    (tmp_path / "profile.yaml").write_text("contact: {name: A, email: a@example.com}\n", encoding="utf-8")
+    (tmp_path / "skills.yaml").write_text("skills:\n  - {name: AWS, level: P, evidence: EKS, RDS and MSK}\n", encoding="utf-8")
+    with pytest.raises(ValidationError) as e:
+        load(tmp_path)
+    assert "Put text with commas in quotes" in explain(e.value)

@@ -1,23 +1,72 @@
+# Ada Example is fictional.
 variants:
   backend:
     title: {en: Senior Backend Engineer, es: Ingeniera Backend Senior}
     summary:
-      en: Backend engineer with 12 years building reliable payment systems in Java, Kafka and Kubernetes.
-      es: Ingeniera backend con 12 años construyendo sistemas de pagos confiables con Java, Kafka y Kubernetes.
-    competencies: [Distributed Systems, Event-Driven Architecture, Payments, Kubernetes, Java]
-    impact: [imp_k8s]
+      en: >-
+        Backend engineer with 12 years building reliable payment systems in Java, Kafka and PostgreSQL.
+        Designed a double-entry ledger handling 2M postings per day and moved 40 services to Kubernetes
+        with no downtime. Comfortable owning a system from design review to on-call.
+      es: >-
+        Ingeniera backend con 12 años construyendo sistemas de pagos confiables con Java, Kafka y PostgreSQL.
+        Diseñé un libro mayor de partida doble con 2M de asientos al día y migré 40 servicios a Kubernetes
+        sin interrupciones. Me hago cargo de un sistema desde la revisión de diseño hasta la guardia.
+    competencies: [Distributed Systems, Event-Driven Architecture, Payments, Java, Kafka, PostgreSQL, Kubernetes, AWS]
+    impact: [imp_ledger, imp_k8s]
     roles:
-      fintech: [ft_kafka, ft_k8s, ft_mentor]
-      bank: [bk_api, bk_obs]
+      fintech: [ft_ledger, ft_kafka, ft_k8s, ft_oncall, ft_mentor]
+      bank: [bk_api, bk_batch, bk_oracle, bk_obs]
+      startup: [st_api, st_routes]
     skills:
       - label: {en: Languages, es: Lenguajes}
-        skills: [Java, Go, Rust, Scala]
-      - label: {en: Platforms, es: Plataformas}
-        skills: [Kafka, Kubernetes, PostgreSQL, Spring Boot]
-    max_pages: 1
+        skills: [Java, Python, Go, Rust, Scala]
+      - label: {en: Data & Messaging, es: Datos y mensajería}
+        skills: [Kafka, PostgreSQL, Oracle, Redis]
+      - label: {en: Frameworks, es: Frameworks}
+        skills: [Spring Boot, Django]
+      - label: {en: Cloud & Operations, es: Nube y operación}
+        skills: [AWS, Kubernetes, Docker, OpenTelemetry, Grafana]
+    max_pages: 2
 
   platform:
     extends: backend
-    title: {en: Platform Engineer, es: Ingeniera de Plataforma}
+    title: {en: Senior Platform Engineer, es: Ingeniera de Plataforma Senior}
+    summary:
+      en: >-
+        Platform engineer with 12 years of backend experience. Moved 40 services to Kubernetes on AWS,
+        cutting infrastructure cost 31%, rebuilt CI/CD on GitHub Actions from 40 to 8 minutes, and
+        introduced OpenTelemetry and SLOs that brought recovery time from 45 to 12 minutes.
+      es: >-
+        Ingeniera de plataforma con 12 años de experiencia backend. Migré 40 servicios a Kubernetes en AWS
+        con 31% menos costo, rehice el CI/CD en GitHub Actions de 40 a 8 minutos e introduje OpenTelemetry
+        y SLOs que bajaron el tiempo de recuperación de 45 a 12 minutos.
+    competencies: [Kubernetes, AWS, CI/CD, Observability, Site Reliability Engineering, Docker, Kafka, Developer Experience]
+    impact: [imp_k8s]
     roles:
-      fintech: [ft_k8s, ft_kafka]
+      fintech: [ft_k8s, ft_ci, ft_oncall, ft_kafka, ft_ledger]
+      bank: [bk_obs, bk_oracle, bk_batch]
+    skills:
+      - label: {en: Platform, es: Plataforma}
+        skills: [Kubernetes, Docker, AWS, GitHub Actions]
+      - label: {en: Observability, es: Observabilidad}
+        skills: [OpenTelemetry, Grafana]
+      - label: {en: Languages, es: Lenguajes}
+        skills: [Java, Python, Go, Rust]
+      - label: {en: Data & Messaging, es: Datos y mensajería}
+        skills: [Kafka, PostgreSQL, Redis]
+
+  leadership:
+    extends: backend
+    title: {en: Backend Tech Lead, es: Líder Técnica Backend}
+    summary:
+      en: >-
+        Tech lead with 12 years in backend and payments. Mentored 6 engineers, 4 of them promoted, set up
+        the architecture reviews used by 6 teams, and still ship code: a ledger handling 2M postings per day.
+      es: >-
+        Líder técnica con 12 años en backend y pagos. Mentoré a 6 ingenieros, 4 de ellos ascendidos, armé
+        las revisiones de arquitectura que usan 6 equipos y sigo entregando código: un libro mayor con 2M de
+        asientos al día.
+    competencies: [Technical Leadership, Mentoring, Architecture Reviews, Hiring, Payments, Distributed Systems]
+    impact: [imp_team, imp_ledger, imp_k8s]
+    roles:
+      fintech: [ft_mentor, ft_hiring, ft_ledger, ft_k8s, ft_grpc]

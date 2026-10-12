@@ -153,9 +153,16 @@ def _content_checks(doc: Document, pypdf_text: str, miner_text: str, add) -> Non
     anchors += [h["impact"]] if doc.impact else []
     anchors += [h["experience"], *(r.heading for r in doc.roles)] if doc.roles else []
     anchors += [h["skills"]] if doc.skills else []
-    positions = [flat_b.find(_flat(a)) for a in anchors]
-    in_order = -1 not in positions and positions == sorted(positions)
-    add(Check("reading_order", in_order, "" if in_order else "sections out of order or missing"))
+    # Search each anchor after the previous one, so a heading word that also
+    # appears earlier in the text (e.g. "Developer Experience") does not confuse it.
+    pos, lost_at = 0, None
+    for a in anchors:
+        found = flat_b.find(_flat(a), pos)
+        if found == -1:
+            lost_at = a
+            break
+        pos = found + len(_flat(a))
+    add(Check("reading_order", lost_at is None, f"'{lost_at}' missing or out of order" if lost_at else ""))
 
     label = FAMILIARITY[doc.lang]
     familiar = next((s.skills for s in doc.skills if s.label == label), [])

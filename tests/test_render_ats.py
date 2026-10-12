@@ -1,5 +1,6 @@
 """ATS invariants, checked on every build of the example profile."""
 
+import copy
 import io
 import re
 
@@ -12,9 +13,10 @@ from honest_cv import document
 from honest_cv.build import build_cv
 from honest_cv.render.docx import render_docx
 from honest_cv.render.pdf import DENSITY, fit_pages, page_stats, render_pdf
+from honest_cv.verify import verify_pdf
 
 LIGATURES = re.compile("[ﬀ-ﬆ]")
-CASES = [(v, l) for v in ("backend", "platform") for l in ("en", "es")]
+CASES = [(v, l) for v in ("backend", "platform", "leadership") for l in ("en", "es")]
 
 
 @pytest.fixture(scope="module")
@@ -50,11 +52,16 @@ def test_role_heading_keeps_its_dates_in_pdfminer(pdfs, case):
 @pytest.mark.parametrize("case", CASES)
 def test_reading_order_follows_source(pdfs, case):
     doc, pdf = pdfs[case]
-    text = extract_text(io.BytesIO(pdf))
-    h = doc.headings
-    anchors = [doc.name, h["summary"], h["impact"], h["experience"], *(r.heading for r in doc.roles), h["skills"], h["education"]]
-    positions = [text.index(a) for a in anchors]
-    assert positions == sorted(positions)
+    report = verify_pdf(pdf, doc=doc)
+    assert next(c for c in report.checks if c.name == "reading_order").ok
+
+
+def test_reading_order_catches_swapped_roles(pdfs):
+    doc, pdf = pdfs[("backend", "en")]
+    doc = copy.deepcopy(doc)
+    doc.roles.reverse()
+    report = verify_pdf(pdf, doc=doc)
+    assert "reading_order" in {c.name for c in report.failures}
 
 
 def test_only_bundled_fonts_embedded(pdfs):
@@ -115,3 +122,14 @@ def test_build_cv_writes_files(ada, tmp_path):
     built = build_cv(ada, "backend", "es", tmp_path)
     assert [b.path.name for b in built] == ["Ada_Example_CV_backend_ES.pdf", "Ada_Example_CV_backend_ES.docx"]
     assert built[0].pages == 1 and built[0].fits
+
+
+@pytest.mark.parametrize("term", ["CI/CD", "event-driven", "first-in-first-out"])
+def test_compound_terms_never_split_across_lines(ada, term):
+    doc = document.build(ada, "backend", "en")
+    # Shift the term across every horizontal position so some copy lands at a line end.
+    doc.summary = " ".join(f"{'x' * (i % 7 + 1)} {term}" for i in range(80))
+    text = extract_text(io.BytesIO(render_pdf(doc)))
+    assert text.count(term) >= 80  # every copy extracted whole
+    for line in text.splitlines():
+        assert not line.rstrip().endswith(("/", "-")), line

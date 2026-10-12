@@ -9,7 +9,7 @@ from honest_cv.model import Bullet, Level, SkillUpgradeError, load
 @pytest.fixture
 def profile(tmp_path, ada_raw):
     for name, data in ada_raw.items():
-        (tmp_path / f"{name}.yaml").write_text(yaml.safe_dump(data, allow_unicode=True))
+        (tmp_path / f"{name}.yaml").write_text(yaml.safe_dump(data, allow_unicode=True), encoding="utf-8")
     return tmp_path
 
 
@@ -20,10 +20,10 @@ def test_init_profile_creates_loadable_templates(tmp_path):
 
 
 def test_init_profile_never_overwrites(profile):
-    before = (profile / "skills.yaml").read_text()
+    before = (profile / "skills.yaml").read_text(encoding="utf-8")
     with pytest.raises(store.StoreError, match="not overwriting"):
         store.init_profile(profile)
-    assert (profile / "skills.yaml").read_text() == before
+    assert (profile / "skills.yaml").read_text(encoding="utf-8") == before
 
 
 def test_new_skill_counts_as_upgrade_from_x(profile):
@@ -56,10 +56,10 @@ def test_add_bullet(profile):
 
 
 def test_invalid_write_leaves_files_untouched(profile):
-    before = (profile / "bullets.yaml").read_text()
+    before = (profile / "bullets.yaml").read_text(encoding="utf-8")
     with pytest.raises(ValidationError, match="unknown role"):
         store.add_bullet(profile, Bullet(id="x", role="nope", text="Text"))
     with pytest.raises(ValidationError, match="duplicate bullet id"):
         store.add_bullet(profile, Bullet(id="ft_kafka", role="fintech", text="Text"))
-    assert (profile / "bullets.yaml").read_text() == before
+    assert (profile / "bullets.yaml").read_text(encoding="utf-8") == before
     assert not list(profile.glob(".*.tmp"))

@@ -30,18 +30,18 @@ async def _tools_and_prompts():
 @pytest.mark.parametrize("doc", DOCS, ids=lambda p: p.name)
 async def test_docs_only_name_real_tools(doc):
     tools, prompts = await _tools_and_prompts()
-    named = set(SNAKE.findall(doc.read_text())) - NOT_TOOLS
+    named = set(SNAKE.findall(doc.read_text(encoding="utf-8"))) - NOT_TOOLS
     assert named <= tools | prompts, named - tools - prompts
 
 
 async def test_skill_covers_every_tool():
     tools, _ = await _tools_and_prompts()
-    text = DOCS[0].read_text()
+    text = DOCS[0].read_text(encoding="utf-8")
     assert {t for t in tools if f"`{t}`" not in text} == set()
 
 
 def test_skill_frontmatter():
-    head = DOCS[0].read_text().split("---")[1]
+    head = DOCS[0].read_text(encoding="utf-8").split("---")[1]
     assert "name: honest-cv" in head and "description:" in head
 
 
