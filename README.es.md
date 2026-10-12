@@ -1,6 +1,6 @@
 # honest-cv
 
-[![CI](https://github.com/OWNER/honest-cv/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/honest-cv/actions/workflows/ci.yml)
+[![CI](https://github.com/JesusCabreraReveles/honest-cv/actions/workflows/ci.yml/badge.svg)](https://github.com/JesusCabreraReveles/honest-cv/actions/workflows/ci.yml)
 [![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
 
 **CVs honestos, aptos para ATS y adaptados a cada puesto, generados por tu agente de IA.**
@@ -53,7 +53,7 @@ Para instalar también la skill, que guía la entrevista y la adaptación:
 
 ```bash
 mkdir -p ~/.claude/skills/honest-cv
-curl -fsSL https://raw.githubusercontent.com/OWNER/honest-cv/main/skills/honest-cv/SKILL.md \
+curl -fsSL https://raw.githubusercontent.com/JesusCabreraReveles/honest-cv/master/skills/honest-cv/SKILL.md \
   -o ~/.claude/skills/honest-cv/SKILL.md
 ```
 

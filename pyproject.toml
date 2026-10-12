@@ -22,6 +22,11 @@ dependencies = [
     "typst>=0.15",
 ]
 
+[project.urls]
+Homepage = "https://github.com/JesusCabreraReveles/honest-cv"
+Repository = "https://github.com/JesusCabreraReveles/honest-cv"
+Issues = "https://github.com/JesusCabreraReveles/honest-cv/issues"
+
 [project.scripts]
 honest-cv = "honest_cv.cli:main"
 
