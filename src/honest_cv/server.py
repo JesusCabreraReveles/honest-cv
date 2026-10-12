@@ -57,6 +57,11 @@ def _load(profile: str | None) -> Source:
     return load(_profile_dir(profile))
 
 
+def _quote(value: object) -> str:
+    # Double quotes work in POSIX shells, PowerShell and cmd alike.
+    return '"' + str(value).replace('"', "'") + '"'
+
+
 def _tool_errors(fn):
     """Turn expected failures into ToolError so the model sees the reason."""
 
@@ -149,7 +154,7 @@ def set_skill(
         if not _can_ask(ctx):
             raise ToolError(
                 "this client cannot ask the person directly, so the upgrade was not saved. "
-                f'Ask them to run: honest-cv skill {folder} "{name}" {new} --evidence "..."'
+                f"Ask them to run: honest-cv skill {_quote(folder)} {_quote(name)} {new} --evidence {_quote(evidence)}"
             )
         if not (isinstance(confirmation, AcceptedElicitation) and confirmation.data.confirm):
             raise ToolError(f"{name}: the person did not confirm the upgrade; nothing was saved")

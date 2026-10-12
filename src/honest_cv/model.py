@@ -260,9 +260,15 @@ class Source(Strict):
 
 
 def explain(error: Exception) -> str:
-    """The error text, plus a hint for the most common YAML slip."""
+    """The error text, plus a hint for the most common YAML slip.
+
+    Validation errors are reduced to "where: what", one per line. pydantic's own
+    text repeats the whole input, which buries the reason under the profile."""
     text = str(error)
     if isinstance(error, ValidationError):
+        text = "\n".join(
+            f"{'.'.join(map(str, e['loc']))}: {_reason(e)}" if e["loc"] else _reason(e) for e in error.errors()
+        )
         split = [e for e in error.errors() if e["type"] == "extra_forbidden" and " " in str(e["loc"][-1])]
         if split:
             text += (
@@ -270,6 +276,10 @@ def explain(error: Exception) -> str:
                 'Put text with commas in quotes, e.g. evidence: "EKS, RDS and MSK".'
             )
     return text
+
+
+def _reason(error: dict) -> str:
+    return error["msg"].removeprefix("Value error, ")
 
 
 def _check_unique(values: list[str], what: str) -> None:

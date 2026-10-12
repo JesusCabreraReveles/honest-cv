@@ -86,4 +86,6 @@ def test_comma_in_flow_mapping_gets_a_hint(tmp_path):
     (tmp_path / "skills.yaml").write_text("skills:\n  - {name: AWS, level: P, evidence: EKS, RDS and MSK}\n", encoding="utf-8")
     with pytest.raises(ValidationError) as e:
         load(tmp_path)
-    assert "Put text with commas in quotes" in explain(e.value)
+    text = explain(e.value)
+    assert "Put text with commas in quotes" in text
+    assert text.startswith("inventory.skills.0.RDS and MSK: Extra inputs are not permitted")

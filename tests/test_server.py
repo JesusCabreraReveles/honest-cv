@@ -84,8 +84,9 @@ async def test_upgrade_without_evidence_never_asks(profile):
 
 async def test_upgrade_without_elicitation_points_to_cli(profile):
     async with Client(server) as c:
-        err, msg = await call(c, "set_skill", profile=profile, name="Scala", level="P", evidence="x")
-    assert err and "honest-cv skill" in msg
+        err, msg = await call(c, "set_skill", profile=profile, name="Scala", level="P", evidence="Akka at Example Bank")
+    # A command the person can paste as is: their evidence, not a placeholder.
+    assert err and f'honest-cv skill "{profile}" "Scala" P --evidence "Akka at Example Bank"' in msg
     assert load(profile).inventory.get("Scala").level is Level.NONE
 
 
@@ -111,6 +112,8 @@ async def test_add_bullet_and_errors_reach_the_model(profile):
         assert not err
         err, msg = await call(c, "add_bullet", profile=profile, id="y", text_en="Y.", role="nope")
     assert err and "unknown role 'nope'" in msg
+    # The reason only, not pydantic's dump of the whole profile.
+    assert "input_value" not in msg and "errors.pydantic.dev" not in msg
 
 
 async def test_build_verify_and_score(profile, tmp_path):
