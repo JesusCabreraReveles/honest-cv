@@ -11,6 +11,7 @@ import functools
 import inspect
 import os
 from pathlib import Path
+from string import Template
 from typing import Annotated, Literal
 
 from mcp.server.elicitation import AcceptedElicitation, ElicitationResult
@@ -276,6 +277,29 @@ def gap_report(
     familiarity_only (only claim it as familiarity), not_in_inventory (do not claim it)."""
     groups = score_mod.gap_report(_load(profile), variant, lang, _keywords(keywords, preferred))
     return {k: [r.__dict__ for r in v] for k, v in groups.items()}
+
+
+PROMPTS = Path(__file__).parent / "prompts"
+
+
+def _prompt(name: str, **values: str) -> str:
+    return Template((PROMPTS / f"{name}.md").read_text(encoding="utf-8")).substitute(values)
+
+
+def _profile_label(profile: str | None) -> str:
+    return profile or os.environ.get("HONEST_CV_PROFILE") or "(ask the person where to keep it)"
+
+
+@mcp.prompt(title="Honest CV interview")
+def interview(profile: str | None = None, langs: str = "en, es") -> str:
+    """Guided interview that fills the skill inventory and the bullet pool, one question at a time."""
+    return _prompt("interview", profile=_profile_label(profile), langs=langs)
+
+
+@mcp.prompt(title="Tailor CV for a job post")
+def tailor_for_job(job_post: str, profile: str | None = None, lang: str = "en") -> str:
+    """Score the variants against a job post, explain the honest gaps, adjust a variant and rebuild."""
+    return _prompt("tailor_for_job", profile=_profile_label(profile), lang=lang, job_post=job_post.strip())
 
 
 def main() -> None:
