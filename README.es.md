@@ -42,6 +42,9 @@ conversación; honest-cv valida, genera, verifica y mide. Tus datos se quedan en
 
 honest-cv necesita [uv](https://docs.astral.sh/uv/). Typst y las fuentes vienen dentro del
 paquete, así que no hay que instalar nada más.
+Funciona en Linux (glibc) con x86_64 y ARM64, en macOS con Intel y Apple
+Silicon, y en Windows con x64. Alpine Linux y Windows en ARM no están soportados, porque el paquete
+`typst` no publica wheels para ellos.
 
 ### Claude Code
 

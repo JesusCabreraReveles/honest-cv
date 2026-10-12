@@ -39,6 +39,9 @@ honest-cv validates, builds, verifies and measures. Your data stays on your mach
 
 honest-cv needs [uv](https://docs.astral.sh/uv/). Typst and the fonts ship inside the package,
 so there is nothing else to install.
+It runs on Linux (glibc) on x86_64 and ARM64, macOS on Intel and Apple
+Silicon, and Windows on x64. Alpine Linux and Windows on ARM aren't supported, because the `typst`
+package doesn't publish wheels for them.
 
 ### Claude Code
 

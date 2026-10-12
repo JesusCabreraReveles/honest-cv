@@ -53,6 +53,8 @@ Python 3.11 or newer. Code, names and comments are in English.
 - **Templates.** A new template must pass `verify_pdf` with the Ada profile in both languages.
   Never put text in a box aligned to the right.
 - **The demo GIF.** Regenerate it with `vhs docs/demo.tape` after the CLI output changes.
+- **Packaging.** After `uv build`, `scripts/smoke.sh` checks the wheel on a clean Linux in
+  Docker; the command is at the top of the script.
 
 ## Pull requests
 
