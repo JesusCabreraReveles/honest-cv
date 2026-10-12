@@ -52,6 +52,13 @@ async def test_lists_the_planned_tools():
                      "build_cv", "verify_pdf", "score_job", "gap_report"}
 
 
+async def test_every_tool_argument_is_described():
+    async with Client(server) as c:
+        tools = (await c.list_tools()).tools
+    missing = [f"{x.name}.{k}" for x in tools for k, v in x.input_schema["properties"].items() if "description" not in v]
+    assert missing == []
+
+
 async def test_confirmation_is_not_a_model_argument():
     async with Client(server) as c:
         tool = next(x for x in (await c.list_tools()).tools if x.name == "set_skill")

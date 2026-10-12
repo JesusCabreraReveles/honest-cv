@@ -78,7 +78,7 @@ def cmd_skill(args: argparse.Namespace) -> int:
             return 1
     skill = store.upsert_skill(
         args.profile, args.name, new, evidence=args.evidence, confirmed=confirmed,
-        years=args.years, last_used=args.last_used, aliases=args.alias, notes=args.notes,
+        years=args.years, last_used_year=args.last_used_year, aliases=args.alias, notes=args.notes,
     )
     print(f"Saved {skill.name}: {skill.level}")
     return 0
@@ -150,11 +150,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("profile")
     p.add_argument("name")
     p.add_argument("level", choices=[lvl.value for lvl in Level])
-    p.add_argument("--evidence")
-    p.add_argument("--years", type=float)
-    p.add_argument("--last-used", type=int)
-    p.add_argument("--alias", action="append")
-    p.add_argument("--notes")
+    p.add_argument("--evidence", help="where and how you used it; required to raise a level")
+    p.add_argument("--years", type=float, help="years of use, e.g. 2.5")
+    p.add_argument("--last-used-year", type=int, help="last calendar year you used it, e.g. 2026")
+    p.add_argument("--alias", action="append", help="another spelling, e.g. k8s; repeatable")
+    p.add_argument("--notes", help="private notes, never printed on the CV")
     p.set_defaults(func=cmd_skill)
 
     p = sub.add_parser("build", help="render PDF and DOCX for one or more variants")

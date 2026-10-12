@@ -50,7 +50,7 @@ Collect every technology mentioned in step 3, then ask about each one using thes
 - **F**: familiarity. They have read about it or tried it. It is always shown labeled as such.
 - **X**: they don't have it. It is never shown, but it is recorded so gaps are honest.
 
-For P and L, ask for `evidence` (where and how they used it), `years` and `last_used`. Then call
+For P and L, ask for `evidence` (where and how they used it), `years` and `last_used_year`. Then call
 `set_skill`. Raising a level makes the server ask the person to confirm directly; that is expected.
 If the server says the client cannot ask, give them the `honest-cv skill` command it returns.
 

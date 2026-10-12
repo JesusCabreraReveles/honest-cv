@@ -63,3 +63,16 @@ def test_invalid_write_leaves_files_untouched(profile):
         store.add_bullet(profile, Bullet(id="ft_kafka", role="fintech", text="Text"))
     assert (profile / "bullets.yaml").read_text(encoding="utf-8") == before
     assert not list(profile.glob(".*.tmp"))
+
+
+def test_last_used_year_must_be_a_year(profile):
+    # Seen in manual testing: "last_used: 1" was saved. A year is what is meant.
+    with pytest.raises(ValidationError, match="must be a calendar year"):
+        store.upsert_skill(profile, "Java", Level.PRODUCTION, last_used_year=1)
+    store.upsert_skill(profile, "Java", Level.PRODUCTION, last_used_year=2024)
+    assert load(profile).inventory.get("Java").last_used_year == 2024
+
+
+def test_text_is_saved_without_stray_whitespace(profile):
+    store.upsert_skill(profile, "Rust", Level.LAB, evidence=" CLI tool on GitHub. ", confirmed=True)
+    assert load(profile).inventory.get("Rust").evidence == "CLI tool on GitHub."

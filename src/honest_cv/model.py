@@ -8,12 +8,13 @@
 
 from __future__ import annotations
 
+from datetime import date
 from enum import StrEnum
 from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 Lang = Literal["en", "es"]
 LANGS: tuple[Lang, ...] = ("en", "es")
@@ -38,7 +39,7 @@ def localize(text: Text, lang: Lang, where: str) -> str:
 
 
 class Strict(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
 
 # --- profile.yaml ------------------------------------------------------------
@@ -107,14 +108,24 @@ class Level(StrEnum):
 LEVEL_RANK = {Level.NONE: 0, Level.FAMILIARITY: 1, Level.LAB: 2, Level.PRODUCTION: 3}
 
 
+FIRST_YEAR = 1950
+
+
 class Skill(Strict):
     name: str
     level: Level
-    years: float | None = None
-    last_used: int | None = None
+    years: float | None = Field(None, ge=0)
+    last_used_year: int | None = None  # a calendar year, e.g. 2026
     evidence: str | None = None
     aliases: list[str] = []
     notes: str | None = None
+
+    @field_validator("last_used_year")
+    @classmethod
+    def _is_a_year(cls, v: int | None) -> int | None:
+        if v is not None and not FIRST_YEAR <= v <= date.today().year + 1:
+            raise ValueError(f"must be a calendar year like {date.today().year}, not {v}")
+        return v
 
 
 class SkillUpgradeError(ValueError):

@@ -19,7 +19,7 @@ from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.mcpserver.resolve import Elicit, Resolve
 from mcp.types import ToolAnnotations
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from honest_cv import __version__, store
 from honest_cv import build as build_mod
@@ -41,6 +41,14 @@ approves; build_cv, which also verifies the PDF.
 """
 
 mcp = MCPServer("honest-cv", version=__version__, instructions=INSTRUCTIONS)
+
+# Parameter descriptions shared by the tools. Clients show them to the model and,
+# in tools like the MCP Inspector, to the person.
+Profile = Annotated[str | None, Field(description="Profile folder. Defaults to HONEST_CV_PROFILE.")]
+LangArg = Annotated[Lang, Field(description="Language of the CV: en or es.")]
+Variant = Annotated[str, Field(description="Variant id from variants.yaml, e.g. backend.")]
+Keywords = Annotated[list[str], Field(description="Required keywords from the job post, in its own wording.")]
+Preferred = Annotated[list[str] | None, Field(description="Nice-to-have keywords from the job post.")]
 
 READ = ToolAnnotations(read_only_hint=True, open_world_hint=False)
 WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=False, open_world_hint=False)
@@ -80,7 +88,9 @@ def _tool_errors(fn):
 
 @mcp.tool(annotations=WRITE)
 @_tool_errors
-def init_profile(profile: str) -> dict:
+def init_profile(
+    profile: Annotated[str, Field(description="Folder to create. Must not hold a profile yet.")],
+) -> dict:
     """Create a profile folder with empty, commented YAML templates. Refuses to overwrite."""
     created = store.init_profile(_profile_dir(profile))
     return {"created": [str(p) for p in created]}
@@ -88,7 +98,7 @@ def init_profile(profile: str) -> dict:
 
 @mcp.tool(annotations=READ)
 @_tool_errors
-def get_inventory(profile: str | None = None) -> dict:
+def get_inventory(profile: Profile = None) -> dict:
     """The skill inventory: level (P/L/F/X), years, last use, evidence and aliases."""
     inv = _load(profile).inventory
     by_level = {lvl.value: [] for lvl in sorted(Level, key=LEVEL_RANK.get, reverse=True)}
@@ -134,15 +144,22 @@ def confirm_upgrade(
 @_tool_errors
 def set_skill(
     ctx: Context,
-    name: str,
-    level: Literal["P", "L", "F", "X"],
+    name: Annotated[str, Field(description="Skill name, e.g. Kubernetes. Matches existing skills ignoring case.")],
+    level: Annotated[
+        Literal["P", "L", "F", "X"],
+        Field(description="P production at a job, L own project or lab, F familiarity, X does not have it."),
+    ],
     confirmation: Annotated[ElicitationResult[ConfirmUpgrade], Resolve(confirm_upgrade)],
-    profile: str | None = None,
-    evidence: str | None = None,
-    years: float | None = None,
-    last_used: int | None = None,
-    aliases: list[str] | None = None,
-    notes: str | None = None,
+    profile: Profile = None,
+    evidence: Annotated[
+        str | None, Field(description="Where and how the person used it. Required to raise a level.")
+    ] = None,
+    years: Annotated[float | None, Field(description="Years of use, e.g. 2.5.", ge=0)] = None,
+    last_used_year: Annotated[
+        int | None, Field(description="Last calendar year the person used it, e.g. 2026.")
+    ] = None,
+    aliases: Annotated[list[str] | None, Field(description="Other spellings, e.g. k8s for Kubernetes.")] = None,
+    notes: Annotated[str | None, Field(description="Private notes; never printed on the CV.")] = None,
 ) -> dict:
     """Add or change a skill. Raising the level (a new skill counts as coming from X) needs
     `evidence`, and the server then asks the person to confirm. Lowering is always allowed."""
@@ -161,7 +178,7 @@ def set_skill(
         confirmed = True
     skill = store.upsert_skill(
         folder, name, new, evidence=evidence, confirmed=confirmed,
-        years=years, last_used=last_used, aliases=aliases, notes=notes,
+        years=years, last_used_year=last_used_year, aliases=aliases, notes=notes,
     )
     return {"saved": skill.model_dump(mode="json", exclude_none=True, exclude_defaults=True), "previous_level": old.value}
 
@@ -169,13 +186,13 @@ def set_skill(
 @mcp.tool(annotations=WRITE)
 @_tool_errors
 def add_bullet(
-    id: str,
-    text_en: str,
-    profile: str | None = None,
-    text_es: str | None = None,
-    role: str | None = None,
-    tags: list[str] | None = None,
-    metrics: list[str] | None = None,
+    id: Annotated[str, Field(description="Unique bullet id, e.g. ft_k8s.")],
+    text_en: Annotated[str, Field(description="The achievement in English, as the person stated it.")],
+    profile: Profile = None,
+    text_es: Annotated[str | None, Field(description="The same achievement in Spanish.")] = None,
+    role: Annotated[str | None, Field(description="Role id from profile.yaml this bullet belongs to.")] = None,
+    tags: Annotated[list[str] | None, Field(description="Skills and topics it shows, e.g. Kubernetes.")] = None,
+    metrics: Annotated[list[str] | None, Field(description="Numbers it claims, e.g. 40%, kept for review.")] = None,
 ) -> dict:
     """Add an achievement to the bullet pool. `role` is a role id from profile.yaml; leave it
     out for bullets used only in the Selected Impact section. Use only facts the person stated."""
@@ -187,7 +204,7 @@ def add_bullet(
 
 @mcp.tool(annotations=READ)
 @_tool_errors
-def list_variants(profile: str | None = None) -> dict:
+def list_variants(profile: Profile = None) -> dict:
     """Variants after `extends:` is applied, with the bullet texts each one uses."""
     source = _load(profile)
     out = {}
@@ -211,11 +228,11 @@ def list_variants(profile: str | None = None) -> dict:
 @mcp.tool(annotations=WRITE)
 @_tool_errors
 def build_cv(
-    variant: str,
-    lang: Lang = "en",
-    profile: str | None = None,
-    formats: list[Literal["pdf", "docx"]] | None = None,
-    out_dir: str | None = None,
+    variant: Variant,
+    lang: LangArg = "en",
+    profile: Profile = None,
+    formats: Annotated[list[Literal["pdf", "docx"]] | None, Field(description="Default: both.")] = None,
+    out_dir: Annotated[str | None, Field(description="Output folder. Default: <profile>/out.")] = None,
 ) -> dict:
     """Render a variant to PDF and/or DOCX (default both) and verify the PDF for ATS safety.
     Files go to `out_dir`, default <profile>/out."""
@@ -238,7 +255,10 @@ def build_cv(
 
 @mcp.tool(annotations=READ)
 @_tool_errors
-def verify_pdf(path: str, max_pages: int | None = None) -> dict:
+def verify_pdf(
+    path: Annotated[str, Field(description="Path to any PDF, made with honest-cv or not.")],
+    max_pages: Annotated[int | None, Field(description="Fail the page_count check above this.")] = None,
+) -> dict:
     """Check that any PDF is ATS-safe and return the text an ATS would extract."""
     report = verify(Path(path).expanduser(), max_pages=max_pages)
     return {
@@ -256,11 +276,11 @@ def _keywords(keywords: list[str], preferred: list[str] | None) -> list[score_mo
 @mcp.tool(annotations=READ)
 @_tool_errors
 def score_job(
-    keywords: list[str],
-    profile: str | None = None,
-    preferred: list[str] | None = None,
-    lang: Lang = "en",
-    variants: list[str] | None = None,
+    keywords: Keywords,
+    profile: Profile = None,
+    preferred: Preferred = None,
+    lang: LangArg = "en",
+    variants: Annotated[list[str] | None, Field(description="Variant ids to score. Default: all.")] = None,
 ) -> dict:
     """Keyword coverage of each variant, best first. Extract the job post's keywords yourself:
     `keywords` are the required ones, `preferred` the nice-to-haves. Use the post's own wording."""
@@ -271,11 +291,11 @@ def score_job(
 @mcp.tool(annotations=READ)
 @_tool_errors
 def gap_report(
-    variant: str,
-    keywords: list[str],
-    profile: str | None = None,
-    preferred: list[str] | None = None,
-    lang: Lang = "en",
+    variant: Variant,
+    keywords: Keywords,
+    profile: Profile = None,
+    preferred: Preferred = None,
+    lang: LangArg = "en",
 ) -> dict:
     """Missing keywords grouped by what can honestly be done:
     in_inventory_not_in_cv (a P/L skill or a pool bullet shows it: add it, see unused_bullets;

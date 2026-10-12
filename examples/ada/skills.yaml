@@ -1,20 +1,20 @@
 # Ada Example is fictional.
 skills:
-  - {name: Java, level: P, years: 10, last_used: 2026, evidence: "Payments API at Example Bank; ledger at Fictional Fintech"}
-  - {name: Spring Boot, level: P, years: 8, last_used: 2025, evidence: "Payments API at Example Bank"}
-  - {name: Kafka, level: P, years: 7, last_used: 2026, evidence: "Reconciliation flow; batch replacement at Example Bank"}
-  - {name: Kubernetes, level: P, years: 5, last_used: 2026, aliases: [k8s], evidence: "40-service migration"}
-  - {name: Docker, level: P, years: 7, last_used: 2026, evidence: "All services at Fictional Fintech"}
-  - {name: PostgreSQL, level: P, years: 10, last_used: 2026, evidence: "Ledger; Oracle migration"}
-  - {name: Oracle, level: P, years: 4, last_used: 2020, evidence: "Core banking schema at Example Bank"}
-  - {name: Redis, level: P, years: 5, last_used: 2025, evidence: "Idempotency keys for the ledger"}
-  - {name: AWS, level: P, years: 6, last_used: 2026, evidence: "EKS, RDS and MSK at Fictional Fintech"}
-  - {name: GitHub Actions, level: P, years: 3, last_used: 2026, evidence: "CI/CD rebuild at Fictional Fintech"}
-  - {name: OpenTelemetry, level: P, years: 2, last_used: 2026, evidence: "Tracing rollout at Fictional Fintech"}
-  - {name: Grafana, level: P, years: 4, last_used: 2026, evidence: "SLO dashboards"}
-  - {name: Python, level: P, years: 3, last_used: 2024, evidence: "Route planner at Tiny Logistics Co."}
-  - {name: Django, level: P, years: 3, last_used: 2016, evidence: "Driver API at Tiny Logistics Co."}
-  - {name: Go, level: L, years: 2, last_used: 2026, aliases: [Golang], evidence: "FX gRPC service (internal tool); personal CLI tools"}
-  - {name: gRPC, level: L, years: 1, last_used: 2025, evidence: "Internal FX rate service"}
+  - {name: Java, level: P, years: 10, last_used_year: 2026, evidence: "Payments API at Example Bank; ledger at Fictional Fintech"}
+  - {name: Spring Boot, level: P, years: 8, last_used_year: 2025, evidence: "Payments API at Example Bank"}
+  - {name: Kafka, level: P, years: 7, last_used_year: 2026, evidence: "Reconciliation flow; batch replacement at Example Bank"}
+  - {name: Kubernetes, level: P, years: 5, last_used_year: 2026, aliases: [k8s], evidence: "40-service migration"}
+  - {name: Docker, level: P, years: 7, last_used_year: 2026, evidence: "All services at Fictional Fintech"}
+  - {name: PostgreSQL, level: P, years: 10, last_used_year: 2026, evidence: "Ledger; Oracle migration"}
+  - {name: Oracle, level: P, years: 4, last_used_year: 2020, evidence: "Core banking schema at Example Bank"}
+  - {name: Redis, level: P, years: 5, last_used_year: 2025, evidence: "Idempotency keys for the ledger"}
+  - {name: AWS, level: P, years: 6, last_used_year: 2026, evidence: "EKS, RDS and MSK at Fictional Fintech"}
+  - {name: GitHub Actions, level: P, years: 3, last_used_year: 2026, evidence: "CI/CD rebuild at Fictional Fintech"}
+  - {name: OpenTelemetry, level: P, years: 2, last_used_year: 2026, evidence: "Tracing rollout at Fictional Fintech"}
+  - {name: Grafana, level: P, years: 4, last_used_year: 2026, evidence: "SLO dashboards"}
+  - {name: Python, level: P, years: 3, last_used_year: 2024, evidence: "Route planner at Tiny Logistics Co."}
+  - {name: Django, level: P, years: 3, last_used_year: 2016, evidence: "Driver API at Tiny Logistics Co."}
+  - {name: Go, level: L, years: 2, last_used_year: 2026, aliases: [Golang], evidence: "FX gRPC service (internal tool); personal CLI tools"}
+  - {name: gRPC, level: L, years: 1, last_used_year: 2025, evidence: "Internal FX rate service"}
   - {name: Rust, level: F, notes: "Read the book, small exercises"}
   - {name: Scala, level: X}

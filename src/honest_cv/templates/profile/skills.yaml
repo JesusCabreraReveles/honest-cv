@@ -3,6 +3,6 @@
 #   F = familiarity (always labeled)     X = you don't have it (never shown)
 # Moving a skill up a level needs `evidence` and your explicit confirmation.
 skills: []
-# - {name: Java, level: P, years: 8, last_used: 2026, evidence: "Payments API at Acme"}
+# - {name: Java, level: P, years: 8, last_used_year: 2026, evidence: "Payments API at Acme"}
 # - {name: Kubernetes, level: L, aliases: [k8s], evidence: "Home lab cluster"}
 # - {name: Rust, level: F}
