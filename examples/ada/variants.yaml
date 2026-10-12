@@ -1,0 +1,23 @@
+variants:
+  backend:
+    title: {en: Senior Backend Engineer, es: Ingeniera Backend Senior}
+    summary:
+      en: Backend engineer with 12 years building reliable payment systems in Java, Kafka and Kubernetes.
+      es: Ingeniera backend con 12 años construyendo sistemas de pagos confiables con Java, Kafka y Kubernetes.
+    competencies: [Distributed Systems, Event-Driven Architecture, Payments, Kubernetes, Java]
+    impact: [imp_k8s]
+    roles:
+      fintech: [ft_kafka, ft_k8s, ft_mentor]
+      bank: [bk_api, bk_obs]
+    skills:
+      - label: {en: Languages, es: Lenguajes}
+        skills: [Java, Go, Rust, Scala]
+      - label: {en: Platforms, es: Plataformas}
+        skills: [Kafka, Kubernetes, PostgreSQL, Spring Boot]
+    max_pages: 1
+
+  platform:
+    extends: backend
+    title: {en: Platform Engineer, es: Ingeniera de Plataforma}
+    roles:
+      fintech: [ft_k8s, ft_kafka]

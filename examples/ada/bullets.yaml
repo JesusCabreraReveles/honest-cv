@@ -1,0 +1,37 @@
+bullets:
+  - id: imp_k8s
+    tags: [kubernetes, cost]
+    metrics: ["31%"]
+    text:
+      en: Cut infrastructure cost 31% by moving 40 services to Kubernetes with no customer-facing downtime.
+      es: Reduje 31% el costo de infraestructura al migrar 40 servicios a Kubernetes sin interrupciones para el cliente.
+  - id: ft_kafka
+    role: fintech
+    tags: [kafka, java, reliability]
+    text:
+      en: Designed an affiliate reconciliation flow on Kafka with exactly-once processing and first-in-first-out ordering.
+      es: Diseñé un flujo de conciliación de afiliados sobre Kafka con procesamiento exactly-once y orden FIFO.
+  - id: ft_k8s
+    role: fintech
+    tags: [kubernetes, platform]
+    text:
+      en: Led the migration of 40 services to Kubernetes and defined the deployment standards adopted by 6 teams.
+      es: Lideré la migración de 40 servicios a Kubernetes y definí los estándares de despliegue que adoptaron 6 equipos.
+  - id: ft_mentor
+    role: fintech
+    tags: [leadership]
+    text:
+      en: Mentored 6 engineers and introduced fit-for-purpose architecture reviews based on ADRs.
+      es: Mentoré a 6 ingenieros e introduje revisiones de arquitectura basadas en ADRs.
+  - id: bk_api
+    role: bank
+    tags: [java, spring, performance]
+    text:
+      en: Built a high-throughput payments API in Java and Spring Boot with p99 latency under 120 ms.
+      es: Construí una API de pagos de alto volumen en Java y Spring Boot con latencia p99 menor a 120 ms.
+  - id: bk_obs
+    role: bank
+    tags: [observability]
+    text:
+      en: Added tracing and dashboards to a legacy monolith, cutting incident diagnosis time in half.
+      es: Agregué trazas y tableros a un monolito legado y reduje a la mitad el tiempo de diagnóstico de incidentes.

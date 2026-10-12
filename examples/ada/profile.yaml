@@ -1,0 +1,32 @@
+# Ada Example is fictional. Use this profile for tests, demos and docs.
+contact:
+  name: Ada Example
+  email: ada@example.com
+  phone: "+1 555 0100"
+  location: {en: "Mexico City, Mexico (remote)", es: "Ciudad de México, México (remoto)"}
+  links: [linkedin.com/in/ada-example, github.com/ada-example]
+
+roles:
+  - id: fintech
+    title: {en: Staff Backend Engineer, es: Ingeniera Backend Staff}
+    company: Fictional Fintech
+    start: "2020"
+    context:
+      en: Payments platform processing 2M transactions per day.
+      es: Plataforma de pagos que procesa 2M de transacciones al día.
+  - id: bank
+    title: {en: Backend Engineer, es: Ingeniera Backend}
+    company: Example Bank
+    start: "2014"
+    end: "2020"
+
+education:
+  - institution: Universidad Ficticia
+    degree: {en: B.Sc. Computer Engineering, es: Ingeniería en Computación}
+    start: "2009"
+    end: "2014"
+
+certifications:
+  - AWS Certified Solutions Architect – Associate
+
+languages: {en: "Spanish (native), English (C1)", es: "Español (nativo), inglés (C1)"}

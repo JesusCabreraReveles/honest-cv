@@ -53,7 +53,7 @@ El servidor es determinista. El LLM del cliente extrae las palabras clave y cond
 | Pieza | Detalle |
 |---|---|
 | Modelo de datos | YAML validado con pydantic. Incluye perfil, pool de bullets (cada uno con id y tags), inventario de skills y plan de variantes (con herencia `extends:`). Soporta EN y ES. |
-| Render | Una plantilla clásica de una columna que sale a PDF. DOCX con python-docx. `fit_pages` ajusta la densidad tipográfica hasta caber en el máximo de páginas. |
+| Render | Una plantilla clásica de una columna que sale a PDF con Typst. DOCX con python-docx. `fit_pages` ajusta la densidad tipográfica hasta caber en el máximo de páginas. |
 | Verificación | Extracción de texto, más revisión del orden de lectura, las ligaduras y el número de páginas. |
 | Score y brechas | Cobertura de palabras clave con sinónimos (k8s ⇄ Kubernetes). Brechas clasificadas por nivel del inventario. |
 | Servidor MCP | Las herramientas y prompts de la sección siguiente, por transporte stdio. |
@@ -93,7 +93,9 @@ El servidor es determinista. El LLM del cliente extrae las palabras clave y cond
 honest-cv/
 ├── src/honest_cv/
 │   ├── model.py        # esquemas pydantic: Profile, Skill, Bullet, Variant
-│   ├── render/         # html.py, pdf.py, docx.py, templates/classic.html
+│   ├── document.py     # variante + idioma → documento; aplica las reglas de honestidad
+│   ├── build.py        # punto de entrada común para la CLI y el servidor
+│   ├── render/         # pdf.py (Typst), docx.py, templates/classic.typ, fonts/ (Carlito, OFL)
 │   ├── verify.py       # extracción y revisiones ATS
 │   ├── score.py        # cobertura, sinónimos, brechas
 │   ├── server.py       # servidor MCP (herramientas y prompts)

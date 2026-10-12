@@ -1,0 +1,9 @@
+skills:
+  - {name: Java, level: P, years: 10, last_used: 2026, evidence: Payments API at Example Bank}
+  - {name: Spring Boot, level: P, years: 8, last_used: 2025, evidence: Payments API at Example Bank}
+  - {name: Kafka, level: P, years: 5, last_used: 2026, evidence: Reconciliation flow at Fictional Fintech}
+  - {name: Kubernetes, level: P, years: 5, last_used: 2026, aliases: [k8s], evidence: 40-service migration}
+  - {name: PostgreSQL, level: P, years: 10, last_used: 2026}
+  - {name: Go, level: L, years: 2, last_used: 2026, evidence: Personal CLI tools on GitHub}
+  - {name: Rust, level: F, notes: "Read the book, small exercises"}
+  - {name: Scala, level: X}
