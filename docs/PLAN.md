@@ -68,6 +68,7 @@ El servidor es determinista. El LLM del cliente extrae las palabras clave y cond
 | Importar y exportar JSON Resume | v0.2 |
 | Importar el PDF de LinkedIn | v0.2 |
 | Carta de presentación por vacante | v0.2 |
+| Checklists de skills para llenar el inventario rápido, con plantillas de la comunidad ([#1](https://github.com/JesusCabreraReveles/honest-cv/issues/1)) | v0.2 |
 | Más plantillas | v0.3, con contribuciones |
 | UI web o servicio hospedado | No está previsto. Los datos se quedan en local. |
 
