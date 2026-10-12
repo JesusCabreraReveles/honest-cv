@@ -10,6 +10,7 @@ from honest_cv import document
 from honest_cv.model import Lang, Source
 from honest_cv.render.docx import render_docx
 from honest_cv.render.pdf import fit_pages
+from honest_cv.verify import Report, verify_pdf
 
 FORMATS = ("pdf", "docx")
 
@@ -22,6 +23,7 @@ class Built:
     format: str
     pages: int | None = None  # PDF only
     fits: bool | None = None  # PDF only: within the variant's max_pages
+    report: Report | None = None  # PDF only: ATS verification
 
 
 def file_stem(name: str, variant: str, lang: Lang) -> str:
@@ -40,7 +42,8 @@ def build_cv(
         fit = fit_pages(doc)
         path = out_dir / f"{stem}.pdf"
         path.write_bytes(fit.pdf)
-        results.append(Built(path, variant, lang, "pdf", fit.pages, fit.fits))
+        report = verify_pdf(fit.pdf, max_pages=doc.max_pages, doc=doc)
+        results.append(Built(path, variant, lang, "pdf", fit.pages, fit.fits, report))
     if "docx" in formats:
         path = out_dir / f"{stem}.docx"
         path.write_bytes(render_docx(doc))
