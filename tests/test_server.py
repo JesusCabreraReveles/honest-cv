@@ -25,17 +25,16 @@ def profile(tmp_path):
     return str(tmp_path / "ada")
 
 
-def answer(confirm: bool | None):
-    """An elicitation callback: None declines, a bool accepts with that value."""
-    asked = []
+def answer(action: str):
+    """An elicitation callback that answers accept, decline or cancel."""
+    asked, schemas = [], []
 
     async def callback(ctx, params):
         asked.append(params.message)
-        if confirm is None:
-            return t.ElicitResult(action="decline")
-        return t.ElicitResult(action="accept", content={"confirm": confirm})
+        schemas.append(params.requested_schema)
+        return t.ElicitResult(action=action, content={} if action == "accept" else None)
 
-    callback.asked = asked
+    callback.asked, callback.schemas = asked, schemas
     return callback
 
 
@@ -66,15 +65,17 @@ async def test_confirmation_is_not_a_model_argument():
 
 
 async def test_upgrade_asks_the_person(profile):
-    cb = answer(True)
+    cb = answer("accept")
     async with Client(server, elicitation_callback=cb) as c:
         err, out = await call(c, "set_skill", profile=profile, name="Rust", level="L", evidence="CLI tool")
     assert not err and out["previous_level"] == "F"
     assert len(cb.asked) == 1 and "Rust F -> L" in cb.asked[0]
+    # Nothing to fill in: Accept alone confirms.
+    assert cb.schemas[0]["properties"] == {}
     assert load(profile).inventory.get("Rust").level is Level.LAB
 
 
-@pytest.mark.parametrize("reply", [False, None])
+@pytest.mark.parametrize("reply", ["decline", "cancel"])
 async def test_upgrade_refused_when_person_says_no(profile, reply):
     async with Client(server, elicitation_callback=answer(reply)) as c:
         err, msg = await call(c, "set_skill", profile=profile, name="Rust", level="P", evidence="x")
@@ -83,7 +84,7 @@ async def test_upgrade_refused_when_person_says_no(profile, reply):
 
 
 async def test_upgrade_without_evidence_never_asks(profile):
-    cb = answer(True)
+    cb = answer("accept")
     async with Client(server, elicitation_callback=cb) as c:
         err, msg = await call(c, "set_skill", profile=profile, name="Scala", level="P")
     assert err and "needs evidence" in msg and cb.asked == []
@@ -98,7 +99,7 @@ async def test_upgrade_without_elicitation_points_to_cli(profile):
 
 
 async def test_downgrade_never_asks(profile):
-    cb = answer(True)
+    cb = answer("accept")
     async with Client(server, elicitation_callback=cb) as c:
         err, _ = await call(c, "set_skill", profile=profile, name="Java", level="F")
     assert not err and cb.asked == []

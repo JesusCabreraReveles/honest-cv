@@ -109,7 +109,7 @@ def get_inventory(profile: Profile = None) -> dict:
 
 
 class ConfirmUpgrade(BaseModel):
-    confirm: bool
+    """No fields: the client's Accept button is the confirmation, Decline refuses."""
 
 
 def _upgrade(profile: str | None, name: str, level: str) -> tuple[Path, Level, Level]:
@@ -130,12 +130,12 @@ def confirm_upgrade(
     try:
         _, old, new = _upgrade(profile, name, level)
     except (ToolError, ValueError):
-        return ConfirmUpgrade(confirm=False)  # set_skill reports the real error
+        return ConfirmUpgrade()  # not asked; set_skill reports the real error
     if LEVEL_RANK[new] <= LEVEL_RANK[old] or not (evidence and evidence.strip()) or not _can_ask(ctx):
-        return ConfirmUpgrade(confirm=False)  # nothing to ask, or set_skill refuses
+        return ConfirmUpgrade()  # not asked: nothing to confirm, or set_skill refuses
     return Elicit(
         f"Confirm skill upgrade: {name} {old} -> {new}.\nEvidence: {evidence}\n"
-        "Only confirm if this is true and you can defend it in an interview.",
+        "Accept only if this is true and you can defend it in an interview.",
         ConfirmUpgrade,
     )
 
@@ -173,7 +173,7 @@ def set_skill(
                 "this client cannot ask the person directly, so the upgrade was not saved. "
                 f"Ask them to run: honest-cv skill {_quote(folder)} {_quote(name)} {new} --evidence {_quote(evidence)}"
             )
-        if not (isinstance(confirmation, AcceptedElicitation) and confirmation.data.confirm):
+        if not isinstance(confirmation, AcceptedElicitation):
             raise ToolError(f"{name}: the person did not confirm the upgrade; nothing was saved")
         confirmed = True
     skill = store.upsert_skill(
