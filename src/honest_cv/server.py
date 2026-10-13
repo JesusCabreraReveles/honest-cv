@@ -21,7 +21,7 @@ from mcp.server.mcpserver.resolve import Elicit, Resolve
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field, ValidationError, create_model
 
-from honest_cv import __version__, checklist, store
+from honest_cv import __version__, checklist, letter, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
 from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
@@ -559,6 +559,57 @@ def verify_pdf(
     }
 
 
+@mcp.tool(annotations=READ)
+@_tool_errors
+def check_claims(
+    text: Annotated[str, Field(description="The draft: a cover letter, a summary, any text about the person.")],
+    profile: Profile = None,
+    keywords: Annotated[
+        list[str] | None, Field(description="Keywords of the job post, so its technologies are checked too.")
+    ] = None,
+) -> dict:
+    """Check a draft against the profile. `problems` must be fixed before `build_letter`: a skill
+    the person marked X, or a familiarity (F) skill not called familiarity in its sentence.
+    `warnings` are for the person: a technology the profile doesn't show, or a number found
+    nowhere in it. Fix them by removing or qualifying the claim, never by adding skills."""
+    return letter.check_claims(text, _load(profile), keywords).to_dict()
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def build_letter(
+    company: Annotated[str, Field(description="Company name, as in the job post.")],
+    role: Annotated[str, Field(description="Job title, as in the job post.")],
+    paragraphs: Annotated[list[str], Field(description="The body, one string per paragraph, approved by the person.")],
+    lang: LangArg = "en",
+    profile: Profile = None,
+    recipient: Annotated[str | None, Field(description="Hiring manager or team, if the post names one.")] = None,
+    greeting: Annotated[str | None, Field(description="Default: Dear Hiring Team, / Estimado equipo de selección:")] = None,
+    closing: Annotated[str | None, Field(description="Default: Sincerely, / Atentamente,")] = None,
+    keywords: Annotated[list[str] | None, Field(description="Keywords of the job post, for check_claims.")] = None,
+    formats: Annotated[list[Literal["pdf", "docx"]] | None, Field(description="Default: both.")] = None,
+    out_dir: Annotated[str | None, Field(description="Output folder. Default: <profile>/out.")] = None,
+) -> dict:
+    """Render a cover letter to PDF and/or DOCX, one page, with the CV's ATS checks. It runs
+    `check_claims` first and refuses while there are problems."""
+    folder = _profile_dir(profile)
+    source = load(folder)
+    draft = letter.make(source, lang, company, role, paragraphs, recipient=recipient, greeting=greeting, closing=closing)
+    claims = letter.check_claims("\n".join([draft.greeting, *draft.paragraphs, draft.closing]), source, keywords)
+    if not claims.ok:
+        found = "; ".join(f"{p.term} ({p.kind}): {p.sentence}" for p in claims.problems)
+        raise ToolError(f"the letter claims what the profile does not support, so it was not built: {found}")
+    out = Path(out_dir).expanduser() if out_dir else folder / "out"
+    files = []
+    for b in letter.build(draft, out, tuple(formats or letter.FORMATS)):
+        entry = {"path": str(b.path), "format": b.format}
+        if b.report is not None:
+            entry |= {"pages": b.report.pages, "ats_ok": b.report.ok,
+                      "failed_checks": [{"name": c.name, "detail": c.detail} for c in b.report.failures]}
+        files.append(entry)
+    return {"files": files, "warnings": claims.to_dict()["warnings"]}
+
+
 def _keywords(keywords: list[str], preferred: list[str] | None) -> list[score_mod.Keyword]:
     return [score_mod.Keyword(k) for k in keywords] + [score_mod.Keyword(k, False) for k in preferred or []]
 
@@ -604,6 +655,12 @@ def _prompt(name: str, **values: str) -> str:
 
 def _profile_label(profile: str | None) -> str:
     return profile or os.environ.get("HONEST_CV_PROFILE") or "(ask the person where to keep it)"
+
+
+@mcp.prompt(title="Honest cover letter")
+def cover_letter(job_post: str, profile: str | None = None, lang: str = "en") -> str:
+    """Write a cover letter for a job post from the person's real bullets and skills."""
+    return _prompt("cover_letter", profile=_profile_label(profile), lang=lang, job_post=job_post)
 
 
 @mcp.prompt(title="Honest CV interview")

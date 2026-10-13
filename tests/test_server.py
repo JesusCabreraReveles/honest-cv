@@ -58,7 +58,8 @@ async def test_lists_the_planned_tools():
     assert names == {"init_profile", "get_inventory", "set_skill", "add_bullet", "list_variants",
                      "build_cv", "verify_pdf", "score_job", "gap_report", "set_contact",
                      "set_profile_details", "upsert_role", "upsert_education", "save_variant",
-                     "set_skills", "checklist_apply", "checklist_list", "checklist_new"}
+                     "set_skills", "checklist_apply", "checklist_list", "checklist_new",
+                     "check_claims", "build_letter"}
 
 
 async def test_every_tool_argument_is_described():
@@ -302,4 +303,20 @@ async def test_long_lists_are_asked_ten_at_a_time(profile):
     assert len(cb.schemas[0]["properties"]) == 10 and "2 more" in cb.asked[0]
     assert first["upgrades_not_asked_yet"] == ["Tool10", "Tool11"]
     assert len(cb.schemas[1]["properties"]) == 2 and second["upgrades_confirmed"] == ["Tool10", "Tool11"]
+
+
+async def test_build_letter_refuses_unsupported_claims_and_builds_honest_ones(profile, tmp_path):
+    async with Client(server) as c:
+        _, claims = await call(c, "check_claims", profile=profile, text="I use Scala and Terraform daily.")
+        err, msg = await call(c, "build_letter", profile=profile, company="Acme", role="SRE",
+                              paragraphs=["I have used Scala daily."], out_dir=str(tmp_path / "x"))
+        ok_err, out = await call(c, "build_letter", profile=profile, company="Acme", role="SRE", lang="es",
+                                 paragraphs=["Lideré la migración de 40 servicios a Kubernetes.",
+                                             "También trabajé con Terraform."], out_dir=str(tmp_path / "o"))
+    assert not claims["ok"] and [p["term"] for p in claims["problems"]] == ["Scala"]
+    assert [w["term"] for w in claims["warnings"]] == ["Terraform"]
+    assert err and "Scala (not_held)" in msg and not (tmp_path / "x").exists()
+    pdf = next(f for f in out["files"] if f["format"] == "pdf")
+    assert not ok_err and pdf["ats_ok"] and pdf["pages"] == 1
+    assert [w["term"] for w in out["warnings"]] == ["Terraform"]
 

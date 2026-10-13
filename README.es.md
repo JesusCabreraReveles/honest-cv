@@ -166,6 +166,22 @@ vacante y sus palabras clave.
 - **Si no quieres que nada salga de tu máquina,** usa solo la CLI (`build`, `verify`, `score`,
   `skill`) y edita tú los archivos YAML.
 
+## Cartas de presentación
+
+El prompt `cover_letter` redacta una carta de una página para una vacante con tus propios bullets.
+Antes de generarla, `check_claims` revisa el texto contra tu perfil:
+
+- **Los problemas bloquean la carta:** una skill que marcaste X, o una skill de familiaridad
+  presentada como experiencia ("uso Rust en producción" cuando Rust es F; "tengo familiaridad con
+  Rust" está bien).
+- **Las advertencias son para que las revises:** una tecnología que ni tu inventario ni tus
+  bullets muestran, o un número que no aparece en tu perfil. Si es cierto, regístralo primero; si
+  no, sale de la carta.
+
+La carta usa las fuentes del CV y pasa las mismas verificaciones ATS. Sin un cliente de IA,
+escríbela en un archivo de texto (párrafos separados por una línea en blanco) y usa
+`honest-cv letter check` y `letter build`.
+
 ## CLI
 
 Ejecuta cualquier comando con `uvx honest-cv ...`, o instálalo una vez con
@@ -177,6 +193,8 @@ honest-cv build ~/cv-profile -v backend -l en -l es # PDF + DOCX, verificados en
 honest-cv verify cualquier-cv.pdf --text            # revisa cualquier PDF, aunque lo hayas hecho en otro lado
 honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # cobertura por variante, con brechas
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI en GitHub"  # te pide confirmar
+honest-cv letter check ~/cv-profile carta.txt -k "Kubernetes,Go"      # afirmaciones que tu perfil no respalda
+honest-cv letter build ~/cv-profile carta.txt --company Acme --role "Platform Engineer" -l es
 honest-cv serve --profile ~/cv-profile              # el servidor MCP, por stdio
 ```
 
@@ -207,7 +225,10 @@ parsers separan de su puesto.
 | `score_job` | Mide la cobertura de palabras clave de cada variante. El cliente extrae las palabras clave. |
 | `gap_report` | Agrupa las palabras clave que faltan según lo que honestamente puedes hacer con cada una. |
 | prompt `interview` | Llena tu inventario y tu pool de bullets, una pregunta a la vez. |
+| `check_claims` | Revisa cualquier texto contra tu perfil: bloquea skills X y la familiaridad presentada como experiencia, y señala lo que el perfil no muestra. |
+| `build_letter` | Genera la carta de presentación en PDF y DOCX, de una página, con las verificaciones ATS del CV. Se niega mientras `check_claims` encuentre problemas. |
 | prompt `tailor_for_job` | Puntúa las variantes, explica las brechas, adapta una variante y vuelve a generar el CV. |
+| prompt `cover_letter` | Redacta una carta para una vacante con tus bullets, revisa sus afirmaciones y la genera. |
 
 ## Garantías ATS
 

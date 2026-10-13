@@ -95,6 +95,18 @@ work from its result, instead of reading the file yourself.
    to show the coverage before and after.
 6. **Close.** List the honest gaps that remain, so the person can prepare for them in the interview.
 
+## Flow D: cover letter
+
+1. **Ground it.** Extract the post's keywords, call `score_job` and `gap_report`, and read the best
+   variant's bullets with `list_variants`.
+2. **Draft** 3 or 4 short paragraphs from those bullets and their P or L skills only, in the
+   language they ask for. Every number comes from a bullet.
+3. **Check.** Call `check_claims` with the draft and the keywords. Fix each problem by removing or
+   qualifying the claim. Show each warning to the person: if it is true, it goes into their
+   inventory or bullets first; if not, take it out.
+4. **Approve and build.** Show the letter, wait for their approval, then call `build_letter`. It
+   refuses while `check_claims` finds problems.
+
 ## Checking an existing CV
 
 Call `verify_pdf` on any PDF, including one made with another tool. Explain each failed check:
@@ -104,4 +116,4 @@ Call `verify_pdf` on any PDF, including one made with another tool. Explain each
 
 Show the person the extracted `text`: that is what the ATS reads.
 
-The same flows exist as MCP prompts: `interview` and `tailor_for_job`.
+The same flows exist as MCP prompts: `interview`, `tailor_for_job` and `cover_letter`.

@@ -160,6 +160,20 @@ post and its keywords.
 - **If you want nothing to leave your machine,** use only the CLI (`build`, `verify`, `score`,
   `skill`) and edit the YAML files yourself.
 
+## Cover letters
+
+The `cover_letter` prompt drafts a one-page letter for a job post from your own bullets. Before it
+is built, `check_claims` reads the text against your profile:
+
+- **Problems block the build:** a skill you marked X, or a familiarity skill presented as
+  experience ("I use Rust in production" when Rust is F; "I am familiar with Rust" is fine).
+- **Warnings are for you to review:** a technology neither your inventory nor your bullets show,
+  or a number that appears nowhere in your profile. If it is true, record it first; if not, it
+  comes out of the letter.
+
+The letter uses the CV's fonts and passes the same ATS checks. Without an AI client, write it in a
+text file (paragraphs separated by blank lines) and use `honest-cv letter check` and `letter build`.
+
 ## CLI
 
 Run any command with `uvx honest-cv ...`, or install it once with `uv tool install honest-cv` to
@@ -171,6 +185,8 @@ honest-cv build ~/cv-profile -v backend -l en -l es # PDF + DOCX, verified on ev
 honest-cv verify any-cv.pdf --text                  # check any PDF, even one made elsewhere
 honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # coverage per variant, with gaps
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI tool on GitHub"  # asks you to confirm
+honest-cv letter check ~/cv-profile letter.txt -k "Kubernetes,Go"     # claims your profile doesn't support
+honest-cv letter build ~/cv-profile letter.txt --company Acme --role "Platform Engineer" -l en
 honest-cv serve --profile ~/cv-profile              # the MCP server, over stdio
 ```
 
@@ -201,7 +217,10 @@ split away from its role.
 | `score_job` | Measures the keyword coverage of each variant. The client extracts the keywords. |
 | `gap_report` | Groups missing keywords by what you can honestly do about each one. |
 | prompt `interview` | Fills your inventory and bullet pool, one question at a time. |
+| `check_claims` | Checks any text against your profile: blocks X skills and familiarity sold as experience, flags what the profile doesn't show. |
+| `build_letter` | Renders a cover letter to PDF and DOCX, one page, with the CV's ATS checks. Refuses while `check_claims` finds problems. |
 | prompt `tailor_for_job` | Scores the variants, explains the gaps, adapts a variant and rebuilds. |
+| prompt `cover_letter` | Drafts a letter for a job post from your bullets, checks its claims and builds it. |
 
 ## ATS guarantees
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from honest_cv import __version__, checklist, store
+from honest_cv import __version__, checklist, letter, store
 from honest_cv.build import FORMATS, build_cv
 from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, is_yes, load
 from honest_cv.score import Gap, Keyword, Status, score_job
@@ -141,6 +141,44 @@ def cmd_checklist_apply(args: argparse.Namespace) -> int:
     return 0
 
 
+def _paragraphs(path: Path) -> list[str]:
+    """A letter file is plain text: paragraphs separated by blank lines."""
+    text = Path(path).expanduser().read_text(encoding="utf-8")
+    return [" ".join(p.split()) for p in text.split("\n\n") if p.strip()]
+
+
+def _print_claims(claims: letter.Claims) -> None:
+    for f in claims.problems:
+        print(f"  PROBLEM {f.term} ({f.kind}): {f.detail}\n    in: {f.sentence}")
+    for f in claims.warnings:
+        print(f"  check   {f.term} ({f.kind}): {f.detail}\n    in: {f.sentence}")
+
+
+def cmd_letter_check(args: argparse.Namespace) -> int:
+    claims = letter.check_claims("\n\n".join(_paragraphs(args.file)), load(args.profile), _split(args.keyword))
+    if claims.ok and not claims.warnings:
+        print("OK: nothing the profile does not support.")
+    _print_claims(claims)
+    return 0 if claims.ok else 1
+
+
+def cmd_letter_build(args: argparse.Namespace) -> int:
+    source = load(args.profile)
+    draft = letter.make(source, args.lang, args.company, args.role, _paragraphs(args.file), recipient=args.recipient)
+    claims = letter.check_claims("\n\n".join(draft.paragraphs), source, _split(args.keyword))
+    _print_claims(claims)
+    if not claims.ok:
+        print("Not built: fix the problems above by removing or qualifying those claims.", file=sys.stderr)
+        return 1
+    status = 0
+    for b in letter.build(draft, Path(args.out), tuple(args.format or letter.FORMATS)):
+        print(f"{b.path}" + (f"  {b.report.pages} page(s)" if b.report else ""))
+        if b.report is not None and not b.report.ok:
+            print_failures(b.report)
+            status = 1
+    return status
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     import os
 
@@ -228,6 +266,25 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("profile")
     c.add_argument("file", type=Path, help="a checklist in Markdown, e.g. <profile>/checklist.md")
     c.set_defaults(func=cmd_checklist_apply)
+
+    p = sub.add_parser("letter", help="check and render a cover letter written in a text file")
+    letter_sub = p.add_subparsers(dest="letter_command", required=True)
+    c = letter_sub.add_parser("check", help="flag claims the profile does not support")
+    c.add_argument("profile")
+    c.add_argument("file", type=Path, help="plain text, paragraphs separated by blank lines")
+    c.add_argument("-k", "--keyword", action="append", help="job post keywords, comma-separated; repeatable")
+    c.set_defaults(func=cmd_letter_check)
+    c = letter_sub.add_parser("build", help="render PDF and DOCX after checking the claims")
+    c.add_argument("profile")
+    c.add_argument("file", type=Path, help="plain text, paragraphs separated by blank lines")
+    c.add_argument("--company", required=True)
+    c.add_argument("--role", required=True, help="job title, as in the post")
+    c.add_argument("--recipient", help="hiring manager or team, if the post names one")
+    c.add_argument("-l", "--lang", choices=LANGS, default="en")
+    c.add_argument("-k", "--keyword", action="append", help="job post keywords, comma-separated; repeatable")
+    c.add_argument("-f", "--format", action="append", choices=letter.FORMATS)
+    c.add_argument("-o", "--out", default="out", help="output folder (default: out)")
+    c.set_defaults(func=cmd_letter_build)
 
     p = sub.add_parser("build", help="render PDF and DOCX for one or more variants")
     p.add_argument("profile", help="profile folder (profile.yaml, bullets.yaml, skills.yaml, variants.yaml)")

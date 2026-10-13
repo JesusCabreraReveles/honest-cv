@@ -81,6 +81,13 @@ def date_range(start: str | None, end: str | None, lang: Lang) -> str:
     return f"{start} – {end or PRESENT[lang]}"
 
 
+def contact_items(source: Source, lang: Lang) -> list[str]:
+    """Location, email, phone and links, in that order: the CV's and the letter's contact line."""
+    c = source.profile.contact
+    location = localize(c.location, lang, "contact.location") if c.location else None
+    return [x for x in (location, c.email, c.phone) if x] + c.links
+
+
 def build(source: Source, variant_id: str, lang: Lang) -> Document:
     v = source.resolve(variant_id)
     p = source.profile
@@ -89,8 +96,7 @@ def build(source: Source, variant_id: str, lang: Lang) -> Document:
     def loc(text, where):
         return localize(text, lang, where)
 
-    contact = [x for x in (loc(c.location, "contact.location") if c.location else None, c.email, c.phone) if x]
-    contact += c.links
+    contact = contact_items(source, lang)
 
     roles = []
     for role in p.roles:
