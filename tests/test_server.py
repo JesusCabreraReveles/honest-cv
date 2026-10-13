@@ -2,6 +2,7 @@
 
 import json
 import shutil
+from pathlib import Path
 
 import mcp.types as t
 import pytest
@@ -49,7 +50,8 @@ async def test_lists_the_planned_tools():
         names = {tool.name for tool in (await c.list_tools()).tools}
     assert names == {"init_profile", "get_inventory", "set_skill", "add_bullet", "list_variants",
                      "build_cv", "verify_pdf", "score_job", "gap_report", "set_contact",
-                     "set_profile_details", "upsert_role", "upsert_education", "save_variant"}
+                     "set_profile_details", "upsert_role", "upsert_education", "save_variant",
+                     "set_skills", "checklist_apply"}
 
 
 async def test_every_tool_argument_is_described():
@@ -174,3 +176,72 @@ async def test_profile_editing_tools(profile):
     assert source.resolve("sre").skills[0].skills == ["AWS", "Kubernetes"]
     assert variants["variants"]["sre"]["own"]["extends"] == "platform"
 
+
+GROUP = [
+    {"name": "Rust", "level": "L", "evidence": "CLI tool on GitHub"},
+    {"name": "NATS", "level": "F", "evidence": "Read the docs, ran the demo"},
+    {"name": "Java", "level": "F"},  # a downgrade needs nothing
+]
+
+
+async def test_set_skills_asks_once_for_every_upgrade(profile):
+    cb = answer("accept")
+    async with Client(server, elicitation_callback=cb) as c:
+        err, out = await call(c, "set_skills", profile=profile, skills=GROUP)
+    assert not err and out == {"saved": ["Java", "Rust", "NATS"], "upgrades": 2}
+    assert len(cb.asked) == 1
+    assert "Rust: F -> L. Evidence: CLI tool on GitHub" in cb.asked[0] and "NATS: X -> F" in cb.asked[0]
+    inv = load(profile).inventory
+    assert (inv.get("Rust").level, inv.get("NATS").level, inv.get("Java").level) == (
+        Level.LAB, Level.FAMILIARITY, Level.FAMILIARITY
+    )
+
+
+@pytest.mark.parametrize("reply", ["decline", "cancel"])
+async def test_set_skills_saves_nothing_when_declined(profile, reply):
+    async with Client(server, elicitation_callback=answer(reply)) as c:
+        err, msg = await call(c, "set_skills", profile=profile, skills=GROUP)
+    assert err and "did not confirm" in msg
+    assert load(profile).inventory.get("Java").level is Level.PRODUCTION  # not even the downgrade
+
+
+async def test_set_skills_needs_evidence_for_every_upgrade(profile):
+    cb = answer("accept")
+    async with Client(server, elicitation_callback=cb) as c:
+        err, msg = await call(c, "set_skills", profile=profile, skills=[*GROUP, {"name": "Elixir", "level": "P"}])
+    assert err and "missing for: Elixir" in msg and cb.asked == []
+    assert load(profile).inventory.get("Rust").level is Level.FAMILIARITY
+
+
+async def test_set_skills_without_elicitation_leaves_a_checklist_for_the_cli(profile):
+    async with Client(server) as c:
+        err, msg = await call(c, "set_skills", profile=profile, skills=GROUP)
+    pending = Path(profile) / "pending-upgrades.md"
+    assert err and "uvx honest-cv checklist apply" in msg and str(pending) in msg
+    assert "- [L] Rust — CLI tool on GitHub" in pending.read_text(encoding="utf-8")
+    assert load(profile).inventory.get("Rust").level is Level.FAMILIARITY
+
+
+async def test_checklist_apply_returns_pending_lines(profile, tmp_path):
+    path = tmp_path / "checklist.md"
+    path.write_text("## Data\n- [L] Rust — CLI tool\n- [P] Elixir\n- [X] Scala\n", encoding="utf-8")
+    cb = answer("accept")
+    async with Client(server, elicitation_callback=cb) as c:
+        err, out = await call(c, "checklist_apply", profile=profile, path=str(path))
+    assert not err and out["saved"] == 2 and len(cb.asked) == 1
+    assert [p["name"] for p in out["pending_evidence"]] == ["Elixir"]
+    assert load(profile).inventory.get("Rust").level is Level.LAB
+
+
+
+def test_not_asked_never_counts_as_a_yes():
+    # The SDK wraps a resolver's plain return value as an accepted elicitation.
+    # Found when checklist_apply saved an upgrade without asking: "not asked" must
+    # never read as the person's confirmation.
+    from mcp.server.elicitation import AcceptedElicitation, DeclinedElicitation
+
+    from honest_cv.server import ConfirmUpgrade, NotAsked, _confirmed
+
+    assert _confirmed(AcceptedElicitation(data=ConfirmUpgrade()))
+    assert not _confirmed(AcceptedElicitation(data=NotAsked()))
+    assert not _confirmed(DeclinedElicitation())

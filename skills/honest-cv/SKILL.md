@@ -54,6 +54,18 @@ conversation.
    `save_variant` once they approve.
 6. **First build.** Call `build_cv`, report pages and `ats_ok`, and mention any `unused_bullets`.
 
+## Flow C: a skill checklist (many skills at once)
+
+A checklist is a Markdown list the person marks with one letter per skill:
+`- [P] Kafka — where they used it`. It is much faster than asking skill by skill.
+
+1. **Apply it.** Call `checklist_apply` with the file's path. The server asks the person once to
+   confirm every upgrade that has evidence.
+2. **Pending lines.** The result lists `pending_evidence`: lines marked without evidence. Ask in
+   groups ("where did you use Kafka, RabbitMQ and Redis?"), then record each group with
+   `set_skills`, which again asks the person once. Use their words as evidence, never yours.
+3. Skip lines marked `[?]` or left `[ ]`; mention how many there were.
+
 ## Flow B: tailor to a job post
 
 1. **Keywords.** Extract the post's required and preferred keywords in its own wording, leaving

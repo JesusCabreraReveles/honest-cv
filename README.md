@@ -159,6 +159,8 @@ split away from its role.
 | `init_profile` | Creates a profile folder with commented templates. |
 | `get_inventory` | Returns your skills, grouped by level, with years and evidence. |
 | `set_skill` | Adds or changes a skill. To raise its level it needs evidence and asks you to confirm. |
+| `set_skills` | Adds or changes several skills at once. Upgrades are confirmed with one question that lists each change. |
+| `checklist_apply` | Saves the skills marked in a checklist and returns the lines that still need evidence. |
 | `add_bullet` | Adds an achievement to the pool. |
 | `set_contact` | Changes contact details: name, email, phone, location, links. |
 | `set_profile_details` | Replaces the certifications list and the spoken-languages line. |

@@ -164,6 +164,8 @@ parsers separan de su puesto.
 | `init_profile` | Crea la carpeta del perfil con plantillas comentadas. |
 | `get_inventory` | Devuelve tus skills agrupadas por nivel, con años y evidencia. |
 | `set_skill` | Agrega o cambia una skill. Para subir de nivel exige evidencia y te pide confirmar. |
+| `set_skills` | Agrega o cambia varias skills a la vez. Las subidas de nivel se confirman con una sola pregunta que lista cada cambio. |
+| `checklist_apply` | Guarda las skills marcadas en un checklist y devuelve las líneas que todavía necesitan evidencia. |
 | `add_bullet` | Agrega un logro al pool. |
 | `set_contact` | Cambia los datos de contacto: nombre, email, teléfono, ubicación y links. |
 | `set_profile_details` | Reemplaza la lista de certificaciones y la línea de idiomas. |

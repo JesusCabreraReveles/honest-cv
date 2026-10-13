@@ -21,7 +21,7 @@ from mcp.server.mcpserver.resolve import Elicit, Resolve
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field, ValidationError
 
-from honest_cv import __version__, store
+from honest_cv import __version__, checklist, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
 from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
@@ -121,6 +121,17 @@ class ConfirmUpgrade(BaseModel):
     """No fields: the client's Accept button is the confirmation, Decline refuses."""
 
 
+class NotAsked(BaseModel):
+    """What a resolver returns when it does not ask the person.
+
+    The SDK wraps any plain return value as an *accepted* elicitation, so "not
+    asked" must be a different type that `_confirmed` never mistakes for a yes."""
+
+
+def _confirmed(confirmation: object) -> bool:
+    return isinstance(confirmation, AcceptedElicitation) and isinstance(confirmation.data, ConfirmUpgrade)
+
+
 def _upgrade(profile: str | None, name: str, level: str) -> tuple[Path, Level, Level]:
     folder = _profile_dir(profile)
     current = load(folder).inventory.get(name)
@@ -134,14 +145,14 @@ def _can_ask(ctx: Context) -> bool:
 
 def confirm_upgrade(
     ctx: Context, name: str, level: str, evidence: str | None, profile: str | None
-) -> Elicit[ConfirmUpgrade] | ConfirmUpgrade:
+) -> Elicit[ConfirmUpgrade] | NotAsked:
     """Ask the person, not the model, to confirm a level upgrade."""
     try:
         _, old, new = _upgrade(profile, name, level)
     except (ToolError, ValueError):
-        return ConfirmUpgrade()  # not asked; set_skill reports the real error
+        return NotAsked()  # set_skill reports the real error
     if LEVEL_RANK[new] <= LEVEL_RANK[old] or not (evidence and evidence.strip()) or not _can_ask(ctx):
-        return ConfirmUpgrade()  # not asked: nothing to confirm, or set_skill refuses
+        return NotAsked()  # nothing to confirm, or set_skill refuses
     return Elicit(
         f"Confirm skill upgrade: {name} {old} -> {new}.\nEvidence: {evidence}\n"
         "Accept only if this is true and you can defend it in an interview.",
@@ -182,7 +193,7 @@ def set_skill(
                 "this client cannot ask the person directly, so the upgrade was not saved. "
                 f"Ask them to run in a terminal: uvx honest-cv skill {_quote(folder)} {_quote(name)} {new} --evidence {_quote(evidence)}"
             )
-        if not isinstance(confirmation, AcceptedElicitation):
+        if not _confirmed(confirmation):
             raise ToolError(f"{name}: the person did not confirm the upgrade; nothing was saved")
         confirmed = True
     skill = store.upsert_skill(
@@ -190,6 +201,101 @@ def set_skill(
         years=years, last_used_year=last_used_year, aliases=aliases, notes=notes,
     )
     return {"saved": skill.model_dump(mode="json", exclude_none=True, exclude_defaults=True), "previous_level": old.value}
+
+
+class SkillInput(BaseModel):
+    name: str = Field(description="Skill name, e.g. Kubernetes.")
+    level: Literal["P", "L", "F", "X"] = Field(description="P production, L own project or lab, F familiarity, X does not have it.")
+    evidence: str | None = Field(None, description="Where and how the person used it. Required to raise a level.")
+    years: float | None = Field(None, description="Years of use, e.g. 2.5.", ge=0)
+    last_used_year: int | None = Field(None, description="Last calendar year the person used it, e.g. 2026.")
+    aliases: list[str] | None = Field(None, description="Other spellings, e.g. k8s.")
+    notes: str | None = Field(None, description="Private notes; never printed on the CV.")
+
+    def change(self) -> store.SkillChange:
+        return store.SkillChange(**{**self.model_dump(), "level": Level(self.level)})
+
+
+def _skills_plan(profile: str | None, skills: list) -> checklist.Plan:
+    changes = [(s if isinstance(s, SkillInput) else SkillInput.model_validate(s)).change() for s in skills]
+    return checklist.classify(_load(profile), changes)
+
+
+def _checklist_plan(profile: str | None, path: str) -> checklist.Plan:
+    return checklist.plan(_load(profile), checklist.read(path))
+
+
+def _ask_for(ctx: Context, plan: checklist.Plan) -> Elicit[ConfirmUpgrade] | NotAsked:
+    if not plan.upgrades or not _can_ask(ctx):
+        return NotAsked()  # the tool reports why
+    return Elicit(checklist.describe(plan.upgrades), ConfirmUpgrade)
+
+
+def confirm_skills(ctx: Context, skills: list, profile: str | None) -> Elicit[ConfirmUpgrade] | NotAsked:
+    try:
+        plan = _skills_plan(profile, skills)
+    except (ToolError, ValueError):
+        return NotAsked()
+    # set_skills saves nothing when an upgrade lacks evidence, so don't ask then.
+    return NotAsked() if plan.missing_evidence else _ask_for(ctx, plan)
+
+
+def confirm_checklist(ctx: Context, path: str, profile: str | None) -> Elicit[ConfirmUpgrade] | NotAsked:
+    try:
+        return _ask_for(ctx, _checklist_plan(profile, path))
+    except (ToolError, ValueError, OSError):
+        return NotAsked()
+
+
+def _save_plan(ctx: Context, profile: str | None, plan: checklist.Plan, confirmation) -> list:
+    """Save every change in the plan; upgrades only with the person's confirmation."""
+    folder = _profile_dir(profile)
+    if plan.upgrades:
+        if not _can_ask(ctx):
+            pending = checklist.write_pending(folder, [c for c, _ in plan.upgrades])
+            raise ToolError(
+                "this client cannot ask the person directly, so nothing was saved. The upgrades are in "
+                f"{pending}. Ask them to read it and run in a terminal: "
+                f"uvx honest-cv checklist apply {_quote(folder)} {_quote(pending)}"
+            )
+        if not _confirmed(confirmation):
+            raise ToolError("the person did not confirm the upgrades; nothing was saved")
+    return store.upsert_skills(folder, plan.changes, confirmed=bool(plan.upgrades))
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def set_skills(
+    ctx: Context,
+    skills: Annotated[list[SkillInput], Field(description="The skills to add or change.")],
+    confirmation: Annotated[ElicitationResult[ConfirmUpgrade], Resolve(confirm_skills)],
+    profile: Profile = None,
+) -> dict:
+    """Add or change several skills at once: all are saved, or none. Every upgrade needs
+    `evidence`, and the person confirms all upgrades with one question that lists each of them.
+    Use it to record skills in groups, e.g. after asking where a set of skills was used."""
+    plan = _skills_plan(profile, skills)
+    if plan.missing_evidence:
+        names = ", ".join(c.name for c in plan.missing_evidence)
+        raise ToolError(f"raising a level needs evidence; missing for: {names}. Nothing was saved")
+    saved = _save_plan(ctx, profile, plan, confirmation)
+    return {"saved": [s.name for s in saved], "upgrades": len(plan.upgrades)}
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def checklist_apply(
+    ctx: Context,
+    path: Annotated[str, Field(description="A Markdown checklist marked by the person, e.g. <profile>/checklist.md.")],
+    confirmation: Annotated[ElicitationResult[ConfirmUpgrade], Resolve(confirm_checklist)],
+    profile: Profile = None,
+) -> dict:
+    """Save the lines the person marked in a checklist. Upgrades with evidence are confirmed with
+    one question. Lines without evidence are returned as `pending_evidence`: ask the person where
+    they used them, in groups, and record them with `set_skills`."""
+    plan = _checklist_plan(profile, path)
+    saved = _save_plan(ctx, profile, plan, confirmation) if plan.changes else []
+    return {"saved": len(saved), **plan.summary()}
 
 
 @mcp.tool(annotations=WRITE)

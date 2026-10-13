@@ -7,11 +7,14 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from honest_cv import __version__, store
+from honest_cv import __version__, checklist, store
 from honest_cv.build import FORMATS, build_cv
 from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, load
 from honest_cv.score import Gap, Keyword, Status, score_job
 from honest_cv.verify import Report, verify_pdf
+
+
+YES = ("y", "yes", "s", "si", "sí")
 
 
 def cmd_build(args: argparse.Namespace) -> int:
@@ -72,7 +75,7 @@ def cmd_skill(args: argparse.Namespace) -> int:
             print("error: raising a level needs an interactive confirmation", file=sys.stderr)
             return 1
         print(f"Upgrade {args.name}: {old} -> {new}\nEvidence: {args.evidence}")
-        confirmed = input("Is this true, and can you defend it in an interview? [y/N] ").strip().lower() in ("y", "yes", "s", "si", "sí")
+        confirmed = input("Is this true, and can you defend it in an interview? [y/N] ").strip().lower() in YES
         if not confirmed:
             print("Not saved.")
             return 1
@@ -81,6 +84,42 @@ def cmd_skill(args: argparse.Namespace) -> int:
         years=args.years, last_used_year=args.last_used_year, aliases=args.alias, notes=args.notes,
     )
     print(f"Saved {skill.name}: {skill.level}")
+    return 0
+
+
+PENDING_SHOWN = 15
+
+
+def cmd_checklist_apply(args: argparse.Namespace) -> int:
+    plan = checklist.plan(load(args.profile), checklist.read(args.file))
+    for problem in plan.problems:
+        print(f"note: {problem}")
+    if plan.updates:
+        print(f"{len(plan.updates)} change(s) that keep or lower a level (X, same level, details).")
+    if plan.upgrades:
+        print(checklist.describe(plan.upgrades))
+    if plan.pending:
+        print(f"\n{len(plan.pending)} marked line(s) need evidence before they can be saved:")
+        for item in plan.pending[:PENDING_SHOWN]:
+            print(f"  line {item.line}: [{item.mark}] {item.name}")
+        if len(plan.pending) > PENDING_SHOWN:
+            print(f"  ... and {len(plan.pending) - PENDING_SHOWN} more")
+        print("Add it after ' — ' on the line, or as an 'evidence: ...' line under the section heading,\n"
+              "then run this again. An MCP client can also ask you for it in groups.")
+    if plan.unsure:
+        print(f"{len(plan.unsure)} line(s) marked [?] were skipped.")
+    if not plan.changes:
+        print("Nothing to save.")
+        return 0
+    if not sys.stdin.isatty():
+        print("error: saving a checklist needs an interactive confirmation", file=sys.stderr)
+        return 1
+    answer = input(f"\nSave {len(plan.changes)} change(s)? [y/N] ").strip().lower()
+    if answer not in YES:
+        print("Not saved.")
+        return 1
+    saved = store.upsert_skills(args.profile, plan.changes, confirmed=True)
+    print(f"Saved {len(saved)} skill(s).")
     return 0
 
 
@@ -156,6 +195,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--alias", action="append", help="another spelling, e.g. k8s; repeatable")
     p.add_argument("--notes", help="private notes, never printed on the CV")
     p.set_defaults(func=cmd_skill)
+
+    p = sub.add_parser("checklist", help="mark many skills at once in a Markdown checklist")
+    checklist_sub = p.add_subparsers(dest="checklist_command", required=True)
+    c = checklist_sub.add_parser("apply", help="save the marked lines; upgrades ask you to confirm once")
+    c.add_argument("profile")
+    c.add_argument("file", type=Path, help="a checklist in Markdown, e.g. <profile>/checklist.md")
+    c.set_defaults(func=cmd_checklist_apply)
 
     p = sub.add_parser("build", help="render PDF and DOCX for one or more variants")
     p.add_argument("profile", help="profile folder (profile.yaml, bullets.yaml, skills.yaml, variants.yaml)")

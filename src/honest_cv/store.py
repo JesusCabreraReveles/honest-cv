@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
@@ -71,6 +72,44 @@ def _dump_model(model) -> dict:
     return model.model_dump(mode="json", exclude_defaults=True)
 
 
+@dataclass
+class SkillChange:
+    """One skill to add or change. Fields left as None keep their current value."""
+
+    name: str
+    level: Level
+    evidence: str | None = None
+    years: float | None = None
+    last_used_year: int | None = None
+    aliases: list[str] | None = None
+    notes: str | None = None
+
+
+def upsert_skills(folder: str | Path, changes: list[SkillChange], *, confirmed: bool = False) -> list[Skill]:
+    """Add or change several skills in one write: all of them are saved, or none.
+
+    A new skill counts as moving up from `X`. Every upgrade needs evidence, and
+    `confirmed` must say the person approved the whole list."""
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    skills = raw["skills.yaml"].setdefault("skills", [])
+    saved = []
+    for change in changes:
+        index = next((i for i, s in enumerate(skills) if s["name"].casefold() == change.name.casefold()), None)
+        current = Skill(**skills[index]) if index is not None else Skill(name=change.name, level=Level.NONE)
+        updated = set_skill_level(current, change.level, evidence=change.evidence, confirmed=confirmed)
+        fields = {k: getattr(change, k) for k in ("years", "last_used_year", "aliases", "notes")}
+        updated = Skill(**{**updated.model_dump(), **{k: v for k, v in fields.items() if v is not None}})
+        if index is None:
+            skills.append(_dump_model(updated))
+        else:
+            skills[index] = _dump_model(updated)
+        saved.append(updated)
+    _validate(raw)
+    _write(folder, "skills.yaml", raw["skills.yaml"])
+    return saved
+
+
 def upsert_skill(
     folder: str | Path,
     name: str,
@@ -80,23 +119,8 @@ def upsert_skill(
     confirmed: bool = False,
     **fields,
 ) -> Skill:
-    """Add or change a skill. A new skill counts as moving up from `X`, so it
-    needs evidence and confirmation unless it is recorded as `X`."""
-    folder = Path(folder).expanduser()
-    raw = _raw(folder)
-    skills = raw["skills.yaml"].setdefault("skills", [])
-    index = next((i for i, s in enumerate(skills) if s["name"].casefold() == name.casefold()), None)
-    current = Skill(**skills[index]) if index is not None else Skill(name=name, level=Level.NONE)
-    updated = set_skill_level(current, level, evidence=evidence, confirmed=confirmed)
-    changes = {k: v for k, v in fields.items() if v is not None}
-    updated = Skill(**{**updated.model_dump(), **changes})
-    if index is None:
-        skills.append(_dump_model(updated))
-    else:
-        skills[index] = _dump_model(updated)
-    _validate(raw)
-    _write(folder, "skills.yaml", raw["skills.yaml"])
-    return updated
+    """Add or change one skill. See `upsert_skills`."""
+    return upsert_skills(folder, [SkillChange(name, level, evidence, **fields)], confirmed=confirmed)[0]
 
 
 def add_bullet(folder: str | Path, bullet: Bullet) -> Bullet:
