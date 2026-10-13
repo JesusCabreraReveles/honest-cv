@@ -121,6 +121,33 @@ generar en inglés y en español.
 | `F` | Familiaridad | Solo en la línea etiquetada "Familiaridad" |
 | `X` | No la tienes | Nunca se muestra, pero se registra para que las brechas sean honestas |
 
+### Checklists de skills
+
+Registrar decenas de skills una pregunta a la vez es lento. Un checklist es un archivo Markdown que
+marcas en tu editor, una letra por línea:
+
+```markdown
+## Messaging and streaming
+evidence: Plataforma de pagos en Acme, 2020–2026
+- [P] Kafka — flujo de conciliación, 2M eventos al día · años: 6 · último uso: 2026
+- [F] RabbitMQ — un taller y los tutoriales oficiales
+- [X] NATS
+```
+
+El texto después de " — " es la evidencia, y una línea `evidence:` bajo un título cubre esa
+sección. Las líneas sin evidencia nunca se guardan: regresan como pendientes y tu asistente te
+pregunta por ellas en grupos. Las subidas de nivel se confirman una sola vez para todo el archivo.
+
+```bash
+honest-cv checklist list                                     # backend-jvm, platform-sre, ...
+honest-cv checklist new ~/cv-profile backend-jvm engineering-lead
+honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
+```
+
+También puedes aplicar un checklist que hayas escrito tú, en inglés o en español (`años`,
+`último uso`). Los checklists nuevos para otros tipos de puesto son bienvenidos: consulta
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
 En [`examples/ada/`](examples/ada/) hay un perfil completo y ficticio, con tres variantes, una
 vacante y sus palabras clave.
 
@@ -165,6 +192,8 @@ parsers separan de su puesto.
 | `get_inventory` | Devuelve tus skills agrupadas por nivel, con años y evidencia. |
 | `set_skill` | Agrega o cambia una skill. Para subir de nivel exige evidencia y te pide confirmar. |
 | `set_skills` | Agrega o cambia varias skills a la vez. Las subidas de nivel se confirman con una sola pregunta que lista cada cambio. |
+| `checklist_list` | Lista los checklists incluidos. |
+| `checklist_new` | Combina checklists incluidos en un archivo, prellenado con tu inventario. |
 | `checklist_apply` | Guarda las skills marcadas en un checklist y devuelve las líneas que todavía necesitan evidencia. |
 | `add_bullet` | Agrega un logro al pool. |
 | `set_contact` | Cambia los datos de contacto: nombre, email, teléfono, ubicación y links. |

@@ -282,6 +282,31 @@ def set_skills(
     return {"saved": [s.name for s in saved], "upgrades": len(plan.upgrades)}
 
 
+@mcp.tool(annotations=READ)
+@_tool_errors
+def checklist_list() -> dict:
+    """The built-in skill checklists, one per kind of profile, to combine with `checklist_new`."""
+    return {"checklists": [b.__dict__ for b in checklist.available()]}
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def checklist_new(
+    lists: Annotated[list[str], Field(description="Checklist ids from checklist_list, e.g. backend-jvm.")],
+    profile: Profile = None,
+    path: Annotated[str | None, Field(description="File to write. Default: <profile>/checklist.md.")] = None,
+    overwrite: Annotated[bool, Field(description="Replace the file if it exists.")] = False,
+) -> dict:
+    """Merge built-in checklists into one Markdown file, without duplicates and prefilled from the
+    inventory. The person marks it in their editor; then call `checklist_apply`."""
+    out = Path(path).expanduser() if path else _profile_dir(profile) / "checklist.md"
+    if out.exists() and not overwrite:
+        raise ToolError(f"{out} exists; ask the person before replacing it (overwrite=true)")
+    text = checklist.compose(lists, _load(profile))
+    out.write_text(text, encoding="utf-8")
+    return {"path": str(out), "skills": len(checklist.parse(text).items)}
+
+
 @mcp.tool(annotations=WRITE)
 @_tool_errors
 def checklist_apply(

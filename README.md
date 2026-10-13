@@ -117,6 +117,32 @@ built in English and in Spanish.
 | `F` | Familiarity | Only on the line labeled "Familiarity" |
 | `X` | You don't have it | Never shown, but recorded so gap reports are honest |
 
+### Skill checklists
+
+Recording dozens of skills one question at a time is slow. A checklist is a Markdown file you mark
+in your editor, one letter per line:
+
+```markdown
+## Messaging and streaming
+evidence: Payments platform at Acme, 2020–2026
+- [P] Kafka — reconciliation flow, 2M events a day · years: 6 · last year: 2026
+- [F] RabbitMQ — a workshop and the official tutorials
+- [X] NATS
+```
+
+Text after " — " is the evidence, and an `evidence:` line under a heading covers that section.
+Lines without evidence are never saved: they come back as pending, and your assistant asks you
+about them in groups. Upgrades are confirmed once for the whole file.
+
+```bash
+honest-cv checklist list                                     # backend-jvm, platform-sre, ...
+honest-cv checklist new ~/cv-profile backend-jvm engineering-lead
+honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
+```
+
+You can also apply a checklist you wrote yourself, in English or Spanish (`años`, `último uso`).
+New checklists for other kinds of roles are welcome: see [CONTRIBUTING.md](https://github.com/JesusCabreraReveles/honest-cv/blob/master/CONTRIBUTING.md).
+
 See [`examples/ada/`](https://github.com/JesusCabreraReveles/honest-cv/tree/master/examples/ada) for a complete, fictional profile with three variants, a job
 post and its keywords.
 
@@ -160,6 +186,8 @@ split away from its role.
 | `get_inventory` | Returns your skills, grouped by level, with years and evidence. |
 | `set_skill` | Adds or changes a skill. To raise its level it needs evidence and asks you to confirm. |
 | `set_skills` | Adds or changes several skills at once. Upgrades are confirmed with one question that lists each change. |
+| `checklist_list` | Lists the built-in checklists. |
+| `checklist_new` | Merges built-in checklists into one file, prefilled from your inventory. |
 | `checklist_apply` | Saves the skills marked in a checklist and returns the lines that still need evidence. |
 | `add_bullet` | Adds an achievement to the pool. |
 | `set_contact` | Changes contact details: name, email, phone, location, links. |

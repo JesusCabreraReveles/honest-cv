@@ -46,7 +46,12 @@ Aim for 4 to 8 bullets per recent role and 2 to 3 per older role.
 
 ## 4. Skills
 
-Collect every technology mentioned in step 3, then ask about each one using these levels:
+If they have many skills, offer a checklist first: it is much faster than asking one by one. Call
+`checklist_list` and `checklist_new`, let them mark the file in their editor, then call
+`checklist_apply` and ask for the `pending_evidence` in groups, recording each group with
+`set_skills`.
+
+Otherwise, collect every technology mentioned in step 3, then ask about each one using these levels:
 - **P**: used in production at a job.
 - **L**: their own project or lab.
 - **F**: familiarity. They have read about it or tried it. It is always shown labeled as such.

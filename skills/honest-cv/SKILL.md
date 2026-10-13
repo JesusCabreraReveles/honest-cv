@@ -59,12 +59,17 @@ conversation.
 A checklist is a Markdown list the person marks with one letter per skill:
 `- [P] Kafka — where they used it`. It is much faster than asking skill by skill.
 
-1. **Apply it.** Call `checklist_apply` with the file's path. The server asks the person once to
+1. **Get one.** If they have their own, use it. Otherwise call `checklist_list`, ask which kinds of
+   role fit them (several can combine, e.g. backend-jvm and engineering-lead), and call
+   `checklist_new`. It writes `<profile>/checklist.md`, prefilled from their inventory.
+2. **They mark it** in their own editor. Explain the letters, the evidence after " — ", and that
+   one `evidence: ...` line under a heading covers that whole section. Wait for them.
+3. **Apply it.** Call `checklist_apply` with the file's path. The server asks the person once to
    confirm every upgrade that has evidence.
-2. **Pending lines.** The result lists `pending_evidence`: lines marked without evidence. Ask in
+4. **Pending lines.** The result lists `pending_evidence`: lines marked without evidence. Ask in
    groups ("where did you use Kafka, RabbitMQ and Redis?"), then record each group with
    `set_skills`, which again asks the person once. Use their words as evidence, never yours.
-3. Skip lines marked `[?]` or left `[ ]`; mention how many there were.
+5. Skip lines marked `[?]` or left `[ ]`; mention how many there were.
 
 ## Flow B: tailor to a job post
 

@@ -50,6 +50,10 @@ Python 3.11 or newer. Code, names and comments are in English.
 
 - **Synonyms.** Add a group to `SYNONYMS` in `score.py`, with the canonical name first. Add a case
   to `tests/test_score.py`. Terms of three characters or fewer match case-sensitively.
+- **Checklists.** Add `src/honest_cv/checklists/<id>.md` for a kind of role that is missing: a
+  `# Title`, a one-line description, a `## ★ Main skills — years and last year used` section with
+  the skills that filter the most, then sections by topic. Leave every line unmarked (`- [ ] Name`)
+  and use the canonical names from `SYNONYMS`. `tests/test_checklist.py` checks all of this.
 - **Templates.** A new template must pass `verify_pdf` with the Ada profile in both languages.
   Never put text in a box aligned to the right.
 - **The demo GIF.** Regenerate it with `vhs docs/demo.tape` after the CLI output changes.

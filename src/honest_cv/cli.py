@@ -90,6 +90,26 @@ def cmd_skill(args: argparse.Namespace) -> int:
 PENDING_SHOWN = 15
 
 
+def cmd_checklist_list(args: argparse.Namespace) -> int:
+    for b in checklist.available():
+        print(f"{b.id:<18} {b.skills:>3} skills  {b.title}: {b.description}")
+    return 0
+
+
+def cmd_checklist_new(args: argparse.Namespace) -> int:
+    ids = _split(args.lists)
+    if not ids:
+        print("error: name one or more checklists, e.g. backend-jvm,engineering-lead", file=sys.stderr)
+        return 1
+    out = Path(args.out) if args.out else Path(args.profile).expanduser() / "checklist.md"
+    if out.exists() and not args.force:
+        print(f"error: {out} exists; use --force to replace it, or --out for another file", file=sys.stderr)
+        return 1
+    out.write_text(checklist.compose(ids, load(args.profile)), encoding="utf-8")
+    print(f"{out}\nMark each line in your editor, then run: honest-cv checklist apply {args.profile} {out}")
+    return 0
+
+
 def cmd_checklist_apply(args: argparse.Namespace) -> int:
     plan = checklist.plan(load(args.profile), checklist.read(args.file))
     for problem in plan.problems:
@@ -198,6 +218,14 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("checklist", help="mark many skills at once in a Markdown checklist")
     checklist_sub = p.add_subparsers(dest="checklist_command", required=True)
+    c = checklist_sub.add_parser("list", help="show the built-in checklists")
+    c.set_defaults(func=cmd_checklist_list)
+    c = checklist_sub.add_parser("new", help="merge built-in checklists into one, prefilled from your inventory")
+    c.add_argument("profile")
+    c.add_argument("lists", nargs="+", help="checklist ids, e.g. backend-jvm engineering-lead")
+    c.add_argument("-o", "--out", help="file to write (default: <profile>/checklist.md)")
+    c.add_argument("--force", action="store_true", help="replace the file if it exists")
+    c.set_defaults(func=cmd_checklist_new)
     c = checklist_sub.add_parser("apply", help="save the marked lines; upgrades ask you to confirm once")
     c.add_argument("profile")
     c.add_argument("file", type=Path, help="a checklist in Markdown, e.g. <profile>/checklist.md")

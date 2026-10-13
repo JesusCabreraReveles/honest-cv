@@ -51,7 +51,7 @@ async def test_lists_the_planned_tools():
     assert names == {"init_profile", "get_inventory", "set_skill", "add_bullet", "list_variants",
                      "build_cv", "verify_pdf", "score_job", "gap_report", "set_contact",
                      "set_profile_details", "upsert_role", "upsert_education", "save_variant",
-                     "set_skills", "checklist_apply"}
+                     "set_skills", "checklist_apply", "checklist_list", "checklist_new"}
 
 
 async def test_every_tool_argument_is_described():
@@ -245,3 +245,14 @@ def test_not_asked_never_counts_as_a_yes():
     assert _confirmed(AcceptedElicitation(data=ConfirmUpgrade()))
     assert not _confirmed(AcceptedElicitation(data=NotAsked()))
     assert not _confirmed(DeclinedElicitation())
+
+
+async def test_checklist_new_and_list(profile):
+    async with Client(server) as c:
+        _, listed = await call(c, "checklist_list")
+        err, out = await call(c, "checklist_new", profile=profile, lists=["data"])
+        again, msg = await call(c, "checklist_new", profile=profile, lists=["data"])
+    assert "data" in {b["id"] for b in listed["checklists"]}
+    assert not err and Path(out["path"]).exists() and out["skills"] > 40
+    assert again and "exists" in msg
+

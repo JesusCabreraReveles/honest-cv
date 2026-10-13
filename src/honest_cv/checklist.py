@@ -14,8 +14,8 @@ unsure; both are skipped. After the name:
 - blanks like `__` are ignored, so a template line can be left half filled.
 "A / B" with short names records two skills with the same mark.
 
-A line `evidence: ...` right under a heading applies to every line in that
-section that has no evidence of its own.
+A line `evidence: ...` right under a heading applies to every P, L or F line in
+that section that has no evidence of its own.
 
 The honesty rule does not change: a skill that moves up a level (a new one
 counts as moving up from X) needs evidence and the person's confirmation.
@@ -38,6 +38,8 @@ SECTION_EVIDENCE = re.compile(r"^\s*>?\s*(?:evidence|evidencia)\s*:\s*(?P<text>.
 MAX_SPLIT_WORDS = 3  # "Kafka / Redpanda" is two skills; "LLMs / agents others used" is one
 DASH = re.compile(r"\s+(?:—|–|--)\s+")
 PARENS = re.compile(r"\(([^()]*)\)")
+TRAILING_PARENS = re.compile(r"\s*\(([^()]*)\)\s*$")
+SEPARATOR = re.compile(r"\s+·\s+|;\s+")
 BLANK = re.compile(r"_{2,}")
 YEAR = re.compile(r"\b(19[5-9]\d|20\d\d)\b")
 NUMBER = re.compile(r"\d+(?:[.,]\d+)?")
@@ -102,7 +104,8 @@ def parse(text: str) -> Parsed:
         try:
             items = _items(m["body"], mark, n, section)
             for item in items:
-                item.evidence = item.evidence or section_evidence
+                if item.mark in {"P", "L", "F"}:  # an X line claims nothing, so it needs none
+                    item.evidence = item.evidence or section_evidence
             out.items += items
         except ValueError as e:
             out.problems.append(f"line {n}: {e}")
@@ -111,19 +114,23 @@ def parse(text: str) -> Parsed:
 
 def _items(body: str, mark: str, line: int, section: str) -> list[Item]:
     name, rest = DASH.split(body, maxsplit=1) if DASH.search(body) else (body, "")
-    notes = PARENS.findall(name) + PARENS.findall(rest)
-    name, rest = PARENS.sub("", name).strip(), PARENS.sub("", rest).strip()
+    notes = PARENS.findall(name)
+    name = PARENS.sub("", name).strip()
     fields: dict = {}
     evidence: list[str] = []
-    for segment in re.split(r"\s+·\s+|\s*;\s+", rest):
-        segment = segment.strip().rstrip(".")
+    segments = _split_outside_parens(rest)
+    for n, segment in enumerate(segments):
+        segment = segment.strip()
         if not segment or BLANK.search(segment) and not KEY.match(segment):
             continue
         if _is_question(segment):
             notes.append(segment)
             continue
-        if k := KEY.match(segment):
-            key, value = KEYS[k["key"].casefold()], k["value"].strip()
+        k = KEY.match(segment)
+        if k and KEYS[k["key"].casefold()] != "evidence":
+            key, value = KEYS[k["key"].casefold()], k["value"]
+            notes += PARENS.findall(value)
+            value = PARENS.sub("", value).strip()
             if BLANK.fullmatch(value) or not value:
                 continue
             if key == "years":
@@ -131,7 +138,7 @@ def _items(body: str, mark: str, line: int, section: str) -> list[Item]:
                 if number is None:
                     raise ValueError(f"years should be a number, not '{value}'")
                 fields["years"] = float(number.group().replace(",", "."))
-            elif key == "last_used_year":
+            else:
                 year = YEAR.search(value)
                 if year is None:
                     raise ValueError(f"last year used should be a year like 2026, not '{value}'")
@@ -139,12 +146,17 @@ def _items(body: str, mark: str, line: int, section: str) -> list[Item]:
                 extra = YEAR.sub("", value, count=1).strip(" .,")
                 if extra:
                     notes.append(extra)
-            elif _is_question(value):
-                notes.append(value)
-            else:
-                evidence.append(value)
-        else:
-            evidence.append(segment)
+            continue
+        value = k["value"].strip() if k else segment
+        # A parenthesis that ends the line is a note: "Kafka — Ledger (v3)". Inside the
+        # evidence, or after "evidence:", it is kept: "FX service (internal tool); CLIs".
+        if not k and n == len(segments) - 1 and (m := TRAILING_PARENS.search(value)):
+            notes.append(m.group(1))
+            value = value[: m.start()].strip()
+        if _is_question(value):
+            notes.append(value)
+        elif value and not BLANK.search(value):
+            evidence.append(value)
     notes = [x.strip() for x in notes if x.strip() and not BLANK.search(x)]
     names = [x.strip() for x in re.split(r"\s+/\s+", name) if x.strip()]
     if any(len(x.split()) > MAX_SPLIT_WORDS for x in names):
@@ -158,6 +170,17 @@ def _items(body: str, mark: str, line: int, section: str) -> list[Item]:
         )
         for x in names
     ]
+
+
+def _split_outside_parens(text: str) -> list[str]:
+    """Split on " · " and "; ", but not inside parentheses, which hold free notes."""
+    parts, start = [], 0
+    for m in SEPARATOR.finditer(text):
+        if text[: m.start()].count("(") == text[: m.start()].count(")"):
+            parts.append(text[start : m.start()])
+            start = m.end()
+    parts.append(text[start:])
+    return parts
 
 
 def _is_question(text: str) -> bool:
@@ -280,6 +303,8 @@ def line(change: SkillChange) -> str:
         parts.append(f"years: {change.years:g}")
     if change.last_used_year is not None:
         parts.append(f"last year: {change.last_used_year}")
+    if change.evidence and change.evidence.rstrip().endswith(")") and len(parts) == 1:
+        parts = [f"evidence: {change.evidence}"]  # so its parentheses are not read as a note
     text = f"- [{change.level.value}] {change.name}"
     if parts:
         text += " — " + " · ".join(parts)
@@ -295,3 +320,110 @@ def write_pending(folder: str | Path, changes: list[SkillChange]) -> Path:
     body += [line(c) for c in changes]
     path.write_text("\n".join(body) + "\n", encoding="utf-8")
     return path
+
+
+# --- built-in checklists ------------------------------------------------------
+
+BUILTIN = Path(__file__).parent / "checklists"
+STAR = "★ Main skills — years and last year used"
+LEGEND = """\
+<!-- Mark each line between the brackets:
+  P = used in production at a job      L = your own project or lab
+  F = familiarity (you tried or read about it)      X = you don't have it
+  [ ] = not marked yet (skipped)       [?] = unsure (skipped)
+After " — " write where and how you used it: that is the evidence an upgrade needs.
+A line "evidence: ..." under a heading applies to every line in that section without its own.
+Text in (parentheses) is a private note. Years and last year are asked only in the ★ section.
+Then run: honest-cv checklist apply <profile> <this file> -->
+"""
+
+
+@dataclass
+class Builtin:
+    id: str
+    title: str
+    description: str
+    skills: int
+
+
+def available() -> list[Builtin]:
+    out = []
+    for path in sorted(BUILTIN.glob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        lines = [x.strip() for x in text.splitlines() if x.strip()]
+        title = next((x.lstrip("# ") for x in lines if x.startswith("# ")), path.stem)
+        description = next((x for x in lines if not x.startswith(("#", "-", "<!--"))), "")
+        out.append(Builtin(path.stem, title, description, len(parse(text).items)))
+    return out
+
+
+def _canonical(name: str) -> str:
+    from honest_cv.score import SYNONYMS
+
+    key = name.casefold()
+    return next((g[0] for g in SYNONYMS if key in (x.casefold() for x in g)), name)
+
+
+def compose(ids: list[str], source: Source | None = None) -> str:
+    """Merge built-in checklists into one, without duplicates, prefilled from the inventory.
+
+    Sections with the same heading merge. A skill keeps its first place, and the ★
+    sections come first, so a key skill is asked once with its years."""
+    known = {b.id for b in available()}
+    unknown = [i for i in ids if i not in known]
+    if unknown:
+        raise ValueError(f"unknown checklist(s): {', '.join(unknown)}; available: {', '.join(sorted(known))}")
+    parsed = [parse((BUILTIN / f"{i}.md").read_text(encoding="utf-8")) for i in ids]
+    sections: dict[str, list[str]] = {STAR: []}
+    seen: set[str] = set()
+    for p in parsed:
+        for item in p.items:
+            if "★" in item.section:
+                _add(sections, STAR, item.name, seen)
+    for p in parsed:
+        for item in p.items:
+            if "★" not in item.section:
+                _add(sections, item.section, item.name, seen)
+    if source is not None:
+        extra = [s.name for s in source.inventory.skills if _key(s.name, source) not in seen]
+        for name in extra:
+            _add(sections, "Also in your inventory", name, seen, source)
+
+    titles = [b.title for b in available() if b.id in ids]
+    out = [f"# Skill checklist: {', '.join(titles)}", "", LEGEND]
+    for heading, names in sections.items():
+        if not names:
+            continue
+        out += [f"## {heading}"]
+        out += [_render(name, heading == STAR, source) for name in names]
+        out.append("")
+    return "\n".join(out)
+
+
+def _key(name: str, source: Source | None) -> str:
+    skill = find_skill(name, source) if source is not None else None
+    return (skill.name if skill else _canonical(name)).casefold()
+
+
+def _add(sections: dict[str, list[str]], heading: str, name: str, seen: set[str], source: Source | None = None) -> None:
+    key = _key(name, source)
+    if key in seen:
+        return
+    seen.add(key)
+    sections.setdefault(heading, []).append(name)
+
+
+def _render(name: str, star: bool, source: Source | None) -> str:
+    skill = find_skill(name, source) if source is not None else None
+    if skill is None:
+        return f"- [ ] {name}" + (" — years: __ · last year: ____" if star else "")
+    change = SkillChange(
+        name=skill.name, level=skill.level, evidence=skill.evidence,
+        years=skill.years, last_used_year=skill.last_used_year, notes=skill.notes,
+    )
+    text = line(change)
+    if star and skill.years is None:
+        text += (" · " if " — " in text else " — ") + "years: __"
+    if star and skill.last_used_year is None:
+        text += (" · " if " — " in text else " — ") + "last year: ____"
+    return text

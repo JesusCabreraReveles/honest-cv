@@ -55,6 +55,7 @@ def test_parse_fields_and_marks():
 def test_section_evidence_and_slash():
     items = by_name(checklist.parse(SAMPLE))
     assert items["Kafka"].evidence == items["RabbitMQ"].evidence == "Fictional Fintech, 2020–2026"
+    assert items["Scala"].evidence is None  # an X line claims nothing
     # A question is never evidence, so the section line applies.
     assert items["Pulsar"].evidence == "Fictional Fintech, 2020–2026"
     assert "¿qué clusters?" in items["Pulsar"].notes
@@ -123,3 +124,72 @@ def test_cli_apply_saves_nothing_when_declined(profile, tmp_path, monkeypatch):
     monkeypatch.setattr("builtins.input", lambda prompt: "n")
     assert cli.main(["checklist", "apply", str(profile), str(path)]) == 1
     assert (profile / "skills.yaml").read_text(encoding="utf-8") == before
+
+
+# --- built-in checklists -----------------------------------------------------
+
+BUILTINS = sorted(checklist.BUILTIN.glob("*.md"))
+
+
+@pytest.mark.parametrize("path", BUILTINS, ids=lambda p: p.stem)
+def test_builtin_checklists_are_well_formed(path):
+    # The contract for community checklists: title, description, a ★ section,
+    # unmarked lines only, canonical names and no duplicates.
+    from honest_cv.score import SYNONYMS
+
+    text = path.read_text(encoding="utf-8")
+    parsed = checklist.parse(text)
+    assert parsed.problems == []
+    assert text.startswith("# ") and checklist.available()
+    assert any("★" in i.section for i in parsed.items), "needs a ★ section"
+    assert {i.mark for i in parsed.items} == {""}, "built-in lines stay unmarked"
+    canonical = {g.casefold(): group[0] for group in SYNONYMS for g in group}
+    wrong = [i.name for i in parsed.items if canonical.get(i.name.casefold(), i.name) != i.name]
+    assert wrong == [], f"use the canonical name from score.SYNONYMS: {wrong}"
+    keys = [canonical.get(i.name.casefold(), i.name).casefold() for i in parsed.items]
+    assert len(keys) == len(set(keys)), "a skill is listed twice"
+
+
+def test_compose_merges_without_duplicates_and_prefills(ada):
+    text = checklist.compose(["backend-jvm", "platform-sre"], ada)
+    parsed = checklist.parse(text)
+    names = [i.name.casefold() for i in parsed.items]
+    assert len(names) == len(set(names))
+    items = by_name(parsed)
+    # Kubernetes is in both ★ sections: asked once, prefilled from Ada's inventory.
+    assert items["Kubernetes"].mark == "P" and items["Kubernetes"].years == 5
+    assert "★" in items["Terraform"].section and items["Terraform"].mark == ""
+    # Skills in the inventory but in no list are not lost.
+    assert items["Django"].section == "Also in your inventory"
+
+
+def test_compose_then_apply_changes_nothing(ada):
+    every = [b.id for b in checklist.available()]
+    plan = checklist.plan(ada, checklist.parse(checklist.compose(every, ada)))
+    assert plan.upgrades == [] and plan.pending == [] and plan.problems == []
+    current = {s.name: s for s in ada.inventory.skills}
+    for change, old in plan.updates:
+        skill = current[change.name]
+        assert (change.level, change.evidence, change.years, change.last_used_year, change.notes) == (
+            old, skill.evidence, skill.years, skill.last_used_year, skill.notes
+        )
+
+
+def test_parentheses_inside_evidence_are_kept():
+    item = checklist.parse("- [P] Go — FX service (internal tool); CLIs · years: 2 (on and off)").items[0]
+    assert (item.evidence, item.notes, item.years) == ("FX service (internal tool); CLIs", "on and off", 2)
+    item = checklist.parse("- [P] Kafka — Ledger at Acme Co. (v3)").items[0]
+    assert (item.evidence, item.notes) == ("Ledger at Acme Co.", "v3")
+
+
+def test_unknown_builtin_is_an_error(ada):
+    with pytest.raises(ValueError, match="unknown checklist"):
+        checklist.compose(["cobol"], ada)
+
+
+def test_cli_new_writes_and_never_overwrites(profile, capsys):
+    assert cli.main(["checklist", "new", str(profile), "backend-go", "engineering-lead"]) == 0
+    path = profile / "checklist.md"
+    assert "## ★ Main skills" in path.read_text(encoding="utf-8")
+    assert cli.main(["checklist", "new", str(profile), "frontend"]) == 1
+    assert "Frontend" not in path.read_text(encoding="utf-8")
