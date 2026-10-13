@@ -159,8 +159,10 @@ def test_compose_merges_without_duplicates_and_prefills(ada):
     # Kubernetes is in both ★ sections: asked once, prefilled from Ada's inventory.
     assert items["Kubernetes"].mark == "P" and items["Kubernetes"].years == 5
     assert "★" in items["Terraform"].section and items["Terraform"].mark == ""
-    # Skills in the inventory but in no list are not lost.
+    # Skills in the inventory but in no list are not lost, except X ones: asking
+    # again about what the person doesn't have only makes the file longer.
     assert items["Django"].section == "Also in your inventory"
+    assert "Scala" not in checklist.compose(["platform-sre"], ada)
 
 
 def test_compose_then_apply_changes_nothing(ada):

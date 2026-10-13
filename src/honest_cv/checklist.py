@@ -397,7 +397,11 @@ def compose(ids: list[str], source: Source | None = None) -> str:
             if "★" not in item.section:
                 _add(sections, item.section, item.name, seen)
     if source is not None:
-        extra = [s.name for s in source.inventory.skills if _key(s.name, source) not in seen]
+        # X skills in no list stay out: asking again about what they don't have is noise.
+        extra = [
+            s.name for s in source.inventory.skills
+            if _key(s.name, source) not in seen and s.level is not Level.NONE
+        ]
         for name in extra:
             _add(sections, "Also in your inventory", name, seen, source)
 
