@@ -31,7 +31,8 @@ with keywords you can't defend in an interview. honest-cv is built around three 
   its role's line, follows the right reading order and includes every bullet.
 
 The server is deterministic and needs no API key. Your MCP client's model runs the conversation;
-honest-cv validates, builds, verifies and measures. Your data stays on your machine.
+honest-cv validates, builds, verifies and measures. It keeps your profile in a folder on your
+machine and never sends it anywhere: see [Privacy](#privacy) for what your AI client does with it.
 
 <p align="center"><img src="https://raw.githubusercontent.com/JesusCabreraReveles/honest-cv/master/docs/assets/ada-platform-en.png" width="560" alt="A generated one-page CV for the fictional Ada Example"></p>
 
@@ -111,6 +112,19 @@ built in English and in Spanish.
 
 See [`examples/ada/`](https://github.com/JesusCabreraReveles/honest-cv/tree/master/examples/ada) for a complete, fictional profile with three variants, a job
 post and its keywords.
+
+## Privacy
+
+- **honest-cv itself makes no network calls.** No accounts, no telemetry, no API keys. Your
+  profile is a folder of YAML files on your machine, and the PDF engine and fonts run locally. You
+  can check it: every command works with the network turned off.
+- **Your AI client is a different matter.** Whatever the client's model reads through the tools
+  goes to that model's provider, under the provider's terms, like anything else you share in a
+  chat. That includes your skills, bullets and the text of your CVs.
+- **Some clients copy files to the cloud.** To edit files, Claude Desktop may ask for access to
+  the profile folder and say that the files leave your device. Claude Code edits them in place.
+- **If you want nothing to leave your machine,** use only the CLI (`build`, `verify`, `score`,
+  `skill`) and edit the YAML files yourself.
 
 ## CLI
 

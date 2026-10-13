@@ -34,7 +34,9 @@ en tres ideas:
   y que estén todos los bullets.
 
 El servidor es determinista y no necesita API key. El modelo de tu cliente MCP conduce la
-conversación; honest-cv valida, genera, verifica y mide. Tus datos se quedan en tu máquina.
+conversación; honest-cv valida, genera, verifica y mide. Guarda tu perfil en una carpeta de tu
+máquina y nunca lo envía a ningún lado. En [Privacidad](#privacidad) se explica qué hace con él tu
+cliente de IA.
 
 <p align="center"><img src="docs/assets/ada-platform-en.png" width="560" alt="CV de una página generado para Ada Example, una persona ficticia"></p>
 
@@ -115,6 +117,20 @@ generar en inglés y en español.
 
 En [`examples/ada/`](examples/ada/) hay un perfil completo y ficticio, con tres variantes, una
 vacante y sus palabras clave.
+
+## Privacidad
+
+- **honest-cv no hace ninguna llamada de red.** No hay cuentas, telemetría ni API keys. Tu perfil
+  es una carpeta de archivos YAML en tu máquina, y el motor de PDF y las fuentes corren en local.
+  Puedes comprobarlo: todos los comandos funcionan con la red desconectada.
+- **Tu cliente de IA es otro asunto.** Lo que su modelo lee por medio de las herramientas llega al
+  proveedor de ese modelo, bajo sus términos, como cualquier otra cosa que compartas en un chat.
+  Eso incluye tus skills, tus bullets y el texto de tus CVs.
+- **Algunos clientes copian archivos a la nube.** Para editar archivos, Claude Desktop puede pedir
+  acceso a la carpeta del perfil y avisar que los archivos salen de tu dispositivo. Claude Code los
+  edita donde están.
+- **Si no quieres que nada salga de tu máquina,** usa solo la CLI (`build`, `verify`, `score`,
+  `skill`) y edita tú los archivos YAML.
 
 ## CLI
 
