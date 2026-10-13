@@ -85,7 +85,7 @@ find `uvx`, use its absolute path (`which uvx`).
 
 > **Skill upgrades need a client that supports MCP elicitation**, so the server can ask you to
 > confirm. On a client that doesn't support it, the server refuses the upgrade and gives you a
-> command to run in a terminal instead: `honest-cv skill <profile> "<name>" <level> --evidence "..."`.
+> command to run in a terminal instead: `uvx honest-cv skill <profile> "<name>" <level> --evidence "..."`.
 
 ## Your profile
 
@@ -113,6 +113,9 @@ See [`examples/ada/`](https://github.com/JesusCabreraReveles/honest-cv/tree/mast
 post and its keywords.
 
 ## CLI
+
+Run any command with `uvx honest-cv ...`, or install it once with `uv tool install honest-cv` to
+type just `honest-cv`.
 
 ```bash
 honest-cv init ~/cv-profile                        # create the profile templates

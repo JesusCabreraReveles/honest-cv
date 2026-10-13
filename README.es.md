@@ -89,7 +89,7 @@ Agrega el mismo bloque `mcpServers` del ejemplo de Cursor y reinicia la app. Si 
 > **Subir de nivel una skill necesita un cliente con soporte de *elicitation* de MCP**, para que el
 > servidor te pida la confirmación. En un cliente sin ese soporte, el servidor rechaza el cambio y
 > te da un comando para ejecutarlo en la terminal:
-> `honest-cv skill <perfil> "<nombre>" <nivel> --evidence "..."`.
+> `uvx honest-cv skill <perfil> "<nombre>" <nivel> --evidence "..."`.
 
 ## Tu perfil
 
@@ -117,6 +117,9 @@ En [`examples/ada/`](examples/ada/) hay un perfil completo y ficticio, con tres 
 vacante y sus palabras clave.
 
 ## CLI
+
+Ejecuta cualquier comando con `uvx honest-cv ...`, o instálalo una vez con
+`uv tool install honest-cv` para escribir solo `honest-cv`.
 
 ```bash
 honest-cv init ~/cv-profile                        # crea las plantillas del perfil

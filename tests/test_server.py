@@ -94,7 +94,7 @@ async def test_upgrade_without_elicitation_points_to_cli(profile):
     async with Client(server) as c:
         err, msg = await call(c, "set_skill", profile=profile, name="Scala", level="P", evidence="Akka at Example Bank")
     # A command the person can paste as is: their evidence, not a placeholder.
-    assert err and f'honest-cv skill "{profile}" "Scala" P --evidence "Akka at Example Bank"' in msg
+    assert err and f'uvx honest-cv skill "{profile}" "Scala" P --evidence "Akka at Example Bank"' in msg
     assert load(profile).inventory.get("Scala").level is Level.NONE
 
 

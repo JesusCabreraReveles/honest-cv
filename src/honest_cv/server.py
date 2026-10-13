@@ -172,7 +172,7 @@ def set_skill(
         if not _can_ask(ctx):
             raise ToolError(
                 "this client cannot ask the person directly, so the upgrade was not saved. "
-                f"Ask them to run: honest-cv skill {_quote(folder)} {_quote(name)} {new} --evidence {_quote(evidence)}"
+                f"Ask them to run in a terminal: uvx honest-cv skill {_quote(folder)} {_quote(name)} {new} --evidence {_quote(evidence)}"
             )
         if not isinstance(confirmation, AcceptedElicitation):
             raise ToolError(f"{name}: the person did not confirm the upgrade; nothing was saved")
