@@ -15,7 +15,7 @@ Generador de CVs honestos y aptos para ATS, con servidor MCP, CLI y skill de Cla
   - El servidor valida, genera, verifica y mide.
 - **Las garantías de ATS son invariantes y se prueban en cada build:**
   - Una sola columna, sin tablas de maquetación, sin imágenes ni iconos, sin encabezado ni pie de página.
-  - Las ligaduras están desactivadas.
+  - Las ligaduras y el kerning están desactivados.
   - El orden del código fuente es el orden de lectura. Las fechas van en línea con el puesto, nunca en una caja alineada a la derecha.
   - El texto es extraíble con pypdf y pdfminer.six.
 - **Alcance.** Lo que no esté en "Lo que entra en la v0.1" de `docs/PLAN.md` va a un issue o a la v0.2, no al código.

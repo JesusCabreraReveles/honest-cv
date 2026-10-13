@@ -37,7 +37,8 @@ Honesty rules, enforced by this server:
 
 Typical flow: get_inventory and list_variants to learn the profile; for a job post, extract its
 keywords yourself, call score_job, then gap_report on the best variant; propose edits the person
-approves; build_cv, which also verifies the PDF.
+approves; build_cv, which also verifies the PDF. If a check fails, never reword the person's
+text to pass it: report it, since it is probably a bug in honest-cv.
 """
 
 mcp = MCPServer("honest-cv", version=__version__, instructions=INSTRUCTIONS)

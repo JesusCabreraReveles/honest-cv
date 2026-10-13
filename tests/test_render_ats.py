@@ -133,3 +133,24 @@ def test_compound_terms_never_split_across_lines(ada, term):
     assert text.count(term) >= 80  # every copy extracted whole
     for line in text.splitlines():
         assert not line.rstrip().endswith(("/", "-")), line
+
+
+def test_punctuation_after_capitals_extracts_without_a_gap(ada):
+    # Found with a real profile: kerning pulled the comma toward "P" and pypdf read
+    # "TCP," as "TCP ,", so the bullet no longer matched. Kerning is off now.
+    doc = document.build(ada, "backend", "en")
+    sentence = "Moved from UDP to TCP, then to HTTP. Cut ERP, VPN and GPS costs; also Y, P and V."
+    doc.roles[0].bullets[0] = sentence
+    pdf = render_pdf(doc)
+    pypdf_text = " ".join(" ".join(p.extract_text().split()) for p in PdfReader(io.BytesIO(pdf)).pages)
+    assert sentence in pypdf_text
+    assert verify_pdf(pdf, doc=doc).ok
+
+
+def test_contact_items_never_split_across_lines(ada):
+    doc = document.build(ada, "backend", "en")
+    url = "https://a-very-long-personal-domain.example.systems/portfolio"
+    # Push the URL across line ends with fillers of growing length.
+    doc.contact = [f"{'x' * n}" for n in range(1, 25)] + [url]
+    lines = [line.strip() for line in extract_text(io.BytesIO(render_pdf(doc))).splitlines()]
+    assert any(url in line for line in lines)

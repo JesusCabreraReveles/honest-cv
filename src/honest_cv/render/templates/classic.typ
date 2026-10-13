@@ -17,6 +17,9 @@
   ligatures: false,
   discretionary-ligatures: false,
   historical-ligatures: false,
+  // Kerning pulls "P" or "Y" toward a following comma, and pypdf reads the gap
+  // as a space: "TCP," extracts as "TCP ,". Text matters more than optics here.
+  kerning: false,
   hyphenate: false,
 )
 #set smartquote(enabled: false)
@@ -34,7 +37,8 @@
 = #d.name
 #text(size: size * 1.15, weight: "bold", d.title)
 
-#line-of(d.contact)
+// One box per item, so a URL or an email never breaks across lines.
+#line-of(d.contact.map(box))
 
 == #d.headings.summary
 #d.summary

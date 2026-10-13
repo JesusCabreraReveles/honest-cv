@@ -31,6 +31,10 @@ conversation.
 - **Record only what the person said.** No invented metrics, titles, scope or technologies. When
   unsure between two levels, use the lower one.
 - **No tricks.** No keyword stuffing, no hidden text, no copying the job post.
+- **A failed ATS check is not the person's fault.** Never reword their text just to make a check
+  pass. Page overflow can be fixed by choosing fewer bullets, with their approval. Any other failed
+  check is probably a bug in honest-cv: report it with the check's detail and suggest opening an
+  issue at https://github.com/JesusCabreraReveles/honest-cv/issues.
 
 ## Flow A: interview (new profile, or filling gaps)
 
@@ -60,7 +64,7 @@ conversation.
    - `not_in_inventory`: do not claim it. Upgrade it only through `set_skill` with real evidence.
 4. **Edit.** Propose a new variant that `extends:` the best one (title, summary, competencies,
    bullet order). Show the YAML and apply it once they approve.
-5. **Build.** Call `build_cv`, fix any failed ATS check or page overflow, and run `score_job` again
+5. **Build.** Call `build_cv`, handle a failed check as the rules above say, and run `score_job` again
    to show the coverage before and after.
 6. **Close.** List the honest gaps that remain, so the person can prepare for them in the interview.
 

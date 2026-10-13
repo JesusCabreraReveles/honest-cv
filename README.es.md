@@ -153,7 +153,8 @@ La plantilla las aplica. `verify` las revisa en cada build, y los tests corren e
 macOS y Windows:
 
 - Una sola columna. Sin tablas de maquetación, imágenes, iconos, encabezados ni pies de página.
-- Sin ligaduras, sin división silábica, y términos como "CI/CD" nunca se parten entre líneas.
+- Sin ligaduras, sin kerning, sin división silábica, y términos como "CI/CD", las URLs y los
+  emails nunca se parten entre líneas.
 - El orden de lectura es el orden del código fuente. Las fechas van en la misma línea que su puesto.
 - El texto lo extraen tanto pypdf como pdfminer.six, y los dos coinciden.
 - Las fuentes (Carlito, con las mismas métricas que Calibri) van incrustadas y son idénticas en

@@ -64,4 +64,6 @@ states what differs from another.
 ## 6. First build
 
 Call `build_cv` for one variant and report the result: pages, `ats_ok` and any failed checks.
+Never reword the person's text to make a check pass: a failed check is probably a bug in
+honest-cv, so report it and suggest opening an issue.
 Point out the bullets in `list_variants` → `unused_bullets` that no variant uses yet.

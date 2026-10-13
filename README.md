@@ -149,7 +149,8 @@ The template enforces these. `verify` checks them on every build, and the test s
 Linux, macOS and Windows:
 
 - One column. No layout tables, images, icons, headers or footers.
-- Ligatures off, no hyphenation, and terms like "CI/CD" never split across lines.
+- Ligatures and kerning off, no hyphenation, and terms like "CI/CD", URLs and emails never split
+  across lines.
 - Reading order equals source order. Dates sit on the same line as their role.
 - Text is extractable by both pypdf and pdfminer.six, and the two agree.
 - The fonts (Carlito, metric-compatible with Calibri) are embedded and identical on every machine.
