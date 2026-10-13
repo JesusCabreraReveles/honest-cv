@@ -57,7 +57,11 @@ El servidor es determinista. El LLM del cliente extrae las palabras clave y cond
 | Verificación | Extracción de texto, más revisión del orden de lectura, las ligaduras y el número de páginas. |
 | Score y brechas | Cobertura de palabras clave con sinónimos (k8s ⇄ Kubernetes). Brechas clasificadas por nivel del inventario. |
 | Servidor MCP | Las herramientas y prompts de la sección siguiente, por transporte stdio. |
-| CLI | `honest-cv init`, `build`, `verify`, `score`. |
+| CLI | `honest-cv init`, `build`, `verify`, `score`, `skill`, `checklist`, `import`. |
+| Edición del perfil | Herramientas para contacto, puestos, formación y variantes, para que ningún cliente necesite editar los YAML a mano. |
+| Checklists ([#1](https://github.com/JesusCabreraReveles/honest-cv/issues/1)) | Listas en Markdown para marcar el nivel de muchas skills en minutos. Vienen listas incluidas y se puede aplicar cualquier archivo con el mismo formato. Las líneas sin evidencia quedan pendientes. `set_skills` confirma varias subidas de nivel con una sola pregunta. |
+| Carta de presentación | Un prompt redacta la carta con los bullets y skills P/L. `build_letter` la genera en PDF y DOCX con las mismas verificaciones. `check_claims` avisa si el texto menciona una skill X, o una F como experiencia. |
+| Importar | JSON Resume y la exportación de datos de LinkedIn (ZIP con CSVs), de forma determinista. El PDF del perfil de LinkedIn, con el texto extraído por el servidor y organizado por el cliente. Las skills importadas llegan sin nivel, como líneas pendientes de un checklist. |
 | Skill | Un `SKILL.md` para Claude Code que orquesta la entrevista y la adaptación a una vacante. |
 | Ejemplo | El perfil ficticio "Ada Example" con una vacante de muestra. |
 
@@ -65,10 +69,7 @@ El servidor es determinista. El LLM del cliente extrae las palabras clave y cond
 
 | Pieza | Cuándo |
 |---|---|
-| Importar y exportar JSON Resume | v0.2 |
-| Importar el PDF de LinkedIn | v0.2 |
-| Carta de presentación por vacante | v0.2 |
-| Checklists de skills para llenar el inventario rápido, con plantillas de la comunidad ([#1](https://github.com/JesusCabreraReveles/honest-cv/issues/1)) | v0.2 |
+| Exportar a JSON Resume | v0.2 |
 | Más plantillas | v0.3, con contribuciones |
 | UI web o servicio hospedado | No está previsto. honest-cv guarda los datos en local y no hace llamadas de red. |
 
@@ -85,8 +86,16 @@ El servidor es determinista. El LLM del cliente extrae las palabras clave y cond
 | `verify_pdf` | Revisa que el archivo sea apto para ATS y devuelve el texto extraído. |
 | `score_job` | Recibe la vacante y las palabras clave que extrajo el cliente. Devuelve la cobertura por variante. |
 | `gap_report` | Clasifica lo que falta en tres casos: está en el inventario pero no en el CV, la tienes en `F`, o no la tienes. |
+| `set_contact`, `upsert_role`, `upsert_education`, `save_variant` | Editan el perfil y las variantes, validando todo antes de escribir. |
+| `set_skills` | Varias skills a la vez. Las subidas de nivel se confirman con una sola pregunta que lista cada cambio y su evidencia. |
+| `checklist_new`, `checklist_apply` | Arman un checklist a partir de las listas incluidas y lo aplican al inventario. |
+| `build_letter` | Genera la carta de presentación en PDF y DOCX, y la verifica. |
+| `check_claims` | Revisa un texto y avisa si menciona skills que el inventario no respalda. |
+| `import_profile` | Importa JSON Resume o el ZIP de LinkedIn. |
 | prompt `interview` | Entrevista guiada para llenar el inventario y los bullets. |
 | prompt `tailor_for_job` | Encadena score, brechas, ajuste de la variante y rebuild. |
+| prompt `cover_letter` | Redacta la carta para una vacante, revisa sus afirmaciones y la genera. |
+| prompt `import_linkedin_pdf` | Organiza el texto del PDF de LinkedIn con las herramientas de edición, con la aprobación de la persona. |
 
 ## Estructura del repo
 
@@ -121,8 +130,13 @@ Calculado a razón de 2–3 h por día.
 | 6 | Los prompts `interview` y `tailor_for_job`, y el `SKILL.md` |
 | 7 | Perfil de ejemplo, tests y CI |
 | 8 | README con GIF y la configuración para Claude Code, Cursor y Claude Desktop |
-| 9 | Publicación en PyPI (`uvx honest-cv`) y en los directorios de MCP |
-| 10 | Lanzamiento: Show HN, Reddit, LinkedIn y un artículo |
+| 9 | Pruebas previas a PyPI: artefactos, Linux limpio en Docker, MCP Inspector, Claude Code y Claude Desktop |
+| 10 | Herramientas de edición del perfil, entrevista por temas, tabla de soporte por cliente |
+| 11–13 | Checklists: formato, parser, CLI, herramientas MCP, `set_skills` y listas incluidas |
+| 14–15 | Carta de presentación: prompt, `build_letter` y `check_claims` |
+| 16–17 | Importar: JSON Resume, ZIP de LinkedIn y PDF de LinkedIn |
+| 18 | Versión 0.1.0, `server.json` y publicación en PyPI y en los directorios de MCP |
+| 19 | Lanzamiento: Show HN, Reddit, LinkedIn y un artículo |
 
 ## Decisiones tomadas (2026-10-11)
 
@@ -147,3 +161,13 @@ Calculado a razón de 2–3 h por día.
 - El autor lo usa para sus propias postulaciones.
 - Está publicado en PyPI, en el registro de MCP y en awesome-mcp-servers.
 - Consigue 100–300 estrellas el primer mes.
+
+## Decisiones tomadas (2026-10-12)
+
+| Decisión | Resultado |
+|---|---|
+| Alcance de la v0.1 | Se amplía con checklists, carta de presentación, importación y herramientas de edición del perfil. No se publica un producto incompleto. |
+| Orden | Edición del perfil, checklists, carta, importar y publicar. La carta va antes de importar porque solo usa datos que ya existen. |
+| Confirmación en grupo | `set_skills` muestra una sola pregunta con la lista completa de cambios y su evidencia. Sigue siendo una confirmación humana. |
+| Evidencia en checklists | Sigue siendo obligatoria. Las líneas sin evidencia quedan pendientes y se preguntan en grupo. |
+| LinkedIn | Los dos caminos: el ZIP de exportación de datos, que es confiable, y el PDF del perfil, que es práctico. |
