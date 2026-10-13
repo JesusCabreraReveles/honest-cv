@@ -3,6 +3,8 @@
 [![CI](https://github.com/JesusCabreraReveles/honest-cv/actions/workflows/ci.yml/badge.svg)](https://github.com/JesusCabreraReveles/honest-cv/actions/workflows/ci.yml)
 [![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
 
+<!-- mcp-name: io.github.JesusCabreraReveles/honest-cv -->
+
 **CVs honestos, aptos para ATS y adaptados a cada puesto, generados por tu agente de IA.**
 honest-cv es un servidor MCP, una CLI y una skill de Claude Code. Guarda una sola fuente de verdad
 sobre tu experiencia y la convierte en un PDF y un DOCX para cada tipo de puesto. Nunca afirma una

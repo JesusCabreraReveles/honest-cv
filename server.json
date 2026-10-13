@@ -1,0 +1,36 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.JesusCabreraReveles/honest-cv",
+  "title": "honest-cv",
+  "description": "Honest, ATS-safe CVs and cover letters from a skill inventory you confirm yourself.",
+  "repository": {
+    "url": "https://github.com/JesusCabreraReveles/honest-cv",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "honest-cv",
+      "version": "0.1.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "serve"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "HONEST_CV_PROFILE",
+          "description": "Folder that holds your profile, e.g. ~/cv-profile. Keep it out of public repositories. Tools also accept a profile argument.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

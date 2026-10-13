@@ -381,7 +381,6 @@ wheels = [
 
 [[package]]
 name = "honest-cv"
-version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },

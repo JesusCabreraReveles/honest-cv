@@ -23,6 +23,22 @@ echo "== score"
 hc score /examples/ada -k "Kubernetes,Terraform,Go" -p "Rust,Scala"
 echo "== init a fresh profile"
 hc init fresh >/dev/null && ls fresh
+echo "== checklists"
+hc checklist list | head -3
+hc checklist new fresh backend-go engineering-lead >/dev/null && grep -c '^- \[' fresh/checklist.md
+echo "== import (JSON Resume)"
+cat > resume.json <<'JSON'
+{"basics": {"name": "Smoke Test", "email": "smoke@example.com", "label": "Engineer",
+            "summary": "Checks that a wheel works on a clean machine."},
+ "work": [{"name": "Example Co", "position": "Engineer", "startDate": "2020-01",
+           "highlights": ["Kept the build green."]}],
+ "skills": [{"name": "Go"}]}
+JSON
+hc import imported resume.json | head -3
+hc build imported -o imported-out | head -1
+echo "== cover letter"
+printf 'I am applying for the Platform Engineer role.\n\nI led a 40-service migration to Kubernetes.\n' > letter.txt
+hc letter build /examples/ada letter.txt --company "Acme" --role "Platform Engineer" -o letter-out
 echo "== MCP stdio handshake"
 # Keep stdin open a moment: a real client does, and on EOF the server stops
 # before answering requests still in flight.
@@ -36,7 +52,9 @@ python3 - mcp.out <<'PY'
 import json, sys
 msgs = {m.get("id"): m for m in map(json.loads, open(sys.argv[1]))}
 print("server:", msgs[1]["result"]["serverInfo"]["name"], "| protocol", msgs[1]["result"]["protocolVersion"])
-print("tools:", ", ".join(t["name"] for t in msgs[2]["result"]["tools"]))
-print("prompts:", ", ".join(p["name"] for p in msgs[3]["result"]["prompts"]))
+tools = [t["name"] for t in msgs[2]["result"]["tools"]]
+prompts = [p["name"] for p in msgs[3]["result"]["prompts"]]
+print(f"tools ({len(tools)}):", ", ".join(tools))
+print(f"prompts ({len(prompts)}):", ", ".join(prompts))
 PY
 echo "== OK"
