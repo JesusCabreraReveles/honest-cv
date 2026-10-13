@@ -33,6 +33,8 @@ Talk to the person in the language they write in, even though the tools answer i
 - **Record only what the person said.** No invented metrics, titles, scope or technologies. When
   unsure between two levels, use the lower one.
 - **No tricks.** No keyword stuffing, no hidden text, no copying the job post.
+- **Removing is the person's call.** `remove_skill`, `remove_bullet` and `remove_role` delete for
+  good: ask first, and say what else changes. To record that they lack a skill, prefer level X.
 - **A failed ATS check is not the person's fault.** Never reword their text just to make a check
   pass. Page overflow can be fixed by choosing fewer bullets, with their approval. Any other failed
   check is probably a bug in honest-cv: report it with the check's detail and suggest opening an

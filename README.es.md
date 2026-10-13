@@ -213,6 +213,7 @@ honest-cv verify cualquier-cv.pdf --text            # revisa cualquier PDF, aunq
 honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # cobertura por variante, con brechas
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI en GitHub"  # te pide confirmar
 honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # o resume.json
+honest-cv remove skill ~/cv-profile "Kafka"                          # te pide confirmar
 honest-cv letter check ~/cv-profile carta.txt -k "Kubernetes,Go"      # afirmaciones que tu perfil no respalda
 honest-cv letter build ~/cv-profile carta.txt --company Acme --role "Platform Engineer" -l es
 honest-cv serve --profile ~/cv-profile              # el servidor MCP, por stdio
@@ -234,6 +235,7 @@ parsers separan de su puesto.
 | `checklist_new` | Combina checklists incluidos en un archivo, prellenado con tu inventario. |
 | `checklist_apply` | Guarda las skills marcadas en un checklist y devuelve las líneas que todavía necesitan evidencia. |
 | `add_bullet` | Agrega un logro al pool. |
+| `remove_skill`, `remove_bullet`, `remove_role` | Borran definitivamente y quitan cada uso en las variantes. Un puesto con bullets necesita `with_bullets`. Los clientes piden permiso antes de usarlas. |
 | `set_contact` | Cambia los datos de contacto: nombre, email, teléfono, ubicación y links. |
 | `set_profile_details` | Reemplaza la lista de certificaciones y la línea de idiomas. |
 | `upsert_role` | Agrega un puesto en orden de fechas, o cambia campos de uno existente. |

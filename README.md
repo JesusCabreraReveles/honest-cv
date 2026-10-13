@@ -204,6 +204,7 @@ honest-cv verify any-cv.pdf --text                  # check any PDF, even one ma
 honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # coverage per variant, with gaps
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI tool on GitHub"  # asks you to confirm
 honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # or resume.json
+honest-cv remove skill ~/cv-profile "Kafka"                          # asks you to confirm
 honest-cv letter check ~/cv-profile letter.txt -k "Kubernetes,Go"     # claims your profile doesn't support
 honest-cv letter build ~/cv-profile letter.txt --company Acme --role "Platform Engineer" -l en
 honest-cv serve --profile ~/cv-profile              # the MCP server, over stdio
@@ -225,6 +226,7 @@ split away from its role.
 | `checklist_new` | Merges built-in checklists into one file, prefilled from your inventory. |
 | `checklist_apply` | Saves the skills marked in a checklist and returns the lines that still need evidence. |
 | `add_bullet` | Adds an achievement to the pool. |
+| `remove_skill`, `remove_bullet`, `remove_role` | Delete for good, and remove every use in the variants. A role with bullets needs `with_bullets`. Clients ask before running them. |
 | `set_contact` | Changes contact details: name, email, phone, location, links. |
 | `set_profile_details` | Replaces the certifications list and the spoken-languages line. |
 | `upsert_role` | Adds a role in date order, or changes fields of an existing one. |

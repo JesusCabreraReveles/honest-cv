@@ -59,7 +59,8 @@ async def test_lists_the_planned_tools():
                      "build_cv", "verify_pdf", "score_job", "gap_report", "set_contact",
                      "set_profile_details", "upsert_role", "upsert_education", "save_variant",
                      "set_skills", "checklist_apply", "checklist_list", "checklist_new",
-                     "check_claims", "build_letter", "import_profile"}
+                     "check_claims", "build_letter", "import_profile",
+                     "remove_skill", "remove_bullet", "remove_role"}
 
 
 async def test_every_tool_argument_is_described():
@@ -333,4 +334,13 @@ async def test_import_profile(tmp_path):
     assert not err and out["skills"] == 3 and out["added"]["variants"] == ["main"]
     # A PDF is read, never parsed into the profile: the client organizes it with the person.
     assert not err2 and text["format"] == "pdf" and "Grace Sample" in text["text"]
+
+
+async def test_remove_tools_are_marked_destructive(profile):
+    async with Client(server) as c:
+        tools = {t.name: t for t in (await c.list_tools()).tools}
+        err, msg = await call(c, "remove_role", profile=profile, id="bank")
+    for name in ("remove_skill", "remove_bullet", "remove_role"):
+        assert tools[name].annotations.destructive_hint is True, name
+    assert err and "with_bullets" in msg
 

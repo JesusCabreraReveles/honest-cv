@@ -227,3 +227,96 @@ def save_variant(folder: str | Path, id: str, variant: Variant) -> Variant:
     _write(folder, "variants.yaml", raw["variants.yaml"])
     return source.variants[id]
 
+
+
+# --- removal -------------------------------------------------------------------
+# Removing never leaves a reference behind: variants that use what is removed are
+# updated in the same write, and the report says which ones changed.
+
+
+def _variants(raw: dict[str, dict]) -> dict:
+    return raw["variants.yaml"].get("variants") or {}
+
+
+def remove_bullet(folder: str | Path, bullet_id: str) -> dict:
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    bullets = raw["bullets.yaml"].get("bullets") or []
+    if not any(b.get("id") == bullet_id for b in bullets):
+        raise StoreError(f"unknown bullet '{bullet_id}'")
+    raw["bullets.yaml"]["bullets"] = [b for b in bullets if b.get("id") != bullet_id]
+    changed = _drop_bullets(raw, {bullet_id})
+    _validate(raw)
+    _write(folder, "bullets.yaml", raw["bullets.yaml"])
+    if changed:
+        _write(folder, "variants.yaml", raw["variants.yaml"])
+    return {"removed": bullet_id, "variants_updated": changed}
+
+
+def _drop_bullets(raw: dict[str, dict], ids: set[str]) -> list[str]:
+    changed = []
+    for vid, v in _variants(raw).items():
+        before = repr(v)
+        if v.get("impact"):
+            v["impact"] = [b for b in v["impact"] if b not in ids]
+        for rid, listed in (v.get("roles") or {}).items():
+            v["roles"][rid] = [b for b in listed if b not in ids]
+        if repr(v) != before:
+            changed.append(vid)
+    return changed
+
+
+def remove_skill(folder: str | Path, name: str) -> dict:
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    skills = raw["skills.yaml"].get("skills") or []
+    match = next((s for s in skills if s["name"].casefold() == name.casefold()), None)
+    if match is None:
+        raise StoreError(f"unknown skill '{name}'")
+    raw["skills.yaml"]["skills"] = [s for s in skills if s is not match]
+    changed = []
+    for vid, v in _variants(raw).items():
+        groups = v.get("skills") or []
+        kept = [{**g, "skills": [s for s in g["skills"] if s.casefold() != name.casefold()]} for g in groups]
+        competencies = v.get("competencies") or []
+        # A competency named exactly like the skill would keep claiming it on the CV.
+        kept_competencies = [c for c in competencies if c.casefold() != name.casefold()]
+        if kept != groups or kept_competencies != competencies:
+            if groups:
+                v["skills"] = [g for g in kept if g["skills"]]
+            if competencies:
+                v["competencies"] = kept_competencies
+            changed.append(vid)
+    _validate(raw)
+    _write(folder, "skills.yaml", raw["skills.yaml"])
+    if changed:
+        _write(folder, "variants.yaml", raw["variants.yaml"])
+    return {"removed": match["name"], "level": match["level"], "variants_updated": changed}
+
+
+def remove_role(folder: str | Path, role_id: str, *, with_bullets: bool = False) -> dict:
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    roles = raw["profile.yaml"].get("roles") or []
+    if not any(r.get("id") == role_id for r in roles):
+        raise StoreError(f"unknown role '{role_id}'")
+    bullets = raw["bullets.yaml"].get("bullets") or []
+    own = [b["id"] for b in bullets if b.get("role") == role_id]
+    if own and not with_bullets:
+        raise StoreError(
+            f"role '{role_id}' has {len(own)} bullet(s): {', '.join(own)}. Nothing was removed. "
+            "Remove them too only if the person agrees (with_bullets)."
+        )
+    raw["profile.yaml"]["roles"] = [r for r in roles if r.get("id") != role_id]
+    raw["bullets.yaml"]["bullets"] = [b for b in bullets if b.get("role") != role_id]
+    changed = set(_drop_bullets(raw, set(own)))
+    for vid, v in _variants(raw).items():
+        if role_id in (v.get("roles") or {}):
+            del v["roles"][role_id]
+            changed.add(vid)
+    _validate(raw)
+    _write(folder, "profile.yaml", raw["profile.yaml"])
+    _write(folder, "bullets.yaml", raw["bullets.yaml"])
+    if changed:
+        _write(folder, "variants.yaml", raw["variants.yaml"])
+    return {"removed": role_id, "bullets_removed": own, "variants_updated": sorted(changed)}

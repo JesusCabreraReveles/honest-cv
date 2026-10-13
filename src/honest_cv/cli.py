@@ -195,6 +195,28 @@ def cmd_import(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_remove(args: argparse.Namespace) -> int:
+    what = f"{args.kind} '{args.id}'" + (" and its bullets" if getattr(args, "with_bullets", False) else "")
+    if not sys.stdin.isatty():
+        print("error: removing needs an interactive confirmation", file=sys.stderr)
+        return 1
+    if not is_yes(input(f"Remove {what} from {args.profile}? It cannot be undone. [y/N] ")):
+        print("Nothing removed.")
+        return 1
+    if args.kind == "skill":
+        result = store.remove_skill(args.profile, args.id)
+    elif args.kind == "bullet":
+        result = store.remove_bullet(args.profile, args.id)
+    else:
+        result = store.remove_role(args.profile, args.id, with_bullets=args.with_bullets)
+    print(f"Removed {result['removed']}.")
+    if result.get("bullets_removed"):
+        print(f"  bullets removed: {', '.join(result['bullets_removed'])}")
+    if result["variants_updated"]:
+        print(f"  variants updated: {', '.join(result['variants_updated'])}")
+    return 0
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     import os
 
@@ -282,6 +304,13 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("profile")
     c.add_argument("file", type=Path, help="a checklist in Markdown, e.g. <profile>/checklist.md")
     c.set_defaults(func=cmd_checklist_apply)
+
+    p = sub.add_parser("remove", help="delete a skill, bullet or role, and its uses in the variants")
+    p.add_argument("kind", choices=["skill", "bullet", "role"])
+    p.add_argument("profile")
+    p.add_argument("id", help="skill name, bullet id or role id")
+    p.add_argument("--with-bullets", action="store_true", help="role only: also delete its bullets")
+    p.set_defaults(func=cmd_remove)
 
     p = sub.add_parser("import", help="import JSON Resume (.json) or a LinkedIn data export (.zip)")
     p.add_argument("profile", help="profile folder; created if it does not exist")

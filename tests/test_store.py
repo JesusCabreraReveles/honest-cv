@@ -126,3 +126,41 @@ def test_save_variant_checks_references_and_children(profile):
     with pytest.raises(ValidationError, match="missing 'summary'"):
         store.save_variant(profile, "backend", Variant(title="Backend only"))
     assert load(profile).resolve("platform").summary
+
+
+# --- removal -------------------------------------------------------------------
+
+
+def test_remove_bullet_leaves_no_reference(profile):
+    out = store.remove_bullet(profile, "ft_k8s")
+    source = load(profile)
+    assert "ft_k8s" not in {b.id for b in source.bullets}
+    assert set(out["variants_updated"]) == {"backend", "platform", "leadership"}
+    assert all("ft_k8s" not in source.resolve(v).impact for v in source.variants)
+
+
+def test_remove_skill_also_leaves_skill_groups_and_competencies(profile):
+    out = store.remove_skill(profile, "kafka")
+    source = load(profile)
+    assert out["removed"] == "Kafka" and source.inventory.get("Kafka") is None
+    for v in source.variants:
+        resolved = source.resolve(v)
+        assert "Kafka" not in resolved.competencies
+        assert all("Kafka" not in g.skills for g in resolved.skills)
+
+
+def test_remove_role_refuses_while_it_has_bullets(profile):
+    before = {f: (profile / f).read_text(encoding="utf-8") for f in ("profile.yaml", "bullets.yaml")}
+    with pytest.raises(ValueError, match="has 4 bullet"):
+        store.remove_role(profile, "bank")
+    assert before == {f: (profile / f).read_text(encoding="utf-8") for f in before}
+    out = store.remove_role(profile, "bank", with_bullets=True)
+    source = load(profile)
+    assert "bank" not in {r.id for r in source.profile.roles} and len(out["bullets_removed"]) == 4
+    assert all("bank" not in source.resolve(v).roles for v in source.variants)
+
+
+def test_remove_unknown_is_an_error(profile):
+    for fn, arg in ((store.remove_bullet, "nope"), (store.remove_skill, "COBOL"), (store.remove_role, "nope")):
+        with pytest.raises(ValueError, match="unknown"):
+            fn(profile, arg)

@@ -60,6 +60,7 @@ TextArg = Annotated[
 ]
 Year = Annotated[str | None, Field(description='A year or year-month, e.g. "2021" or "2021-03".')]
 
+REMOVE = ToolAnnotations(read_only_hint=False, destructive_hint=True, idempotent_hint=False, open_world_hint=False)
 READ = ToolAnnotations(read_only_hint=True, open_world_hint=False)
 WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=False, open_world_hint=False)
 
@@ -519,6 +520,42 @@ def save_variant(
     variant = Variant(**{k: v for k, v in fields.items() if v is not None})
     saved = store.save_variant(_profile_dir(profile), id, variant)
     return {"saved": id, "variant": saved.model_dump(mode="json", exclude_none=True)}
+
+
+@mcp.tool(annotations=REMOVE)
+@_tool_errors
+def remove_skill(
+    name: Annotated[str, Field(description="Skill name as in the inventory.")],
+    profile: Profile = None,
+) -> dict:
+    """Delete a skill from the inventory, e.g. a duplicate or a misspelling. It also leaves the
+    variants' skill groups and same-named competencies. To say the person doesn't have a skill,
+    prefer set_skill with level X: it keeps gap reports honest. Ask the person first."""
+    return store.remove_skill(_profile_dir(profile), name)
+
+
+@mcp.tool(annotations=REMOVE)
+@_tool_errors
+def remove_bullet(
+    id: Annotated[str, Field(description="Bullet id.")],
+    profile: Profile = None,
+) -> dict:
+    """Delete an achievement from the pool and from every variant that uses it. Ask the person first."""
+    return store.remove_bullet(_profile_dir(profile), id)
+
+
+@mcp.tool(annotations=REMOVE)
+@_tool_errors
+def remove_role(
+    id: Annotated[str, Field(description="Role id from profile.yaml.")],
+    profile: Profile = None,
+    with_bullets: Annotated[
+        bool, Field(description="Also delete the role's bullets. Only if the person agreed to lose them.")
+    ] = False,
+) -> dict:
+    """Delete a role and its place in every variant. A role with bullets is refused unless
+    `with_bullets` is true. Ask the person first."""
+    return store.remove_role(_profile_dir(profile), id, with_bullets=with_bullets)
 
 
 @mcp.tool(annotations=READ)
