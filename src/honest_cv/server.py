@@ -364,7 +364,9 @@ def checklist_apply(
     """Save the lines the person marked in a checklist. The person answers "sí" or "no" for each
     upgrade with evidence, up to 10 per question: call it again while `upgrades_not_asked_yet`
     is not empty. Lines without evidence come back as `pending_evidence`: ask where they used
-    them, in groups, and record them with `set_skills`."""
+    them, in groups, and record them with `set_skills`. Ask about nothing else: unmarked lines
+    are for the person to mark in the file, not to go through in the chat. To resume a checklist,
+    call this again rather than reading the file."""
     plan = _checklist_plan(profile, path)
     result = _save_plan(ctx, profile, plan, confirmation) if plan.upgrades or plan.updates else {"saved": []}
     summary = plan.summary()

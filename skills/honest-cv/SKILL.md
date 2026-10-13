@@ -75,6 +75,10 @@ A checklist is a Markdown list the person marks with one letter per skill:
    yours.
 5. Skip lines marked `[?]` or left `[ ]`; mention how many there were.
 
+Never turn the checklist back into an interview. Unmarked lines belong to the person: they mark
+them in the file when they want to, not in the chat. To resume, call `checklist_apply` first and
+work from its result, instead of reading the file yourself.
+
 ## Flow B: tailor to a job post
 
 1. **Keywords.** Extract the post's required and preferred keywords in its own wording, leaving
