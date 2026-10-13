@@ -113,9 +113,12 @@ def parse(text: str) -> Parsed:
 
 
 def _items(body: str, mark: str, line: int, section: str) -> list[Item]:
-    name, rest = DASH.split(body, maxsplit=1) if DASH.search(body) else (body, "")
+    dash = next((m for m in DASH.finditer(body) if _outside_parens(body, m.start())), None)
+    name, rest = (body[: dash.start()], body[dash.end() :]) if dash else (body, "")
     notes = PARENS.findall(name)
-    name = PARENS.sub("", name).strip()
+    # After the name, "; more text" is a note: "LLM streaming (SSE); Kafka events, yes".
+    name, *extra = _split_outside_parens(_tidy(PARENS.sub("", name)))
+    notes += extra
     fields: dict = {}
     evidence: list[str] = []
     segments = _split_outside_parens(rest)
@@ -158,9 +161,10 @@ def _items(body: str, mark: str, line: int, section: str) -> list[Item]:
         elif value and not BLANK.search(value):
             evidence.append(value)
     notes = [x.strip() for x in notes if x.strip() and not BLANK.search(x)]
-    names = [x.strip() for x in re.split(r"\s+/\s+", name) if x.strip()]
+    name = name.strip()
+    names = [x.strip() for x in re.split(r"\s+/\s+|,\s+", name) if x.strip()]
     if any(len(x.split()) > MAX_SPLIT_WORDS for x in names):
-        names = [" / ".join(names)]
+        names = [name]
     if not names:
         raise ValueError("no skill name")
     return [
@@ -172,11 +176,20 @@ def _items(body: str, mark: str, line: int, section: str) -> list[Item]:
     ]
 
 
+def _outside_parens(text: str, at: int) -> bool:
+    return text[:at].count("(") == text[:at].count(")")
+
+
+def _tidy(text: str) -> str:
+    """Spacing left behind by a removed "(...)": "diffusion models , FFmpeg" -> "..., FFmpeg"."""
+    return re.sub(r"\s+([,;.])", r"\1", re.sub(r"\s{2,}", " ", text)).strip()
+
+
 def _split_outside_parens(text: str) -> list[str]:
     """Split on " · " and "; ", but not inside parentheses, which hold free notes."""
     parts, start = [], 0
     for m in SEPARATOR.finditer(text):
-        if text[: m.start()].count("(") == text[: m.start()].count(")"):
+        if _outside_parens(text, m.start()):
             parts.append(text[start : m.start()])
             start = m.end()
     parts.append(text[start:])
@@ -230,8 +243,7 @@ def plan(source: Source, parsed: Parsed) -> Plan:
         if item.mark == "?":
             out.unsure.append(item.name)
             continue
-        skill = find_skill(item.name, source)
-        key = (skill.name if skill else item.name).casefold()
+        key = _key(item.name, source)
         if key in merged:
             merged[key] = _merge(merged[key], item, out.problems)
         else:

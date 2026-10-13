@@ -110,3 +110,13 @@ def test_gap_report_groups(ada):
     assert [r.keyword for r in groups["familiarity_only"]] == ["Rust"]
     assert [r.keyword for r in groups["not_in_inventory"]] == ["Scala"]
     assert groups["in_inventory_not_in_cv"] == []
+
+
+def test_spanish_spellings_match():
+    # Found scoring a Spanish CV: "observabilidad" did not count as Observability.
+    from honest_cv.score import _match, spellings
+
+    text = "Introduje la observabilidad; infraestructura como código con Terraform; integración continua."
+    for term in ("Observability", "Infrastructure as Code", "CI/CD"):
+        assert _match(spellings(term), text), term
+

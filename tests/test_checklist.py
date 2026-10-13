@@ -193,3 +193,31 @@ def test_cli_new_writes_and_never_overwrites(profile, capsys):
     assert "## ★ Main skills" in path.read_text(encoding="utf-8")
     assert cli.main(["checklist", "new", str(profile), "frontend"]) == 1
     assert "Frontend" not in path.read_text(encoding="utf-8")
+
+
+# Found applying a real, hand-written checklist.
+
+
+def test_a_dash_inside_parentheses_is_not_the_evidence_separator():
+    item = checklist.parse("- [X] Cloud certifications (none yet; next: AWS Solutions Architect – Associate)").items[0]
+    assert (item.name, item.evidence) == ("Cloud certifications", None)
+    assert item.notes == "none yet; next: AWS Solutions Architect – Associate"
+
+
+def test_text_after_a_semicolon_in_the_name_is_a_note():
+    item = checklist.parse("- [X] LLM response streaming (SSE); event streaming with Kafka, yes").items[0]
+    assert item.name == "LLM response streaming"
+    assert item.notes == "SSE; event streaming with Kafka, yes"
+
+
+def test_a_comma_list_of_short_names_is_several_skills():
+    parsed = checklist.parse("- [X] Diffusion models (tuning), FFmpeg, MLOps (retraining)")
+    assert [i.name for i in parsed.items] == ["Diffusion models", "FFmpeg", "MLOps"]
+
+
+def test_two_names_for_one_skill_merge_at_the_lower_level(ada):
+    plan = checklist.plan(ada, checklist.parse("- [F] OpenID Connect\n- [P] OIDC — SSO for the portal\n"))
+    assert [(c.name, c.level, c.evidence) for c, _ in plan.upgrades] == [
+        ("OpenID Connect", Level.FAMILIARITY, "SSO for the portal")
+    ]
+    assert "using the lower" in plan.problems[0]
