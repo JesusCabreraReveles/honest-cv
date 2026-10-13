@@ -1,0 +1,67 @@
+# Changelog
+
+All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and versions follow [Semantic Versioning](https://semver.org/).
+
+## [0.1.0] — unreleased
+
+The first release: an MCP server, a CLI and a Claude Code skill that turn one profile folder into
+honest, ATS-safe CVs and cover letters.
+
+### Profile and honesty
+
+- A profile is four YAML files: contact and roles, a pool of achievement bullets, a skill inventory
+  and variants per type of role, with `extends:` inheritance. Texts can be per language (EN, ES).
+- Skill levels: P (production), L (own project or lab), F (familiarity, always labeled as such)
+  and X (never shown, but kept so gap reports are honest).
+- Raising a level needs written evidence and the person's own confirmation. In MCP clients that
+  support elicitation, a form asks "no / sí" for each upgrade, up to 10 at a time; elsewhere the
+  CLI asks in the terminal. The model cannot confirm for the person.
+- Tools to edit every part of the profile, each validating the whole profile before writing, and
+  to remove a skill, bullet or role without leaving a broken reference.
+
+### CVs
+
+- PDF with Typst and the bundled Carlito font, the same on every machine with no system fonts;
+  DOCX with python-docx. `fit_pages` adjusts density to meet a variant's page limit.
+- ATS guarantees checked on every build with pypdf and pdfminer.six: one column, no ligatures,
+  no kerning, no hyphenation, dates on their role's line, reading order, every bullet extracted,
+  and terms like "CI/CD", URLs and emails never split across lines.
+- `verify` checks any PDF, including CVs made with other tools.
+
+### Job posts
+
+- Keyword coverage per variant, with synonyms in English and Spanish.
+- Gaps classified against the person's own inventory: in the inventory but not on this CV,
+  familiarity only, or not held.
+
+### Skill checklists
+
+- Mark many skills at once in a Markdown file: one letter per line, evidence after " — ", an
+  optional evidence line per section, years and last year used.
+- Seven built-in checklists (backend JVM, Python and Go, frontend, platform/SRE, data,
+  engineering leadership), merged without duplicates and prefilled from the inventory.
+- Any checklist written by hand can be applied, in English or Spanish. Lines without evidence
+  come back as pending and are asked about in groups.
+
+### Cover letters
+
+- `check_claims` reads any text against the profile. It blocks an X skill, or an F skill
+  presented as experience, and warns about technologies and numbers the profile doesn't show.
+- `build_letter` renders a one-page letter to PDF and DOCX with the CV's ATS checks, and refuses
+  while there are problems.
+
+### Import
+
+- JSON Resume and LinkedIn's data export (ZIP of CSVs): contact, roles, achievements,
+  education, certifications and languages. It only adds what is missing and never overwrites.
+  Skills arrive without a level, as a checklist to mark.
+- LinkedIn's profile PDF: the server returns its text and the client proposes each section for
+  the person to approve.
+
+### Clients
+
+- Tested in Claude Code (confirmation in the chat) and Claude Desktop (confirmation in a
+  terminal). The server needs no API key and makes no network calls.
+
+[0.1.0]: https://github.com/JesusCabreraReveles/honest-cv/releases/tag/v0.1.0

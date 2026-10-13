@@ -12,7 +12,7 @@ skill que no tienes.
 
 [Read in English](README.md)
 
-![Demo: puntuar una vacante, generar una variante y verificarla](docs/assets/demo.gif)
+![Demo: un checklist de skills, el puntaje contra una vacante, un build verificado y una carta que rechaza una skill que la persona no tiene](docs/assets/demo.gif)
 
 ## Por qué
 

@@ -33,6 +33,7 @@ dependencies = [
 Homepage = "https://github.com/JesusCabreraReveles/honest-cv"
 Repository = "https://github.com/JesusCabreraReveles/honest-cv"
 Issues = "https://github.com/JesusCabreraReveles/honest-cv/issues"
+Changelog = "https://github.com/JesusCabreraReveles/honest-cv/blob/master/CHANGELOG.md"
 
 [project.scripts]
 honest-cv = "honest_cv.cli:main"
@@ -61,6 +62,7 @@ include = [
     "/README.md",
     "/README.es.md",
     "/CONTRIBUTING.md",
+    "/CHANGELOG.md",
     "/LICENSE",
 ]
 # .claude/skills/honest-cv is a symlink to skills/honest-cv. Hatchling walks each

@@ -11,7 +11,7 @@ turns it into a PDF and DOCX for each type of role. It never claims a skill you 
 
 [Leer en español](https://github.com/JesusCabreraReveles/honest-cv/blob/master/README.es.md)
 
-![Demo: score a job post, build a variant, verify it](https://raw.githubusercontent.com/JesusCabreraReveles/honest-cv/master/docs/assets/demo.gif)
+![Demo: a skill checklist, scoring a job post, a verified build, and a cover letter that refuses a skill the person lacks](https://raw.githubusercontent.com/JesusCabreraReveles/honest-cv/master/docs/assets/demo.gif)
 
 ## Why
 
