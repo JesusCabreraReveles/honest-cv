@@ -91,7 +91,7 @@ elicitation. Not every client supports it yet:
 
 | Client | Where you confirm |
 |---|---|
-| Claude Code | In the chat: type "yes" (or "sí") and Accept. Anything else, or Decline, saves nothing. |
+| Claude Code | In the chat: a form with one "no / sí" field per upgrade, up to 10 at a time. Only the ones you answer "sí" are saved; Decline saves nothing. |
 | Claude Desktop | In a terminal. The server refuses the change and gives you the command to run: `uvx honest-cv skill <profile> "<name>" <level> --evidence "..."`. |
 | Other clients | In the chat if they support elicitation, otherwise in a terminal as above. |
 

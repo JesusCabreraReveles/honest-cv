@@ -64,11 +64,13 @@ A checklist is a Markdown list the person marks with one letter per skill:
    `checklist_new`. It writes `<profile>/checklist.md`, prefilled from their inventory.
 2. **They mark it** in their own editor. Explain the letters, the evidence after " — ", and that
    one `evidence: ...` line under a heading covers that whole section. Wait for them.
-3. **Apply it.** Call `checklist_apply` with the file's path. The server asks the person once to
-   confirm every upgrade that has evidence.
+3. **Apply it.** Call `checklist_apply` with the file's path. The server shows the person a form
+   with one "no / sí" field per upgrade, up to 10 at a time. Call it again while
+   `upgrades_not_asked_yet` is not empty.
 4. **Pending lines.** The result lists `pending_evidence`: lines marked without evidence. Ask in
    groups ("where did you use Kafka, RabbitMQ and Redis?"), then record each group with
-   `set_skills`, which again asks the person once. Use their words as evidence, never yours.
+   `set_skills`, which again asks "no / sí" for each upgrade. Use their words as evidence, never
+   yours.
 5. Skip lines marked `[?]` or left `[ ]`; mention how many there were.
 
 ## Flow B: tailor to a job post

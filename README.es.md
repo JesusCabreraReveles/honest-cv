@@ -95,7 +95,7 @@ Subir de nivel una skill necesita tu propia confirmación, que el servidor pide 
 
 | Cliente | Dónde confirmas |
 |---|---|
-| Claude Code | En el chat: escribe "sí" (o "yes") y pulsa Accept. Cualquier otra respuesta, o Decline, no guarda nada. |
+| Claude Code | En el chat: un formulario con un campo "no / sí" por cada subida, hasta 10 a la vez. Solo se guardan las que respondes "sí"; Decline no guarda nada. |
 | Claude Desktop | En una terminal. El servidor rechaza el cambio y te da el comando para ejecutarlo: `uvx honest-cv skill <perfil> "<nombre>" <nivel> --evidence "..."`. |
 | Otros clientes | En el chat si soportan *elicitation*; si no, en una terminal como arriba. |
 

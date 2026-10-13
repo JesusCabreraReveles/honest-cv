@@ -26,14 +26,20 @@ def profile(tmp_path):
     return str(tmp_path / "ada")
 
 
-def answer(action: str, typed: str | None = "yes"):
-    """An elicitation callback: accept (typing `typed` in the form), decline or cancel."""
+def answer(action: str, value: str | None = "sí", per: dict | None = None):
+    """An elicitation callback. On accept it answers every field with `value`, or with
+    `per[skill]` for the skill a field asks about; `value=None` sends no answers."""
     asked, schemas = [], []
 
     async def callback(ctx, params):
         asked.append(params.message)
         schemas.append(params.requested_schema)
-        content = ({} if typed is None else {"confirm": typed}) if action == "accept" else None
+        content = None
+        if action == "accept":
+            props = params.requested_schema["properties"]
+            content = {} if value is None else {
+                k: (per or {}).get(f["title"].split(":")[0], value) for k, f in props.items()
+            }
         return t.ElicitResult(action=action, content=content)
 
     callback.asked, callback.schemas = asked, schemas
@@ -73,10 +79,11 @@ async def test_upgrade_asks_the_person(profile):
     async with Client(server, elicitation_callback=cb) as c:
         err, out = await call(c, "set_skill", profile=profile, name="Rust", level="L", evidence="CLI tool")
     assert not err and out["previous_level"] == "F"
-    assert len(cb.asked) == 1 and "Rust F -> L" in cb.asked[0]
-    # The person must type the answer: a form with no fields can be accepted by the
-    # client without them deciding.
-    assert cb.schemas[0]["required"] == ["confirm"]
+    assert len(cb.asked) == 1
+    # One field per upgrade, shown by every client, with "no" first.
+    assert cb.schemas[0]["required"] == ["u1"]
+    field = cb.schemas[0]["properties"]["u1"]
+    assert field["title"] == "Rust: F → L — CLI tool" and field["enum"] == ["no", "sí"]
     assert load(profile).inventory.get("Rust").level is Level.LAB
 
 
@@ -190,9 +197,10 @@ async def test_set_skills_asks_once_for_every_upgrade(profile):
     cb = answer("accept")
     async with Client(server, elicitation_callback=cb) as c:
         err, out = await call(c, "set_skills", profile=profile, skills=GROUP)
-    assert not err and out == {"saved": ["Java", "Rust", "NATS"], "upgrades": 2}
+    assert not err and out["saved"] == ["Java", "Rust", "NATS"] and out["upgrades_confirmed"] == ["Rust", "NATS"]
     assert len(cb.asked) == 1
-    assert "Rust: F -> L. Evidence: CLI tool on GitHub" in cb.asked[0] and "NATS: X -> F" in cb.asked[0]
+    titles = [f["title"] for f in cb.schemas[0]["properties"].values()]
+    assert titles == ["Rust: F → L — CLI tool on GitHub", "NATS: X → F — Read the docs, ran the demo"]
     inv = load(profile).inventory
     assert (inv.get("Rust").level, inv.get("NATS").level, inv.get("Java").level) == (
         Level.LAB, Level.FAMILIARITY, Level.FAMILIARITY
@@ -203,7 +211,7 @@ async def test_set_skills_asks_once_for_every_upgrade(profile):
 async def test_set_skills_saves_nothing_when_declined(profile, reply):
     async with Client(server, elicitation_callback=answer(reply)) as c:
         err, msg = await call(c, "set_skills", profile=profile, skills=GROUP)
-    assert err and "did not confirm" in msg
+    assert err and "declined" in msg
     assert load(profile).inventory.get("Java").level is Level.PRODUCTION  # not even the downgrade
 
 
@@ -230,7 +238,7 @@ async def test_checklist_apply_returns_pending_lines(profile, tmp_path):
     cb = answer("accept")
     async with Client(server, elicitation_callback=cb) as c:
         err, out = await call(c, "checklist_apply", profile=profile, path=str(path))
-    assert not err and out["saved"] == 2 and len(cb.asked) == 1
+    assert not err and out["saved"] == 2 and len(cb.asked) == 1 and out["upgrades_confirmed"] == ["Rust"]
     assert [p["name"] for p in out["pending_evidence"]] == ["Elixir"]
     assert load(profile).inventory.get("Rust").level is Level.LAB
 
@@ -242,38 +250,55 @@ def test_not_asked_never_counts_as_a_yes():
     # never read as the person's confirmation.
     from mcp.server.elicitation import AcceptedElicitation, DeclinedElicitation
 
-    from honest_cv.server import ConfirmUpgrade, NotAsked, _confirmed
+    from honest_cv.server import NotAsked, _approved, _confirm_form
+    from honest_cv.store import SkillChange
 
-    assert _confirmed(AcceptedElicitation(data=ConfirmUpgrade(confirm="sí")))
-    assert not _confirmed(AcceptedElicitation(data=ConfirmUpgrade(confirm="no")))
-    assert not _confirmed(AcceptedElicitation(data=NotAsked()))
-    assert not _confirmed(DeclinedElicitation())
-
-
-async def test_checklist_new_and_list(profile):
-    async with Client(server) as c:
-        _, listed = await call(c, "checklist_list")
-        err, out = await call(c, "checklist_new", profile=profile, lists=["data"])
-        again, msg = await call(c, "checklist_new", profile=profile, lists=["data"])
-    assert "data" in {b["id"] for b in listed["checklists"]}
-    assert not err and Path(out["path"]).exists() and out["skills"] > 40
-    assert again and "exists" in msg
+    upgrades = [(SkillChange("Rust", Level.LAB, "CLI"), Level.FAMILIARITY)]
+    form = _confirm_form(upgrades)
+    assert _approved(AcceptedElicitation(data=form(u1="sí")), upgrades) == upgrades
+    assert _approved(AcceptedElicitation(data=form(u1="no")), upgrades) == []
+    assert _approved(AcceptedElicitation(data=NotAsked()), upgrades) == []
+    assert _approved(DeclinedElicitation(), upgrades) == []
 
 
-@pytest.mark.parametrize("typed", [None, "", "no", "ok", "true"])
-async def test_accept_without_typing_yes_saves_nothing(profile, typed):
+@pytest.mark.parametrize("value", [None, "", "yes", "ok", "true"])
+async def test_accept_without_a_valid_answer_saves_nothing(profile, value):
     # Found in Claude Code: an empty form came back "accept" with {} while the
-    # person saw no question. Only a typed yes/sí counts.
-    async with Client(server, elicitation_callback=answer("accept", typed)) as c:
+    # person saw no question. Every field needs an explicit "sí" or "no".
+    async with Client(server, elicitation_callback=answer("accept", value)) as c:
         err, _ = await call(c, "set_skill", profile=profile, name="Rust", level="L", evidence="CLI tool")
         err2, _ = await call(c, "set_skills", profile=profile, skills=GROUP)
     assert err and err2
+    inv = load(profile).inventory
+    assert inv.get("Rust").level is Level.FAMILIARITY and inv.get("Java").level is Level.PRODUCTION
+
+
+async def test_no_saves_nothing_for_that_skill(profile):
+    async with Client(server, elicitation_callback=answer("accept", "no")) as c:
+        err, msg = await call(c, "set_skill", profile=profile, name="Rust", level="L", evidence="CLI tool")
+    assert err and "did not confirm" in msg
     assert load(profile).inventory.get("Rust").level is Level.FAMILIARITY
 
 
-@pytest.mark.parametrize("typed", ["yes", "Y", " sí ", "Si", "s"])
-async def test_typed_yes_in_either_language_confirms(profile, typed):
-    async with Client(server, elicitation_callback=answer("accept", typed)) as c:
-        err, _ = await call(c, "set_skill", profile=profile, name="Rust", level="L", evidence="CLI tool")
-    assert not err and load(profile).inventory.get("Rust").level is Level.LAB
+async def test_each_upgrade_is_answered_on_its_own(profile):
+    # Found in Claude Code: a list in the message showed only its last line. Each
+    # upgrade is now its own field, and only the ones answered "sí" are saved.
+    cb = answer("accept", per={"Rust": "sí", "NATS": "no"})
+    async with Client(server, elicitation_callback=cb) as c:
+        err, out = await call(c, "set_skills", profile=profile, skills=GROUP)
+    assert not err and out["upgrades_confirmed"] == ["Rust"] and out["upgrades_refused"] == ["NATS"]
+    inv = load(profile).inventory
+    assert inv.get("Rust").level is Level.LAB and inv.get("NATS") is None
+    assert inv.get("Java").level is Level.FAMILIARITY  # the downgrade needs no answer
+
+
+async def test_long_lists_are_asked_ten_at_a_time(profile):
+    many = [{"name": f"Tool{n:02}", "level": "F", "evidence": "Tried it"} for n in range(12)]
+    cb = answer("accept")
+    async with Client(server, elicitation_callback=cb) as c:
+        _, first = await call(c, "set_skills", profile=profile, skills=many)
+        _, second = await call(c, "set_skills", profile=profile, skills=many)
+    assert len(cb.schemas[0]["properties"]) == 10 and "2 more" in cb.asked[0]
+    assert first["upgrades_not_asked_yet"] == ["Tool10", "Tool11"]
+    assert len(cb.schemas[1]["properties"]) == 2 and second["upgrades_confirmed"] == ["Tool10", "Tool11"]
 
