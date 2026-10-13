@@ -12,6 +12,8 @@ conversation.
 
 ## Before starting
 
+Talk to the person in the language they write in, even though the tools answer in English.
+
 1. **Check the server.** Look for the `honest-cv` MCP tools (`get_inventory`, `build_cv` and the
    rest). If they are missing, tell the person to run:
    `claude mcp add honest-cv -- uvx honest-cv serve --profile ~/cv-profile`, and then restart the

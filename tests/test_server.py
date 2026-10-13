@@ -238,7 +238,8 @@ async def test_checklist_apply_returns_pending_lines(profile, tmp_path):
     cb = answer("accept")
     async with Client(server, elicitation_callback=cb) as c:
         err, out = await call(c, "checklist_apply", profile=profile, path=str(path))
-    assert not err and out["saved"] == 2 and len(cb.asked) == 1 and out["upgrades_confirmed"] == ["Rust"]
+    # Scala was already X: a line that changes nothing saves nothing.
+    assert not err and out["saved"] == 1 and len(cb.asked) == 1 and out["upgrades_confirmed"] == ["Rust"]
     assert [p["name"] for p in out["pending_evidence"]] == ["Elixir"]
     assert load(profile).inventory.get("Rust").level is Level.LAB
 

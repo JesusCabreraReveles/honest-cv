@@ -71,6 +71,7 @@ class Item:
     years: float | None = None
     last_used_year: int | None = None
     notes: str | None = None
+    evidence_from_section: bool = False
 
     @property
     def level(self) -> Level | None:
@@ -104,8 +105,9 @@ def parse(text: str) -> Parsed:
         try:
             items = _items(m["body"], mark, n, section)
             for item in items:
-                if item.mark in {"P", "L", "F"}:  # an X line claims nothing, so it needs none
-                    item.evidence = item.evidence or section_evidence
+                if item.mark in {"P", "L", "F"} and not item.evidence and section_evidence:
+                    # An X line claims nothing, so it needs none.
+                    item.evidence, item.evidence_from_section = section_evidence, True
             out.items += items
         except ValueError as e:
             out.problems.append(f"line {n}: {e}")
@@ -258,6 +260,11 @@ def plan(source: Source, parsed: Parsed) -> Plan:
         )
         for i in merged.values()
     ]
+    for item, change in pairs:
+        skill = find_skill(item.name, source)
+        if item.evidence_from_section and skill is not None and LEVEL_RANK[item.level] <= LEVEL_RANK[skill.level]:
+            # The section line backs an upgrade; it never replaces what a skill already says.
+            change.evidence = None
     classify(source, [c for _, c in pairs], out)
     missing = {id(c) for c in out.missing_evidence}
     out.pending = [i for i, c in pairs if id(c) in missing]
@@ -275,12 +282,21 @@ def classify(source: Source, changes: list[SkillChange], out: Plan | None = None
         if skill is not None:
             change.name = skill.name
         if LEVEL_RANK[change.level] <= LEVEL_RANK[old]:
-            out.updates.append((change, old))
+            if skill is None or _changes_something(change, skill):
+                out.updates.append((change, old))
         elif change.evidence and change.evidence.strip():
             out.upgrades.append((change, old))
         else:
             out.missing_evidence.append(change)
     return out
+
+
+def _changes_something(change: SkillChange, skill) -> bool:
+    """A line that repeats what the inventory already says saves nothing."""
+    if change.level != skill.level:
+        return True
+    fields = ("evidence", "years", "last_used_year", "aliases", "notes")
+    return any(getattr(change, f) is not None and getattr(change, f) != getattr(skill, f) for f in fields)
 
 
 def describe(upgrades: list[tuple[SkillChange, Level]]) -> str:

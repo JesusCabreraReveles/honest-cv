@@ -74,8 +74,9 @@ def test_plan_sorts_upgrades_updates_and_pending(profile):
     # "Golang" is Ada's "Go" through the alias, so it updates that skill.
     assert upgrades == {"Go": (Level.LAB, Level.PRODUCTION), "RabbitMQ": (Level.NONE, Level.PRODUCTION),
                         "NATS": (Level.NONE, Level.FAMILIARITY), "Pulsar": (Level.NONE, Level.PRODUCTION)}
-    assert updates == {"Java": (Level.PRODUCTION, Level.PRODUCTION), "Kafka": (Level.PRODUCTION, Level.PRODUCTION),
-                       "Scala": (Level.NONE, Level.NONE)}
+    # Java gets new years. Kafka and Scala repeat the inventory, so they save nothing:
+    # the section's evidence line never replaces the evidence Kafka already has.
+    assert updates == {"Java": (Level.PRODUCTION, Level.PRODUCTION)}
     # Rust (F -> L) has no evidence, not even from its section: pending, never saved.
     assert [i.name for i in plan.pending] == ["Rust"]
     assert plan.unmarked == 1 and plan.unsure == ["MQTT"]
@@ -168,13 +169,7 @@ def test_compose_merges_without_duplicates_and_prefills(ada):
 def test_compose_then_apply_changes_nothing(ada):
     every = [b.id for b in checklist.available()]
     plan = checklist.plan(ada, checklist.parse(checklist.compose(every, ada)))
-    assert plan.upgrades == [] and plan.pending == [] and plan.problems == []
-    current = {s.name: s for s in ada.inventory.skills}
-    for change, old in plan.updates:
-        skill = current[change.name]
-        assert (change.level, change.evidence, change.years, change.last_used_year, change.notes) == (
-            old, skill.evidence, skill.years, skill.last_used_year, skill.notes
-        )
+    assert (plan.upgrades, plan.updates, plan.pending, plan.problems) == ([], [], [], [])
 
 
 def test_parentheses_inside_evidence_are_kept():
