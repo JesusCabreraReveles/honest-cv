@@ -48,7 +48,8 @@ async def test_lists_the_planned_tools():
     async with Client(server) as c:
         names = {tool.name for tool in (await c.list_tools()).tools}
     assert names == {"init_profile", "get_inventory", "set_skill", "add_bullet", "list_variants",
-                     "build_cv", "verify_pdf", "score_job", "gap_report"}
+                     "build_cv", "verify_pdf", "score_job", "gap_report", "set_contact",
+                     "set_profile_details", "upsert_role", "upsert_education", "save_variant"}
 
 
 async def test_every_tool_argument_is_described():
@@ -151,3 +152,25 @@ async def test_missing_profile_is_a_clear_error(monkeypatch):
     async with Client(server) as c:
         err, msg = await call(c, "get_inventory")
     assert err and "HONEST_CV_PROFILE" in msg
+
+
+async def test_profile_editing_tools(profile):
+    async with Client(server) as c:
+        err, _ = await call(c, "set_contact", profile=profile, location={"en": "Remote", "es": "Remoto"})
+        assert not err
+        err, out = await call(c, "upsert_role", profile=profile, id="fintech", end="2025")
+        assert not err and out["role"]["end"] == "2025"
+        err, out = await call(c, "upsert_role", profile=profile, id="fintech", end="present")
+        assert not err and "end" not in out["role"]
+        err, msg = await call(c, "upsert_role", profile=profile, id="new", title="Engineer", start="2024")
+        assert err and "company" in msg
+        err, _ = await call(c, "save_variant", profile=profile, id="sre", extends="platform",
+                            title={"en": "SRE", "es": "SRE"},
+                            skills=[{"label": "Cloud", "skills": ["AWS", "Kubernetes"]}])
+        assert not err
+        _, variants = await call(c, "list_variants", profile=profile)
+    source = load(profile)
+    assert source.profile.contact.location == {"en": "Remote", "es": "Remoto"}
+    assert source.resolve("sre").skills[0].skills == ["AWS", "Kubernetes"]
+    assert variants["variants"]["sre"]["own"]["extends"] == "platform"
+

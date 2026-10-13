@@ -13,7 +13,7 @@ from pathlib import Path
 
 import yaml
 
-from honest_cv.model import FILES, Bullet, Level, Skill, Source, set_skill_level
+from honest_cv.model import FILES, Bullet, Contact, Education, Level, Role, Skill, Source, Variant, set_skill_level
 
 TEMPLATES = Path(__file__).parent / "templates" / "profile"
 
@@ -106,3 +106,100 @@ def add_bullet(folder: str | Path, bullet: Bullet) -> Bullet:
     _validate(raw)
     _write(folder, "bullets.yaml", raw["bullets.yaml"])
     return bullet
+
+
+# Passed for an optional field to remove it, e.g. a role's `end` when it is current again.
+CLEAR = "clear"
+
+
+def _merge(current: dict, changes: dict) -> dict:
+    """Fields given as None stay as they are; CLEAR removes them."""
+    merged = dict(current)
+    for key, value in changes.items():
+        if value is None:
+            continue
+        if value == CLEAR:
+            merged.pop(key, None)
+        else:
+            merged[key] = value
+    return merged
+
+
+def _save_profile(folder: Path, raw: dict[str, dict]) -> Source:
+    source = _validate(raw)
+    _write(folder, "profile.yaml", raw["profile.yaml"])
+    return source
+
+
+def set_contact(folder: str | Path, **fields) -> Contact:
+    """Change the contact fields given; the rest stay as they are."""
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    profile = raw["profile.yaml"]
+    profile["contact"] = _merge(profile.get("contact") or {}, fields)
+    return _save_profile(folder, raw).profile.contact
+
+
+def set_profile_details(folder: str | Path, *, certifications=None, languages=None) -> dict:
+    """Replace the certifications list and/or the languages line."""
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    raw["profile.yaml"] = _merge(raw["profile.yaml"], {"certifications": certifications, "languages": languages})
+    profile = _save_profile(folder, raw).profile
+    return {"certifications": profile.certifications, "languages": profile.languages}
+
+
+def upsert_role(folder: str | Path, id: str, **fields) -> Role:
+    """Add a role, or change the fields given on an existing one.
+
+    A new role is placed by its start date, newest first, because the CV lists
+    roles in file order."""
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    roles = raw["profile.yaml"].setdefault("roles", [])
+    index = next((i for i, r in enumerate(roles) if r.get("id") == id), None)
+    if index is not None:
+        roles[index] = _merge(roles[index], fields)
+    else:
+        new = _merge({"id": id}, fields)
+        start = str(new.get("start", ""))
+        at = next((i for i, r in enumerate(roles) if str(r.get("start", "")) < start), len(roles))
+        roles.insert(at, new)
+    source = _save_profile(folder, raw)
+    return next(r for r in source.profile.roles if r.id == id)
+
+
+def upsert_education(folder: str | Path, institution: str, **fields) -> Education:
+    """Add an education entry, or change the one with the same institution and degree."""
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    entries = raw["profile.yaml"].setdefault("education", [])
+    degree = fields.get("degree")
+    index = next(
+        (
+            i
+            for i, e in enumerate(entries)
+            if e.get("institution", "").casefold() == institution.casefold()
+            and (degree is None or e.get("degree") == degree)
+        ),
+        None,
+    )
+    if index is not None:
+        entries[index] = _merge(entries[index], fields)
+    else:
+        entries.append(_merge({"institution": institution}, fields))
+        index = len(entries) - 1
+    return _save_profile(folder, raw).profile.education[index]
+
+
+def save_variant(folder: str | Path, id: str, variant: Variant) -> Variant:
+    """Add a variant, or replace it whole."""
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    variants = raw["variants.yaml"].get("variants") or {}
+    variants[id] = variant.model_dump(mode="json", exclude_none=True, exclude_defaults=True)
+    raw["variants.yaml"]["variants"] = variants
+    source = _validate(raw)  # resolves every variant, including those that extend this one
+    _write(folder, "variants.yaml", raw["variants.yaml"])
+    return source.variants[id]
+

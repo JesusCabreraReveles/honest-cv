@@ -24,7 +24,7 @@ from pydantic import BaseModel, Field, ValidationError
 from honest_cv import __version__, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
-from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, Source, explain, load
+from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
 from honest_cv.verify import verify_pdf as verify
 
 INSTRUCTIONS = """\
@@ -34,6 +34,10 @@ Honesty rules, enforced by this server:
 - Skill levels: P (production), L (own project/lab), F (familiarity, always labeled), X (never shown).
 - Raising a skill's level needs written evidence and the person's own confirmation, which the
   server asks for directly. Never invent experience, metrics or skills.
+
+Edit the profile through the tools (set_contact, upsert_role, upsert_education,
+set_profile_details, add_bullet, set_skill, save_variant), not by writing its files: the tools
+validate every change.
 
 Typical flow: get_inventory and list_variants to learn the profile; for a job post, extract its
 keywords yourself, call score_job, then gap_report on the best variant; propose edits the person
@@ -47,9 +51,13 @@ mcp = MCPServer("honest-cv", version=__version__, instructions=INSTRUCTIONS)
 # in tools like the MCP Inspector, to the person.
 Profile = Annotated[str | None, Field(description="Profile folder. Defaults to HONEST_CV_PROFILE.")]
 LangArg = Annotated[Lang, Field(description="Language of the CV: en or es.")]
-Variant = Annotated[str, Field(description="Variant id from variants.yaml, e.g. backend.")]
+VariantId = Annotated[str, Field(description="Variant id from variants.yaml, e.g. backend.")]
 Keywords = Annotated[list[str], Field(description="Required keywords from the job post, in its own wording.")]
 Preferred = Annotated[list[str] | None, Field(description="Nice-to-have keywords from the job post.")]
+TextArg = Annotated[
+    Text | None, Field(description='One string, or one per language: {"en": "...", "es": "..."}.')
+]
+Year = Annotated[str | None, Field(description='A year or year-month, e.g. "2021" or "2021-03".')]
 
 READ = ToolAnnotations(read_only_hint=True, open_world_hint=False)
 WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=False, open_world_hint=False)
@@ -203,6 +211,104 @@ def add_bullet(
     return {"saved": bullet.model_dump(mode="json", exclude_defaults=True)}
 
 
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def set_contact(
+    profile: Profile = None,
+    name: Annotated[str | None, Field(description="Full name as it should appear on the CV.")] = None,
+    email: Annotated[str | None, Field(description="Email for the CV.")] = None,
+    phone: Annotated[str | None, Field(description='Phone, e.g. "+52 442 000 0000".')] = None,
+    location: TextArg = None,
+    links: Annotated[list[str] | None, Field(description="Full list of links: LinkedIn, GitHub, site.")] = None,
+) -> dict:
+    """Change the contact details given; the others stay as they are. Pass `"clear"` to remove
+    an optional field."""
+    contact = store.set_contact(
+        _profile_dir(profile), name=name, email=email, phone=phone, location=location, links=links
+    )
+    return {"contact": contact.model_dump(mode="json", exclude_none=True)}
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def set_profile_details(
+    profile: Profile = None,
+    certifications: Annotated[
+        list[Text] | None, Field(description="The full list of certifications, replacing the current one.")
+    ] = None,
+    languages: TextArg = None,
+) -> dict:
+    """Replace the certifications list and/or the spoken-languages line."""
+    return store.set_profile_details(_profile_dir(profile), certifications=certifications, languages=languages)
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def upsert_role(
+    id: Annotated[str, Field(description="Short role id, e.g. acme. Bullets point to it.")],
+    profile: Profile = None,
+    title: TextArg = None,
+    company: Annotated[str | None, Field(description="Company name.")] = None,
+    start: Year = None,
+    end: Annotated[
+        str | None, Field(description='Year it ended, e.g. "2024". "present" marks it as the current role.')
+    ] = None,
+    location: TextArg = None,
+    context: TextArg = None,
+) -> dict:
+    """Add a role, or change the fields given on an existing one. A new role needs `title`,
+    `company` and `start`, and goes in date order, newest first. Keep the person's real title."""
+    if end is not None and end.strip().casefold() in {"present", "current", "now"}:
+        end = store.CLEAR
+    role = store.upsert_role(
+        _profile_dir(profile), id, title=title, company=company, start=start, end=end,
+        location=location, context=context,
+    )
+    return {"role": role.model_dump(mode="json", exclude_none=True)}
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def upsert_education(
+    institution: Annotated[str, Field(description="School or university.")],
+    profile: Profile = None,
+    degree: TextArg = None,
+    start: Year = None,
+    end: Year = None,
+) -> dict:
+    """Add an education entry, or change the one with the same institution and degree. Say
+    honestly whether the degree was completed, e.g. "B.Sc. (unfinished)"."""
+    entry = store.upsert_education(_profile_dir(profile), institution, degree=degree, start=start, end=end)
+    return {"education": entry.model_dump(mode="json", exclude_none=True)}
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def save_variant(
+    id: Annotated[str, Field(description="Variant id, e.g. backend.")],
+    profile: Profile = None,
+    extends: Annotated[str | None, Field(description="Variant to inherit from; set only what differs.")] = None,
+    title: TextArg = None,
+    summary: TextArg = None,
+    competencies: Annotated[list[str] | None, Field(description="Short list of core competencies.")] = None,
+    impact: Annotated[list[str] | None, Field(description="Bullet ids for Selected Impact.")] = None,
+    roles: Annotated[
+        dict[str, list[str]] | None, Field(description="Role id -> bullet ids to show, in order.")
+    ] = None,
+    skills: Annotated[list[SkillGroup] | None, Field(description="Skill groups: a label and skill names.")] = None,
+    max_pages: Annotated[int | None, Field(description="Page limit, usually 1 or 2.", ge=1)] = None,
+) -> dict:
+    """Add a variant or replace it whole: pass every field it should define. A variant without
+    `extends` needs `title` and `summary`. See `list_variants` → `own` for what it defines now."""
+    fields = {
+        "extends": extends, "title": title, "summary": summary, "competencies": competencies,
+        "impact": impact, "roles": roles, "skills": skills, "max_pages": max_pages,
+    }
+    variant = Variant(**{k: v for k, v in fields.items() if v is not None})
+    saved = store.save_variant(_profile_dir(profile), id, variant)
+    return {"saved": id, "variant": saved.model_dump(mode="json", exclude_none=True)}
+
+
 @mcp.tool(annotations=READ)
 @_tool_errors
 def list_variants(profile: Profile = None) -> dict:
@@ -212,6 +318,7 @@ def list_variants(profile: Profile = None) -> dict:
     for vid, raw in source.variants.items():
         v = source.resolve(vid)
         out[vid] = {
+            "own": raw.model_dump(mode="json", exclude_none=True),
             "extends": raw.extends,
             "title": v.title,
             "max_pages": v.max_pages,
@@ -229,7 +336,7 @@ def list_variants(profile: Profile = None) -> dict:
 @mcp.tool(annotations=WRITE)
 @_tool_errors
 def build_cv(
-    variant: Variant,
+    variant: VariantId,
     lang: LangArg = "en",
     profile: Profile = None,
     formats: Annotated[list[Literal["pdf", "docx"]] | None, Field(description="Default: both.")] = None,
@@ -292,7 +399,7 @@ def score_job(
 @mcp.tool(annotations=READ)
 @_tool_errors
 def gap_report(
-    variant: Variant,
+    variant: VariantId,
     keywords: Keywords,
     profile: Profile = None,
     preferred: Preferred = None,

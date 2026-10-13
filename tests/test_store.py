@@ -76,3 +76,53 @@ def test_last_used_year_must_be_a_year(profile):
 def test_text_is_saved_without_stray_whitespace(profile):
     store.upsert_skill(profile, "Rust", Level.LAB, evidence=" CLI tool on GitHub. ", confirmed=True)
     assert load(profile).inventory.get("Rust").evidence == "CLI tool on GitHub."
+
+
+def test_set_contact_changes_only_given_fields(profile):
+    store.set_contact(profile, email="ada@new.example", phone=store.CLEAR)
+    contact = load(profile).profile.contact
+    assert (contact.name, contact.email, contact.phone) == ("Ada Example", "ada@new.example", None)
+
+
+def test_upsert_role_places_new_roles_by_date_and_edits_in_place(profile):
+    store.upsert_role(profile, "agency", title="Contractor", company="Some Agency", start="2018", end="2019")
+    store.upsert_role(profile, "fintech", end="2026")
+    roles = load(profile).profile.roles
+    assert [r.id for r in roles] == ["fintech", "agency", "bank", "startup"]
+    assert roles[0].end == "2026" and roles[0].company == "Fictional Fintech"
+    store.upsert_role(profile, "fintech", end=store.CLEAR)
+    assert load(profile).profile.roles[0].end is None
+
+
+def test_new_role_needs_its_required_fields(profile):
+    before = (profile / "profile.yaml").read_text(encoding="utf-8")
+    with pytest.raises(ValidationError, match="company"):
+        store.upsert_role(profile, "half", title="Engineer", start="2024")
+    assert (profile / "profile.yaml").read_text(encoding="utf-8") == before
+
+
+def test_upsert_education(profile):
+    store.upsert_education(profile, "universidad ficticia", end="2012")
+    store.upsert_education(profile, "Online School", degree="Data Engineering bootcamp", end="2021")
+    education = load(profile).profile.education
+    assert [e.institution for e in education] == ["Universidad Ficticia", "Online School"]
+    assert education[0].end == "2012"
+
+
+def test_profile_details(profile):
+    store.set_profile_details(profile, certifications=["CKA"], languages={"en": "English (C1)", "es": "Inglés (C1)"})
+    p = load(profile).profile
+    assert p.certifications == ["CKA"] and p.languages == {"en": "English (C1)", "es": "Inglés (C1)"}
+
+
+def test_save_variant_checks_references_and_children(profile):
+    from honest_cv.model import Variant
+
+    store.save_variant(profile, "sre", Variant(extends="platform", title="Site Reliability Engineer"))
+    assert load(profile).resolve("sre").title == "Site Reliability Engineer"
+    with pytest.raises(ValidationError, match="unknown bullet"):
+        store.save_variant(profile, "bad", Variant(title="T", summary="S", impact=["nope"]))
+    # Replacing a parent must not break the variants that extend it.
+    with pytest.raises(ValidationError, match="missing 'summary'"):
+        store.save_variant(profile, "backend", Variant(title="Backend only"))
+    assert load(profile).resolve("platform").summary

@@ -88,10 +88,16 @@ Edita `claude_desktop_config.json`:
 Agrega el mismo bloque `mcpServers` del ejemplo de Cursor y reinicia la app. Si la app no encuentra
 `uvx`, usa su ruta absoluta (`which uvx`).
 
-> **Subir de nivel una skill necesita un cliente con soporte de *elicitation* de MCP**, para que el
-> servidor te pida la confirmación. En un cliente sin ese soporte, el servidor rechaza el cambio y
-> te da un comando para ejecutarlo en la terminal:
-> `uvx honest-cv skill <perfil> "<nombre>" <nivel> --evidence "..."`.
+### Cómo confirma cada cliente una subida de nivel
+
+Subir de nivel una skill necesita tu propia confirmación, que el servidor pide mediante
+*elicitation* de MCP. No todos los clientes lo soportan todavía:
+
+| Cliente | Dónde confirmas |
+|---|---|
+| Claude Code | En el chat: Accept o Decline. |
+| Claude Desktop | En una terminal. El servidor rechaza el cambio y te da el comando para ejecutarlo: `uvx honest-cv skill <perfil> "<nombre>" <nivel> --evidence "..."`. |
+| Otros clientes | En el chat si soportan *elicitation*; si no, en una terminal como arriba. |
 
 ## Tu perfil
 
@@ -126,9 +132,10 @@ vacante y sus palabras clave.
 - **Tu cliente de IA es otro asunto.** Lo que su modelo lee por medio de las herramientas llega al
   proveedor de ese modelo, bajo sus términos, como cualquier otra cosa que compartas en un chat.
   Eso incluye tus skills, tus bullets y el texto de tus CVs.
-- **Algunos clientes copian archivos a la nube.** Para editar archivos, Claude Desktop puede pedir
-  acceso a la carpeta del perfil y avisar que los archivos salen de tu dispositivo. Claude Code los
-  edita donde están.
+- **Algunos clientes copian archivos a la nube.** Para editar archivos directamente, Claude Desktop
+  puede pedir acceso a la carpeta del perfil y avisar que los archivos salen de tu dispositivo. Las
+  herramientas de edición de honest-cv lo hacen innecesario: rechaza el acceso y pide al asistente
+  que use las herramientas.
 - **Si no quieres que nada salga de tu máquina,** usa solo la CLI (`build`, `verify`, `score`,
   `skill`) y edita tú los archivos YAML.
 
@@ -158,6 +165,11 @@ parsers separan de su puesto.
 | `get_inventory` | Devuelve tus skills agrupadas por nivel, con años y evidencia. |
 | `set_skill` | Agrega o cambia una skill. Para subir de nivel exige evidencia y te pide confirmar. |
 | `add_bullet` | Agrega un logro al pool. |
+| `set_contact` | Cambia los datos de contacto: nombre, email, teléfono, ubicación y links. |
+| `set_profile_details` | Reemplaza la lista de certificaciones y la línea de idiomas. |
+| `upsert_role` | Agrega un puesto en orden de fechas, o cambia campos de uno existente. |
+| `upsert_education` | Agrega o cambia una entrada de formación. |
+| `save_variant` | Agrega o reemplaza una variante. Revisa todas sus referencias antes de guardar. |
 | `list_variants` | Lista las variantes ya con la herencia aplicada, con el texto de sus bullets y los bullets que ninguna usa. |
 | `build_cv` | Genera el PDF y/o el DOCX y lo verifica. |
 | `verify_pdf` | Pasa las revisiones ATS a cualquier PDF y devuelve su texto extraído. |

@@ -4,7 +4,8 @@ language. Their CVs will be produced in: $langs.
 
 ## Rules
 
-- Ask one question at a time. Wait for the answer.
+- Cover one topic at a time and wait for the answer. A few short related fields, like the contact
+  details, can go in one message; achievements and skills go one by one.
 - Record only what the person said. Never invent metrics, scope, titles or technologies.
 - When a number is missing, ask for it. If they don't know it, write the bullet without a number.
 - Before saving a bullet, read the wording back and save it only after they approve it.
@@ -19,9 +20,10 @@ Call `get_inventory` and `list_variants` with `profile="$profile"`.
 
 ## 2. Contact, roles and education
 
-There is no tool for these: edit `profile.yaml` directly. If you cannot edit files, give the person
-the YAML to paste. Each role needs an `id`, `title`, `company`, `start`, and `end` (leave `end` out
-for a current role), plus an optional one-line `context`.
+Save them with `set_contact`, `upsert_role`, `upsert_education` and `set_profile_details`
+(certifications and spoken languages). Each role needs an `id`, `title`, `company` and `start`, plus
+`end` unless it is the current role, and an optional one-line `context`. Use `{"en": ..., "es": ...}`
+for texts when they want CVs in both languages. Say honestly whether a degree was completed.
 
 Keep their real job titles. Do not upgrade "Senior" to "Staff".
 
@@ -57,9 +59,9 @@ If the server says the client cannot ask, give them the `honest-cv skill` comman
 ## 5. Variants
 
 Ask which kinds of roles they apply to: for example backend, platform or leadership. Propose one
-variant per kind in `variants.yaml`, each with a title, a 2–3 sentence summary, competencies, impact
-bullets, the bullets for each role, and skill groups. Use `extends:` so that each variant only
-states what differs from another.
+variant per kind, each with a title, a 2–3 sentence summary, competencies, impact bullets, the
+bullets for each role, and skill groups. Use `extends` so that each variant only states what
+differs from another. Show it, and call `save_variant` once they approve.
 
 ## 6. First build
 

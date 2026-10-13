@@ -39,7 +39,8 @@ conversation.
 ## Flow A: interview (new profile, or filling gaps)
 
 1. Call `get_inventory` and `list_variants`. If there is no profile yet, call `init_profile`.
-2. **Contact, roles and education.** Edit `profile.yaml` directly. Keep the real job titles.
+2. **Contact, roles and education.** Use `set_contact`, `upsert_role`, `upsert_education` and
+   `set_profile_details`. Keep the real job titles. One topic at a time.
 3. **Achievements.** Go role by role, newest first, one question at a time:
    - what the product did and at what scale;
    - what they personally built or decided;
@@ -49,7 +50,8 @@ conversation.
 4. **Skills.** Ask the level of each technology mentioned, plus evidence, years and last use, then
    call `set_skill`. If the server says the client cannot ask the person, give them the
    `honest-cv skill ...` command it returns.
-5. **Variants.** Write one variant per kind of target role in `variants.yaml`, using `extends:`.
+5. **Variants.** Propose one variant per kind of target role, using `extends`, and call
+   `save_variant` once they approve.
 6. **First build.** Call `build_cv`, report pages and `ats_ok`, and mention any `unused_bullets`.
 
 ## Flow B: tailor to a job post
@@ -63,7 +65,7 @@ conversation.
    - `familiarity_only`: it stays under the Familiarity label.
    - `not_in_inventory`: do not claim it. Upgrade it only through `set_skill` with real evidence.
 4. **Edit.** Propose a new variant that `extends:` the best one (title, summary, competencies,
-   bullet order). Show the YAML and apply it once they approve.
+   bullet order). Show it, and call `save_variant` once they approve.
 5. **Build.** Call `build_cv`, handle a failed check as the rules above say, and run `score_job` again
    to show the coverage before and after.
 6. **Close.** List the honest gaps that remain, so the person can prepare for them in the interview.

@@ -84,9 +84,16 @@ Edit `claude_desktop_config.json`:
 Add the same `mcpServers` block as in the Cursor example and restart the app. If the app can't
 find `uvx`, use its absolute path (`which uvx`).
 
-> **Skill upgrades need a client that supports MCP elicitation**, so the server can ask you to
-> confirm. On a client that doesn't support it, the server refuses the upgrade and gives you a
-> command to run in a terminal instead: `uvx honest-cv skill <profile> "<name>" <level> --evidence "..."`.
+### How each client confirms a skill upgrade
+
+Raising a skill's level needs your own confirmation, which the server asks for through MCP
+elicitation. Not every client supports it yet:
+
+| Client | Where you confirm |
+|---|---|
+| Claude Code | In the chat: Accept or Decline. |
+| Claude Desktop | In a terminal. The server refuses the change and gives you the command to run: `uvx honest-cv skill <profile> "<name>" <level> --evidence "..."`. |
+| Other clients | In the chat if they support elicitation, otherwise in a terminal as above. |
 
 ## Your profile
 
@@ -121,8 +128,9 @@ post and its keywords.
 - **Your AI client is a different matter.** Whatever the client's model reads through the tools
   goes to that model's provider, under the provider's terms, like anything else you share in a
   chat. That includes your skills, bullets and the text of your CVs.
-- **Some clients copy files to the cloud.** To edit files, Claude Desktop may ask for access to
-  the profile folder and say that the files leave your device. Claude Code edits them in place.
+- **Some clients copy files to the cloud.** To edit files directly, Claude Desktop may ask for
+  access to the profile folder and say that the files leave your device. honest-cv's editing tools
+  make that unnecessary: decline the request and ask the assistant to use the tools.
 - **If you want nothing to leave your machine,** use only the CLI (`build`, `verify`, `score`,
   `skill`) and edit the YAML files yourself.
 
@@ -152,6 +160,11 @@ split away from its role.
 | `get_inventory` | Returns your skills, grouped by level, with years and evidence. |
 | `set_skill` | Adds or changes a skill. To raise its level it needs evidence and asks you to confirm. |
 | `add_bullet` | Adds an achievement to the pool. |
+| `set_contact` | Changes contact details: name, email, phone, location, links. |
+| `set_profile_details` | Replaces the certifications list and the spoken-languages line. |
+| `upsert_role` | Adds a role in date order, or changes fields of an existing one. |
+| `upsert_education` | Adds or changes an education entry. |
+| `save_variant` | Adds or replaces a variant. Every reference is checked before saving. |
 | `list_variants` | Lists the variants after inheritance, with their bullet texts and the bullets no variant uses. |
 | `build_cv` | Renders a PDF and/or DOCX and verifies it. |
 | `verify_pdf` | Runs the ATS checks on any PDF and returns its extracted text. |
