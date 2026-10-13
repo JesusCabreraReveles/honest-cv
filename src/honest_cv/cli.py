@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from honest_cv import __version__, checklist, letter, store
+from honest_cv import __version__, checklist, importer, letter, store
 from honest_cv.build import FORMATS, build_cv
 from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, is_yes, load
 from honest_cv.score import Gap, Keyword, Status, score_job
@@ -179,6 +179,22 @@ def cmd_letter_build(args: argparse.Namespace) -> int:
     return status
 
 
+def cmd_import(args: argparse.Namespace) -> int:
+    report = importer.merge(args.profile, importer.read(args.file), dry_run=args.dry_run)
+    print("Would add:" if args.dry_run else "Added:")
+    for what, names in report.added.items():
+        print(f"  {what}: {', '.join(names)}")
+    for what, names in report.skipped.items():
+        print(f"  skipped {what}: {', '.join(names)}")
+    if report.skills_checklist:
+        state = "kept as it was (it may hold your marks)" if report.skills_checklist_kept else "written to"
+        print(f"{report.skills} skill(s), without levels, {state}: {report.skills_checklist}\n"
+              f"Mark it, then run: honest-cv checklist apply {args.profile} {report.skills_checklist}")
+    if not args.dry_run and report.added.get("bullets"):
+        print("Imported achievements are tagged 'imported' in bullets.yaml: review their wording.")
+    return 0
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     import os
 
@@ -266,6 +282,12 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("profile")
     c.add_argument("file", type=Path, help="a checklist in Markdown, e.g. <profile>/checklist.md")
     c.set_defaults(func=cmd_checklist_apply)
+
+    p = sub.add_parser("import", help="import JSON Resume (.json) or a LinkedIn data export (.zip)")
+    p.add_argument("profile", help="profile folder; created if it does not exist")
+    p.add_argument("file", type=Path)
+    p.add_argument("--dry-run", action="store_true", help="show what would be added, write nothing")
+    p.set_defaults(func=cmd_import)
 
     p = sub.add_parser("letter", help="check and render a cover letter written in a text file")
     letter_sub = p.add_subparsers(dest="letter_command", required=True)

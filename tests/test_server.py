@@ -59,7 +59,7 @@ async def test_lists_the_planned_tools():
                      "build_cv", "verify_pdf", "score_job", "gap_report", "set_contact",
                      "set_profile_details", "upsert_role", "upsert_education", "save_variant",
                      "set_skills", "checklist_apply", "checklist_list", "checklist_new",
-                     "check_claims", "build_letter"}
+                     "check_claims", "build_letter", "import_profile"}
 
 
 async def test_every_tool_argument_is_described():
@@ -319,4 +319,18 @@ async def test_build_letter_refuses_unsupported_claims_and_builds_honest_ones(pr
     pdf = next(f for f in out["files"] if f["format"] == "pdf")
     assert not ok_err and pdf["ats_ok"] and pdf["pages"] == 1
     assert [w["term"] for w in out["warnings"]] == ["Terraform"]
+
+
+async def test_import_profile(tmp_path):
+    resume = Path(__file__).parent / "fixtures" / "resume.json"
+    async with Client(server) as c:
+        err, dry = await call(c, "import_profile", profile=str(tmp_path / "p"), path=str(resume), dry_run=True)
+        assert not err and dry["dry_run"] and not (tmp_path / "p").exists()
+        err, out = await call(c, "import_profile", profile=str(tmp_path / "p"), path=str(resume))
+        _, built = await call(c, "build_cv", profile=str(tmp_path / "p"), variant="main", out_dir=str(tmp_path / "o"))
+        pdf = next(f["path"] for f in built["files"] if f["format"] == "pdf")
+        err2, text = await call(c, "import_profile", profile=str(tmp_path / "p"), path=pdf)
+    assert not err and out["skills"] == 3 and out["added"]["variants"] == ["main"]
+    # A PDF is read, never parsed into the profile: the client organizes it with the person.
+    assert not err2 and text["format"] == "pdf" and "Grace Sample" in text["text"]
 

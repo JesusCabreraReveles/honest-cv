@@ -1,0 +1,73 @@
+{
+  "basics": {
+    "name": "Grace Sample",
+    "label": "Backend Engineer",
+    "email": "grace@example.com",
+    "phone": "+1 555 0199",
+    "url": "https://grace.example.com",
+    "location": {
+      "city": "Lima",
+      "countryCode": "PE"
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "url": "https://github.com/grace-sample"
+      }
+    ],
+    "summary": "Backend engineer focused on payments and retail systems. I build services in Python and keep them observable."
+  },
+  "work": [
+    {
+      "name": "Imaginary Payments",
+      "position": "Senior Backend Engineer",
+      "startDate": "2021-04-01",
+      "highlights": [
+        "Cut checkout latency by 35% by caching price rules.",
+        "Led the move from cron jobs to Kafka consumers."
+      ]
+    },
+    {
+      "name": "Sample Retail",
+      "position": "Software Engineer",
+      "startDate": "2017-02",
+      "endDate": "2021-03",
+      "summary": "- Built the inventory API in Python.\n- Wrote the CI pipeline in GitHub Actions."
+    }
+  ],
+  "education": [
+    {
+      "institution": "Universidad Imaginaria",
+      "studyType": "B.Sc.",
+      "area": "Computer Science",
+      "startDate": "2012",
+      "endDate": "2016"
+    }
+  ],
+  "certificates": [
+    {
+      "name": "Certified Kubernetes Administrator",
+      "issuer": "CNCF"
+    }
+  ],
+  "languages": [
+    {
+      "language": "Spanish",
+      "fluency": "Native"
+    },
+    {
+      "language": "English",
+      "fluency": "C1"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Backend",
+      "keywords": [
+        "Python",
+        "Kafka",
+        "PostgreSQL"
+      ]
+    }
+  ]
+}

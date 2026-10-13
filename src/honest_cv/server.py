@@ -21,7 +21,7 @@ from mcp.server.mcpserver.resolve import Elicit, Resolve
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field, ValidationError, create_model
 
-from honest_cv import __version__, checklist, letter, store
+from honest_cv import __version__, checklist, importer, letter, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
 from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
@@ -328,6 +328,32 @@ def set_skills(
     return _save_plan(ctx, profile, plan, confirmation)
 
 
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def import_profile(
+    path: Annotated[str, Field(description="A JSON Resume (.json), a LinkedIn data export (.zip) or a LinkedIn profile PDF.")],
+    profile: Profile = None,
+    dry_run: Annotated[bool, Field(description="Report what would be added without writing.")] = False,
+) -> dict:
+    """Import contact, roles with their achievements, education, certifications and languages.
+    Only what the profile lacks is added; nothing is overwritten. Skills come without a level, so
+    they go to <profile>/imported-skills.md, a checklist for the person to mark, never to the
+    inventory. Imported bullets are tagged `imported`: review them with the person.
+
+    For a PDF nothing is written: its text comes back for you to organize with the editing tools
+    (see the import_linkedin_pdf prompt)."""
+    file = Path(path).expanduser()
+    if file.suffix.lower() == ".pdf":
+        from pdfminer.high_level import extract_text
+
+        return {"format": "pdf", "text": extract_text(str(file)),
+                "next": "Propose contact, roles, education and achievements from this text; save what the person "
+                        "approves with set_contact, upsert_role, upsert_education, set_profile_details and "
+                        "add_bullet; pass the skills to checklist_new as extra."}
+    report = importer.merge(_profile_dir(profile), importer.read(file), dry_run=dry_run)
+    return {"dry_run": dry_run, **report.__dict__}
+
+
 @mcp.tool(annotations=READ)
 @_tool_errors
 def checklist_list() -> dict:
@@ -342,13 +368,17 @@ def checklist_new(
     profile: Profile = None,
     path: Annotated[str | None, Field(description="File to write. Default: <profile>/checklist.md.")] = None,
     overwrite: Annotated[bool, Field(description="Replace the file if it exists.")] = False,
+    extra: Annotated[
+        list[str] | None, Field(description="More skill names to ask about, e.g. found in an imported profile.")
+    ] = None,
 ) -> dict:
     """Merge built-in checklists into one Markdown file, without duplicates and prefilled from the
-    inventory. The person marks it in their editor; then call `checklist_apply`."""
+    inventory. The person marks it in their editor; then call `checklist_apply`. `lists` may be
+    empty when `extra` names the skills."""
     out = Path(path).expanduser() if path else _profile_dir(profile) / "checklist.md"
     if out.exists() and not overwrite:
         raise ToolError(f"{out} exists; ask the person before replacing it (overwrite=true)")
-    text = checklist.compose(lists, _load(profile))
+    text = checklist.compose(lists, _load(profile), extra)
     out.write_text(text, encoding="utf-8")
     return {"path": str(out), "skills": len(checklist.parse(text).items)}
 
@@ -661,6 +691,12 @@ def _profile_label(profile: str | None) -> str:
 def cover_letter(job_post: str, profile: str | None = None, lang: str = "en") -> str:
     """Write a cover letter for a job post from the person's real bullets and skills."""
     return _prompt("cover_letter", profile=_profile_label(profile), lang=lang, job_post=job_post)
+
+
+@mcp.prompt(title="Import a LinkedIn profile PDF")
+def import_linkedin_pdf(path: str, profile: str | None = None) -> str:
+    """Turn the PDF from LinkedIn's "Save to PDF" into a profile, with the person's approval."""
+    return _prompt("import_linkedin_pdf", profile=_profile_label(profile), path=path)
 
 
 @mcp.prompt(title="Honest CV interview")

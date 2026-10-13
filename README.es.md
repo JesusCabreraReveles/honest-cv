@@ -166,6 +166,23 @@ vacante y sus palabras clave.
 - **Si no quieres que nada salga de tu máquina,** usa solo la CLI (`build`, `verify`, `score`,
   `skill`) y edita tú los archivos YAML.
 
+## Importa lo que ya tienes
+
+`honest-cv import` lee un archivo [JSON Resume](https://jsonresume.org) o la exportación de datos de
+LinkedIn (Configuración → Privacidad de datos → Obtener una copia de tus datos, un ZIP con CSVs).
+Contacto, puestos, formación, certificaciones, idiomas y los logros de cada puesto pasan a tu
+perfil. Si trae titular y resumen, también crea una primera variante, así que `build` funciona de
+inmediato.
+
+- Solo agrega lo que le falta a tu perfil y nunca sobrescribe. Prueba primero con `--dry-run`.
+- Los logros importados llevan la etiqueta `imported`: revisa su redacción.
+- **Las skills llegan sin nivel**, porque ningún formato dice si usaste una skill en producción.
+  Van a `imported-skills.md`, un checklist para que las marques.
+
+El PDF de "Guardar como PDF" de LinkedIn cambia de formato sin aviso, así que no se interpreta
+automáticamente: con un cliente MCP, el prompt `import_linkedin_pdf` lee su texto y te propone cada
+sección para que la apruebes.
+
 ## Cartas de presentación
 
 El prompt `cover_letter` redacta una carta de una página para una vacante con tus propios bullets.
@@ -193,6 +210,7 @@ honest-cv build ~/cv-profile -v backend -l en -l es # PDF + DOCX, verificados en
 honest-cv verify cualquier-cv.pdf --text            # revisa cualquier PDF, aunque lo hayas hecho en otro lado
 honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # cobertura por variante, con brechas
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI en GitHub"  # te pide confirmar
+honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # o resume.json
 honest-cv letter check ~/cv-profile carta.txt -k "Kubernetes,Go"      # afirmaciones que tu perfil no respalda
 honest-cv letter build ~/cv-profile carta.txt --company Acme --role "Platform Engineer" -l es
 honest-cv serve --profile ~/cv-profile              # el servidor MCP, por stdio
@@ -229,6 +247,8 @@ parsers separan de su puesto.
 | `build_letter` | Genera la carta de presentación en PDF y DOCX, de una página, con las verificaciones ATS del CV. Se niega mientras `check_claims` encuentre problemas. |
 | prompt `tailor_for_job` | Puntúa las variantes, explica las brechas, adapta una variante y vuelve a generar el CV. |
 | prompt `cover_letter` | Redacta una carta para una vacante con tus bullets, revisa sus afirmaciones y la genera. |
+| `import_profile` | Importa JSON Resume o la exportación de datos de LinkedIn, agregando solo lo que falta. Con un PDF de LinkedIn devuelve el texto. |
+| prompt `import_linkedin_pdf` | Convierte el PDF de "Guardar como PDF" de LinkedIn en un perfil, sección por sección, con tu aprobación. |
 
 ## Garantías ATS
 

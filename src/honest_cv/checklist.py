@@ -392,11 +392,14 @@ def _canonical(name: str) -> str:
     return next((g[0] for g in SYNONYMS if key in (x.casefold() for x in g)), name)
 
 
-def compose(ids: list[str], source: Source | None = None) -> str:
+def compose(ids: list[str], source: Source | None = None, extra: list[str] | None = None) -> str:
     """Merge built-in checklists into one, without duplicates, prefilled from the inventory.
 
     Sections with the same heading merge. A skill keeps its first place, and the ★
-    sections come first, so a key skill is asked once with its years."""
+    sections come first, so a key skill is asked once with its years. `extra` names
+    skills found elsewhere, e.g. in an imported LinkedIn profile."""
+    if not ids and not extra:
+        raise ValueError("name at least one checklist, or extra skills")
     known = {b.id for b in available()}
     unknown = [i for i in ids if i not in known]
     if unknown:
@@ -412,6 +415,8 @@ def compose(ids: list[str], source: Source | None = None) -> str:
         for item in p.items:
             if "★" not in item.section:
                 _add(sections, item.section, item.name, seen)
+    for name in extra or []:
+        _add(sections, "Found in your imported profile", name, seen, source)
     if source is not None:
         # X skills in no list stay out: asking again about what they don't have is noise.
         extra = [
@@ -421,7 +426,7 @@ def compose(ids: list[str], source: Source | None = None) -> str:
         for name in extra:
             _add(sections, "Also in your inventory", name, seen, source)
 
-    titles = [b.title for b in available() if b.id in ids]
+    titles = [b.title for b in available() if b.id in ids] + (["imported skills"] if extra else [])
     out = [f"# Skill checklist: {', '.join(titles)}", "", LEGEND]
     for heading, names in sections.items():
         if not names:

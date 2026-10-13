@@ -160,6 +160,22 @@ post and its keywords.
 - **If you want nothing to leave your machine,** use only the CLI (`build`, `verify`, `score`,
   `skill`) and edit the YAML files yourself.
 
+## Import what you already have
+
+`honest-cv import` reads a [JSON Resume](https://jsonresume.org) file or LinkedIn's data export
+(Settings → Data privacy → Get a copy of your data, a ZIP of CSVs). Contact, roles, education,
+certifications, languages and each role's achievements go into your profile; with a headline and
+a summary it also creates a first variant, so `build` works right away.
+
+- It only adds what your profile lacks and never overwrites. Try `--dry-run` first.
+- Imported achievements are tagged `imported`: review their wording.
+- **Skills arrive without a level**, because neither format says whether you used a skill in
+  production. They go to `imported-skills.md`, a checklist for you to mark.
+
+LinkedIn's "Save to PDF" profile changes layout without notice, so it isn't parsed: with an MCP
+client, the `import_linkedin_pdf` prompt reads its text and proposes each section for you to
+approve.
+
 ## Cover letters
 
 The `cover_letter` prompt drafts a one-page letter for a job post from your own bullets. Before it
@@ -185,6 +201,7 @@ honest-cv build ~/cv-profile -v backend -l en -l es # PDF + DOCX, verified on ev
 honest-cv verify any-cv.pdf --text                  # check any PDF, even one made elsewhere
 honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # coverage per variant, with gaps
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI tool on GitHub"  # asks you to confirm
+honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # or resume.json
 honest-cv letter check ~/cv-profile letter.txt -k "Kubernetes,Go"     # claims your profile doesn't support
 honest-cv letter build ~/cv-profile letter.txt --company Acme --role "Platform Engineer" -l en
 honest-cv serve --profile ~/cv-profile              # the MCP server, over stdio
@@ -221,6 +238,8 @@ split away from its role.
 | `build_letter` | Renders a cover letter to PDF and DOCX, one page, with the CV's ATS checks. Refuses while `check_claims` finds problems. |
 | prompt `tailor_for_job` | Scores the variants, explains the gaps, adapts a variant and rebuilds. |
 | prompt `cover_letter` | Drafts a letter for a job post from your bullets, checks its claims and builds it. |
+| `import_profile` | Imports JSON Resume or a LinkedIn data export, adding only what is missing. For a LinkedIn PDF it returns the text. |
+| prompt `import_linkedin_pdf` | Turns the PDF from LinkedIn's "Save to PDF" into a profile, section by section, with your approval. |
 
 ## ATS guarantees
 

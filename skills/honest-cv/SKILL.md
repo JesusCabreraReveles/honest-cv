@@ -107,6 +107,17 @@ work from its result, instead of reading the file yourself.
 4. **Approve and build.** Show the letter, wait for their approval, then call `build_letter`. It
    refuses while `check_claims` finds problems.
 
+## Flow E: import an existing CV
+
+- **JSON Resume or a LinkedIn data export** (Settings → Data privacy → Get a copy of your data;
+  the ZIP of CSVs): call `import_profile` with `dry_run` first, show what would be added, then
+  import. It only adds what is missing and creates a first variant, `main`, if there is none.
+  Imported bullets are tagged `imported`: go over their wording with the person.
+- **A LinkedIn profile PDF** ("Save to PDF"): `import_profile` returns its text and writes nothing.
+  Follow the `import_linkedin_pdf` prompt: propose each section and save what they approve.
+- **Skills never arrive with a level.** They go to `imported-skills.md` (or `checklist_new` with
+  `extra`): continue with Flow C.
+
 ## Checking an existing CV
 
 Call `verify_pdf` on any PDF, including one made with another tool. Explain each failed check:
@@ -116,4 +127,5 @@ Call `verify_pdf` on any PDF, including one made with another tool. Explain each
 
 Show the person the extracted `text`: that is what the ATS reads.
 
-The same flows exist as MCP prompts: `interview`, `tailor_for_job` and `cover_letter`.
+The same flows exist as MCP prompts: `interview`, `tailor_for_job`, `cover_letter` and
+`import_linkedin_pdf`.
