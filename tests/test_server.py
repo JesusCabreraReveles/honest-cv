@@ -26,14 +26,15 @@ def profile(tmp_path):
     return str(tmp_path / "ada")
 
 
-def answer(action: str):
-    """An elicitation callback that answers accept, decline or cancel."""
+def answer(action: str, typed: str | None = "yes"):
+    """An elicitation callback: accept (typing `typed` in the form), decline or cancel."""
     asked, schemas = [], []
 
     async def callback(ctx, params):
         asked.append(params.message)
         schemas.append(params.requested_schema)
-        return t.ElicitResult(action=action, content={} if action == "accept" else None)
+        content = ({} if typed is None else {"confirm": typed}) if action == "accept" else None
+        return t.ElicitResult(action=action, content=content)
 
     callback.asked, callback.schemas = asked, schemas
     return callback
@@ -73,8 +74,9 @@ async def test_upgrade_asks_the_person(profile):
         err, out = await call(c, "set_skill", profile=profile, name="Rust", level="L", evidence="CLI tool")
     assert not err and out["previous_level"] == "F"
     assert len(cb.asked) == 1 and "Rust F -> L" in cb.asked[0]
-    # Nothing to fill in: Accept alone confirms.
-    assert cb.schemas[0]["properties"] == {}
+    # The person must type the answer: a form with no fields can be accepted by the
+    # client without them deciding.
+    assert cb.schemas[0]["required"] == ["confirm"]
     assert load(profile).inventory.get("Rust").level is Level.LAB
 
 
@@ -242,7 +244,8 @@ def test_not_asked_never_counts_as_a_yes():
 
     from honest_cv.server import ConfirmUpgrade, NotAsked, _confirmed
 
-    assert _confirmed(AcceptedElicitation(data=ConfirmUpgrade()))
+    assert _confirmed(AcceptedElicitation(data=ConfirmUpgrade(confirm="sí")))
+    assert not _confirmed(AcceptedElicitation(data=ConfirmUpgrade(confirm="no")))
     assert not _confirmed(AcceptedElicitation(data=NotAsked()))
     assert not _confirmed(DeclinedElicitation())
 
@@ -255,4 +258,22 @@ async def test_checklist_new_and_list(profile):
     assert "data" in {b["id"] for b in listed["checklists"]}
     assert not err and Path(out["path"]).exists() and out["skills"] > 40
     assert again and "exists" in msg
+
+
+@pytest.mark.parametrize("typed", [None, "", "no", "ok", "true"])
+async def test_accept_without_typing_yes_saves_nothing(profile, typed):
+    # Found in Claude Code: an empty form came back "accept" with {} while the
+    # person saw no question. Only a typed yes/sí counts.
+    async with Client(server, elicitation_callback=answer("accept", typed)) as c:
+        err, _ = await call(c, "set_skill", profile=profile, name="Rust", level="L", evidence="CLI tool")
+        err2, _ = await call(c, "set_skills", profile=profile, skills=GROUP)
+    assert err and err2
+    assert load(profile).inventory.get("Rust").level is Level.FAMILIARITY
+
+
+@pytest.mark.parametrize("typed", ["yes", "Y", " sí ", "Si", "s"])
+async def test_typed_yes_in_either_language_confirms(profile, typed):
+    async with Client(server, elicitation_callback=answer("accept", typed)) as c:
+        err, _ = await call(c, "set_skill", profile=profile, name="Rust", level="L", evidence="CLI tool")
+    assert not err and load(profile).inventory.get("Rust").level is Level.LAB
 

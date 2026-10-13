@@ -128,6 +128,14 @@ class Skill(Strict):
         return v
 
 
+# Answers that confirm an upgrade, in the CLI and in an MCP client's form.
+YES = frozenset({"y", "yes", "s", "si", "sí"})
+
+
+def is_yes(answer: object) -> bool:
+    return isinstance(answer, str) and answer.strip().casefold() in YES
+
+
 class SkillUpgradeError(ValueError):
     pass
 

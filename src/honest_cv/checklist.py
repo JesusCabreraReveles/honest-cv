@@ -287,7 +287,7 @@ def describe(upgrades: list[tuple[SkillChange, Level]]) -> str:
     """The confirmation text: every upgrade with its evidence, for the person to read."""
     lines = [f"Confirm {len(upgrades)} skill upgrade(s):"]
     lines += [f"- {c.name}: {old.value} -> {c.level.value}. Evidence: {c.evidence}" for c, old in upgrades]
-    lines.append("Accept only if every line is true and you can defend it in an interview.")
+    lines.append('Type "yes" or "sí" and accept only if every line is true and you can defend it in an interview.')
     return "\n".join(lines)
 
 

@@ -9,12 +9,11 @@ from pydantic import ValidationError
 
 from honest_cv import __version__, checklist, store
 from honest_cv.build import FORMATS, build_cv
-from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, load
+from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, is_yes, load
 from honest_cv.score import Gap, Keyword, Status, score_job
 from honest_cv.verify import Report, verify_pdf
 
 
-YES = ("y", "yes", "s", "si", "sí")
 
 
 def cmd_build(args: argparse.Namespace) -> int:
@@ -75,7 +74,7 @@ def cmd_skill(args: argparse.Namespace) -> int:
             print("error: raising a level needs an interactive confirmation", file=sys.stderr)
             return 1
         print(f"Upgrade {args.name}: {old} -> {new}\nEvidence: {args.evidence}")
-        confirmed = input("Is this true, and can you defend it in an interview? [y/N] ").strip().lower() in YES
+        confirmed = is_yes(input("Is this true, and can you defend it in an interview? [y/N] "))
         if not confirmed:
             print("Not saved.")
             return 1
@@ -134,8 +133,7 @@ def cmd_checklist_apply(args: argparse.Namespace) -> int:
     if not sys.stdin.isatty():
         print("error: saving a checklist needs an interactive confirmation", file=sys.stderr)
         return 1
-    answer = input(f"\nSave {len(plan.changes)} change(s)? [y/N] ").strip().lower()
-    if answer not in YES:
+    if not is_yes(input(f"\nSave {len(plan.changes)} change(s)? [y/N] ")):
         print("Not saved.")
         return 1
     saved = store.upsert_skills(args.profile, plan.changes, confirmed=True)

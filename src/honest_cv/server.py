@@ -24,7 +24,7 @@ from pydantic import BaseModel, Field, ValidationError
 from honest_cv import __version__, checklist, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
-from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
+from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, is_yes, load
 from honest_cv.verify import verify_pdf as verify
 
 INSTRUCTIONS = """\
@@ -118,7 +118,14 @@ def get_inventory(profile: Profile = None) -> dict:
 
 
 class ConfirmUpgrade(BaseModel):
-    """No fields: the client's Accept button is the confirmation, Decline refuses."""
+    """The person types the answer. A form with no fields is not enough: a client
+    can accept it without the person deciding, which happened in Claude Code."""
+
+    confirm: str = Field(
+        title='Type "yes" or "sí" to confirm',
+        description="Only if every upgrade listed is true and you can defend it in an interview.",
+        min_length=1,
+    )
 
 
 class NotAsked(BaseModel):
@@ -129,7 +136,11 @@ class NotAsked(BaseModel):
 
 
 def _confirmed(confirmation: object) -> bool:
-    return isinstance(confirmation, AcceptedElicitation) and isinstance(confirmation.data, ConfirmUpgrade)
+    return (
+        isinstance(confirmation, AcceptedElicitation)
+        and isinstance(confirmation.data, ConfirmUpgrade)
+        and is_yes(confirmation.data.confirm)
+    )
 
 
 def _upgrade(profile: str | None, name: str, level: str) -> tuple[Path, Level, Level]:
@@ -155,7 +166,7 @@ def confirm_upgrade(
         return NotAsked()  # nothing to confirm, or set_skill refuses
     return Elicit(
         f"Confirm skill upgrade: {name} {old} -> {new}.\nEvidence: {evidence}\n"
-        "Accept only if this is true and you can defend it in an interview.",
+        'Type "yes" or "sí" and accept only if this is true and you can defend it in an interview.',
         ConfirmUpgrade,
     )
 
