@@ -69,7 +69,8 @@ El servidor es determinista. El LLM del cliente extrae las palabras clave y cond
 
 | Pieza | Cuándo |
 |---|---|
-| Exportar a JSON Resume | v0.2 |
+| Exportar a JSON Resume | v0.2 (ver "Alcance de la v0.2") |
+| Preparar entrevistas | Después de la v0.2 |
 | Más plantillas | v0.3, con contribuciones |
 | UI web o servicio hospedado | No está previsto. honest-cv guarda los datos en local y no hace llamadas de red. |
 
@@ -178,3 +179,18 @@ Calculado a razón de 2–3 h por día.
 |---|---|
 | v0.1 | Congelada en la rama `release/0.1`, sin publicar. Las pruebas en clientes que quedan (importar el ZIP real de LinkedIn, Claude Desktop) y la publicación salen de esa rama cuando el autor decida. Las correcciones que necesite se hacen ahí y se pasan a `master`. |
 | v0.2 | El desarrollo sigue en `master`, versión `0.2.0.dev0`. |
+
+## Alcance de la v0.2
+
+Decidido el 2026-10-14. Las mismas reglas que en la v0.1: el servidor es determinista, la
+honestidad la aplica el código y nada de esto hace llamadas de red.
+
+| Pieza | Detalle |
+|---|---|
+| Exportar a JSON Resume | Una variante en un idioma sale como JSON Resume: los puestos con sus bullets, la formación, las certificaciones, los idiomas y las skills por grupo. Las skills F salen en su propio grupo "Familiarity" con `level: Familiarity`, y las X nunca salen. Volver a importar el archivo da el mismo perfil. Herramienta `export_json_resume` y `honest-cv export`. |
+| Plantillas propias | honest-cv es genérico: sirve para cualquier profesión, no solo desarrollo. Una plantilla de skills es cualquier Markdown con el formato de los checklists. Las que la persona guarda en `<perfil>/checklists/` aparecen en `checklist_list` junto a las incluidas y se combinan con `checklist_new`, que también acepta una ruta. Después de aplicarla, `checklist_apply` devuelve las skills P y L que ningún bullet respalda, y la entrevista pide un logro real por cada una. Así la plantilla sirve para llenar rápido o como guion de la entrevista. |
+| Seguimiento de postulaciones | Un `applications.yaml` en la carpeta del perfil: empresa, puesto, enlace, fecha, variante e idioma, archivos enviados (CV y carta), estado (`draft`, `applied`, `interview`, `offer`, `rejected`, `withdrawn`) con su historial de fechas, y notas. Herramientas `log_application` y `list_applications`, y `honest-cv apps`. |
+| Sugerencias para LinkedIn | Desde una variante: titular (máx. 220 caracteres), "Acerca de" (máx. 2,600), la descripción de cada puesto con sus bullets (máx. 2,000) y las skills P y L, nunca F ni X. Cada texto lleva su conteo contra el límite. El cliente puede pulir la redacción con un prompt, pero el texto final pasa por `check_claims`. Herramienta `linkedin_profile`, prompt `linkedin_profile` y `honest-cv linkedin`. |
+
+Orden: exportar (reutiliza el documento del CV y el importador para la prueba de ida y vuelta),
+plantillas propias, postulaciones, LinkedIn.

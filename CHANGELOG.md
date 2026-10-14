@@ -7,6 +7,11 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 Work on `master`.
 
+### Added
+
+- `export_json_resume` and `honest-cv export`: a variant as JSON Resume, in one language. X skills
+  never appear and F skills keep their label; importing the file back gives the same profile.
+
 ## [0.1.0] — unreleased, frozen
 
 Frozen on the `release/0.1` branch on 2026-10-14; it will be published from there.

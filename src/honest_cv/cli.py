@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from honest_cv import __version__, checklist, importer, letter, store
+from honest_cv import __version__, checklist, export, importer, letter, store
 from honest_cv.build import FORMATS, build_cv
 from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, is_yes, load
 from honest_cv.score import Gap, Keyword, Status, score_job
@@ -196,6 +196,14 @@ def cmd_import(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_export(args: argparse.Namespace) -> int:
+    source = load(args.profile)
+    for variant in args.variant or list(source.variants):
+        for lang in args.lang or ["en"]:
+            print(export.export(source, variant, lang, Path(args.out)))
+    return 0
+
+
 def cmd_remove(args: argparse.Namespace) -> int:
     what = f"{args.kind} '{args.id}'" + (" and its bullets" if getattr(args, "with_bullets", False) else "")
     if not sys.stdin.isatty():
@@ -318,6 +326,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("file", type=Path)
     p.add_argument("--dry-run", action="store_true", help="show what would be added, write nothing")
     p.set_defaults(func=cmd_import)
+
+    p = sub.add_parser("export", help="export variants as JSON Resume; X skills never appear")
+    p.add_argument("profile")
+    p.add_argument("-v", "--variant", action="append", help="variant id; repeatable (default: all)")
+    p.add_argument("-l", "--lang", action="append", choices=LANGS, help="language; repeatable (default: en)")
+    p.add_argument("-o", "--out", default="out", help="output folder (default: out)")
+    p.set_defaults(func=cmd_export)
 
     p = sub.add_parser("letter", help="check and render a cover letter written in a text file")
     letter_sub = p.add_subparsers(dest="letter_command", required=True)

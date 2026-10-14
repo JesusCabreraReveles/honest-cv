@@ -119,6 +119,8 @@ work from its result, instead of reading the file yourself.
   Follow the `import_linkedin_pdf` prompt: propose each section and save what they approve.
 - **Skills never arrive with a level.** They go to `imported-skills.md` (or `checklist_new` with
   `extra`): continue with Flow C.
+- **The other way:** `export_json_resume` writes a variant as JSON Resume for other CV tools and
+  sites, with the same rules as the CV.
 
 ## Checking an existing CV
 

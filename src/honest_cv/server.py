@@ -21,7 +21,7 @@ from mcp.server.mcpserver.resolve import Elicit, Resolve
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field, ValidationError, create_model
 
-from honest_cv import __version__, checklist, importer, letter, store
+from honest_cv import __version__, checklist, export, importer, letter, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
 from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
@@ -685,6 +685,21 @@ def build_letter(
                       "failed_checks": [{"name": c.name, "detail": c.detail} for c in b.report.failures]}
         files.append(entry)
     return {"files": files, "warnings": claims.to_dict()["warnings"]}
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def export_json_resume(
+    variant: VariantId,
+    lang: LangArg = "en",
+    profile: Profile = None,
+    out_dir: Annotated[str | None, Field(description="Output folder. Default: <profile>/out.")] = None,
+) -> dict:
+    """Export a variant as JSON Resume, for other CV tools and sites. Same rules as the CV:
+    X skills never appear and F skills only in a "Familiarity" group with that level."""
+    folder = _profile_dir(profile)
+    out = Path(out_dir).expanduser() if out_dir else folder / "out"
+    return {"path": str(export.export(load(folder), variant, lang, out))}
 
 
 def _keywords(keywords: list[str], preferred: list[str] | None) -> list[score_mod.Keyword]:

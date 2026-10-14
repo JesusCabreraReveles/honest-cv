@@ -178,6 +178,10 @@ LinkedIn's "Save to PDF" profile changes layout without notice, so it isn't pars
 client, the `import_linkedin_pdf` prompt reads its text and proposes each section for you to
 approve.
 
+To go the other way, `honest-cv export` writes a variant as JSON Resume for other CV tools and
+sites, with the same rules as the CV: X skills never appear, and F skills only in a "Familiarity"
+group with that level.
+
 ## Cover letters
 
 The `cover_letter` prompt drafts a one-page letter for a job post from your own bullets. Before it
@@ -204,6 +208,7 @@ honest-cv verify any-cv.pdf --text                  # check any PDF, even one ma
 honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # coverage per variant, with gaps
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI tool on GitHub"  # asks you to confirm
 honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # or resume.json
+honest-cv export ~/cv-profile -v backend -l en                       # JSON Resume
 honest-cv remove skill ~/cv-profile "Kafka"                          # asks you to confirm
 honest-cv letter check ~/cv-profile letter.txt -k "Kubernetes,Go"     # claims your profile doesn't support
 honest-cv letter build ~/cv-profile letter.txt --company Acme --role "Platform Engineer" -l en
@@ -243,6 +248,7 @@ split away from its role.
 | prompt `tailor_for_job` | Scores the variants, explains the gaps, adapts a variant and rebuilds. |
 | prompt `cover_letter` | Drafts a letter for a job post from your bullets, checks its claims and builds it. |
 | `import_profile` | Imports JSON Resume or a LinkedIn data export, adding only what is missing. For a LinkedIn PDF it returns the text. |
+| `export_json_resume` | Exports a variant as JSON Resume; X skills never appear and F skills keep their label. |
 | prompt `import_linkedin_pdf` | Turns the PDF from LinkedIn's "Save to PDF" into a profile, section by section, with your approval. |
 
 ## ATS guarantees
