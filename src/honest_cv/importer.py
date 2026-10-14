@@ -47,6 +47,7 @@ class Imported:
     title: str | None = None  # headline, e.g. "Backend Engineer"
     summary: str | None = None  # the person's own summary
     source: str = ""
+    missing: list[str] = field(default_factory=list)  # files the export lacks
 
 
 @dataclass
@@ -56,6 +57,8 @@ class Report:
     skills_checklist: str | None = None
     skills: int = 0
     skills_checklist_kept: bool = False  # it existed already and may hold the person's marks
+    missing: list[str] = field(default_factory=list)
+    note: str | None = None
 
     def add(self, what: str, name: str) -> None:
         self.added.setdefault(what, []).append(name)
@@ -131,12 +134,26 @@ def from_json_resume(data: dict) -> Imported:
 # --- LinkedIn data export -----------------------------------------------------
 
 
-def _csv(zf: zipfile.ZipFile, name: str, header_hint: str) -> list[dict]:
+# What a profile needs from the export. The basic export, the one LinkedIn offers when you
+# pick files, has only Profile.csv; these come with the full archive.
+EXPECTED = ("Positions.csv", "Education.csv", "Skills.csv")
+
+
+def _zip_files(data: bytes) -> dict[str, bytes]:
+    zf = zipfile.ZipFile(io.BytesIO(data))
+    return {n.rsplit("/", 1)[-1].lower(): zf.read(n) for n in zf.namelist() if n.lower().endswith(".csv")}
+
+
+def _dir_files(folder: Path) -> dict[str, bytes]:
+    # Safari unzips downloads by default, so the export often arrives as a folder.
+    return {p.name.lower(): p.read_bytes() for p in folder.rglob("*.csv") if p.is_file()}
+
+
+def _csv(files: dict[str, bytes], name: str, header_hint: str) -> list[dict]:
     """Rows of a CSV in the export. Some files start with notes before the header."""
-    match = next((n for n in zf.namelist() if n.rsplit("/", 1)[-1].lower() == name.lower()), None)
-    if match is None:
+    if name.lower() not in files:
         return []
-    lines = zf.read(match).decode("utf-8-sig").splitlines()
+    lines = files[name.lower()].decode("utf-8-sig").splitlines()
     start = next((i for i, x in enumerate(lines) if header_hint.lower() in x.lower()), None)
     if start is None:
         return []
@@ -146,7 +163,11 @@ def _csv(zf: zipfile.ZipFile, name: str, header_hint: str) -> list[dict]:
 
 
 def from_linkedin_zip(data: bytes) -> Imported:
-    zf = zipfile.ZipFile(io.BytesIO(data))
+    return from_linkedin(_zip_files(data))
+
+
+def from_linkedin(zf: dict[str, bytes]) -> Imported:
+    """A LinkedIn data export, as {file name: contents}."""
     profile = (_csv(zf, "Profile.csv", "First Name") or [{}])[0]
     out = Imported(source="LinkedIn data export", title=profile.get("Headline") or None,
                    summary=" ".join((profile.get("Summary") or "").split()) or None)
@@ -174,6 +195,7 @@ def from_linkedin_zip(data: bytes) -> Imported:
         if lang.get("Name"):
             out.languages.append(f"{lang['Name']} ({lang['Proficiency']})" if lang.get("Proficiency") else lang["Name"])
     out.skills = [s["Name"] for s in _csv(zf, "Skills.csv", "Name") if s.get("Name")]
+    out.missing = [n for n in EXPECTED if n.lower() not in zf]
     return out
 
 
@@ -182,10 +204,15 @@ def read(path: str | Path) -> Imported:
     suffix = path.suffix.lower()
     if suffix == ".json":
         return from_json_resume(json.loads(path.read_text(encoding="utf-8")))
+    if path.is_dir():
+        files = _dir_files(path)
+        if "profile.csv" not in files:
+            raise ValueError(f"{path}: no Profile.csv here; is it the unzipped LinkedIn export?")
+        return from_linkedin(files)
     if suffix == ".zip":
         return from_linkedin_zip(path.read_bytes())
     raise ValueError(
-        f"{path.name}: import reads JSON Resume (.json) or a LinkedIn data export (.zip). "
+        f"{path.name}: import reads JSON Resume (.json) or a LinkedIn data export (.zip, or its folder). "
         "For a LinkedIn profile PDF, read its text and add the data with the editing tools."
     )
 
@@ -212,7 +239,11 @@ def _role_id(role: dict, taken: set[str]) -> str:
 def merge(folder: str | Path, data: Imported, *, dry_run: bool = False) -> Report:
     """Add what the profile lacks. An empty folder becomes a new profile."""
     folder = Path(folder).expanduser()
-    report = Report()
+    report = Report(missing=list(data.missing))
+    if data.missing:
+        report.note = (f"This export has no {', '.join(data.missing)}: it is LinkedIn's basic export, which only "
+                       "has the profile. Request the full archive (Settings → Data privacy → Download your "
+                       "data, the larger one; it can take up to a day), or use the profile PDF.")
     new_profile = not (folder / "profile.yaml").exists()
     if new_profile and not dry_run:
         store.init_profile(folder)
@@ -296,6 +327,9 @@ def merge(folder: str | Path, data: Imported, *, dry_run: bool = False) -> Repor
         raw["variants.yaml"]["variants"] = variants
         report.add("variants", "main")
     store._validate(raw)
+    if not contact.get("email"):
+        report.note = " ".join(x for x in (report.note, "There is no email in it: add yours with set_contact "
+                                                         "(or edit profile.yaml) before sending a CV.") if x)
     report.skills = len(data.skills)
     if data.skills:
         report.skills_checklist = str(folder / "imported-skills.md")

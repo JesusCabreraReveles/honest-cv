@@ -171,7 +171,9 @@ vacante y sus palabras clave.
 ## Importa lo que ya tienes
 
 `honest-cv import` lee un archivo [JSON Resume](https://jsonresume.org) o la exportación de datos de
-LinkedIn (Ajustes → Privacidad de datos → Descargar tus datos, un ZIP con CSVs).
+LinkedIn (Ajustes → Privacidad de datos → Descargar tus datos, un ZIP con CSVs, o su carpeta si tu
+navegador lo descomprimió). Pide el archivo completo: el básico, el que ofrece al elegir archivos,
+solo trae tu titular y tu resumen, sin puestos.
 Contacto, puestos, formación, certificaciones, idiomas y los logros de cada puesto pasan a tu
 perfil. Si trae titular y resumen, también crea una primera variante, así que `build` funciona de
 inmediato.

@@ -47,7 +47,7 @@ class Strict(BaseModel):
 
 class Contact(Strict):
     name: str
-    email: str
+    email: str | None = None  # imports may lack it; the import report says so
     phone: str | None = None
     location: Text | None = None
     links: list[str] = []

@@ -58,6 +58,8 @@ honest, ATS-safe CVs and cover letters.
   Skills arrive without a level, as a checklist to mark.
 - LinkedIn's profile PDF: the server returns its text and the client proposes each section for
   the person to approve.
+- The export may be a ZIP or the folder a browser unzipped it into. The report names the files
+  it lacks: LinkedIn's basic export has only the profile, without roles or email.
 
 ### Clients
 
