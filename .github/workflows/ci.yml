@@ -27,16 +27,29 @@ jobs:
       - run: uv run pytest -q
 
   package:
-    # The wheel must work on its own: template, fonts and prompts included.
-    runs-on: ubuntu-latest
+    # The wheel must work on its own: template, fonts, prompts and checklists
+    # included, and no output that a Windows console can't encode.
+    name: package (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.0
       - run: uv build
-      - name: Build and verify the example from the wheel
+      - name: Run the CLI from the wheel
         shell: bash
         run: |
           wheel=$(ls dist/*.whl)
-          uvx --from "$wheel" honest-cv build examples/ada -l en -l es -o "$RUNNER_TEMP/out"
-          uvx --from "$wheel" honest-cv verify "$RUNNER_TEMP"/out/*.pdf
-          uvx --from "$wheel" honest-cv score examples/ada -k "Kubernetes,Terraform" -p "Rust"
+          run() { uvx --from "$wheel" honest-cv "$@"; }
+          run build examples/ada -l en -l es -o out
+          run verify out/*.pdf
+          run score examples/ada -k "Kubernetes,Terraform" -p "Rust"
+          run checklist list
+          run checklist new examples/ada backend-jvm platform-sre -o out/checklist.md
+          run import out/imported tests/fixtures/resume.json
+          run build out/imported -o out/imported-cv
+          printf 'I led a 40-service migration to Kubernetes on AWS.\n' > out/letter.txt
+          run letter check examples/ada out/letter.txt
