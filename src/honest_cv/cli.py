@@ -202,6 +202,8 @@ def cmd_import(args: argparse.Namespace) -> int:
         state = "kept as it was (it may hold your marks)" if report.skills_checklist_kept else "written to"
         print(f"{report.skills} skill(s), without levels, {state}: {report.skills_checklist}\n"
               f"Mark it, then run: honest-cv checklist apply {args.profile} {report.skills_checklist}")
+    if report.note:
+        print(f"note: {report.note}")
     if not args.dry_run and report.added.get("bullets"):
         print("Imported achievements are tagged 'imported' in bullets.yaml: review their wording.")
     return 0

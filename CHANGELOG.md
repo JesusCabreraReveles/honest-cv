@@ -23,6 +23,9 @@ Work on `master`.
 
 ### Fixed
 
+- Import accepts the folder of an unzipped LinkedIn export (Safari unzips downloads), and a
+  profile without an email. It says which files the export lacks: LinkedIn's basic export has
+  only the profile.
 - A composed checklist's title said "imported skills" whenever the inventory had skills outside
   the chosen lists.
 

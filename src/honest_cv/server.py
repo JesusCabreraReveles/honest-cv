@@ -350,7 +350,8 @@ def import_profile(
     """Import contact, roles with their achievements, education, certifications and languages.
     Only what the profile lacks is added; nothing is overwritten. Skills come without a level, so
     they go to <profile>/imported-skills.md, a checklist for the person to mark, never to the
-    inventory. Imported bullets are tagged `imported`: review them with the person.
+    inventory. Imported bullets are tagged `imported`: review them with the person. `path` may be
+    the folder of an unzipped LinkedIn export. Tell the person the result's `note` if there is one.
 
     For a PDF nothing is written: its text comes back for you to organize with the editing tools
     (see the import_linkedin_pdf prompt)."""

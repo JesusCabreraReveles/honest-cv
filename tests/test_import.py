@@ -137,3 +137,32 @@ def test_checklist_with_extra_skills(ada):
     items = {i.name: i for i in checklist.parse(text).items}
     assert items["Elixir"].section == "Found in your imported profile" and items["Elixir"].mark == ""
     assert items["Kubernetes"].mark == "P"  # prefilled from the inventory
+
+
+# Found importing a real export.
+
+
+def test_an_unzipped_export_folder_works(tmp_path):
+    # Safari unzips downloads by default: the "file" is a folder named like the ZIP.
+    folder = tmp_path / "Basic_LinkedInDataExport.zip"
+    with zipfile.ZipFile(io.BytesIO(linkedin_zip())) as zf:
+        zf.extractall(folder)
+    data = importer.read(folder)
+    assert [r["company"] for r in data.roles] == ["Nimbus Freight", "Nimbus Freight"] and data.missing == []
+    (tmp_path / "empty").mkdir()
+    with pytest.raises(ValueError, match="no Profile.csv"):
+        importer.read(tmp_path / "empty")
+
+
+def test_the_basic_export_says_what_is_missing(tmp_path):
+    # When you pick files, LinkedIn sends only Profile.csv: no roles, no email.
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("Profile.csv", "First Name,Last Name,Headline,Summary,Geo Location\n"
+                                   "Lin,Example,Platform Engineer,I keep freight software running.,Bogotá\n")
+    path = tmp_path / "basic.zip"
+    path.write_bytes(buf.getvalue())
+    report = importer.merge(tmp_path / "p", importer.read(path))
+    assert report.missing == ["Positions.csv", "Education.csv", "Skills.csv"]
+    assert "full archive" in report.note and "no email" in report.note
+    assert load(tmp_path / "p").profile.contact.email is None

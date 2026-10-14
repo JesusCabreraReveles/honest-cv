@@ -121,7 +121,9 @@ work from its result, instead of reading the file yourself.
 - **JSON Resume or a LinkedIn data export** (Settings → Data privacy → Download your data;
   the ZIP of CSVs): call `import_profile` with `dry_run` first, show what would be added, then
   import. It only adds what is missing and creates a first variant, `main`, if there is none.
-  Imported bullets are tagged `imported`: go over their wording with the person.
+  Imported bullets are tagged `imported`: go over their wording with the person. If the browser
+  unzipped the export, pass the folder. Relay the result's `note`: LinkedIn's basic export (the one
+  offered when you pick files) has only the profile, so roles need the full archive or the PDF.
 - **A LinkedIn profile PDF** ("Save to PDF"): `import_profile` returns its text and writes nothing.
   Follow the `import_linkedin_pdf` prompt: propose each section and save what they approve.
 - **Skills never arrive with a level.** They go to `imported-skills.md` (or `checklist_new` with
