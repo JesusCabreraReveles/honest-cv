@@ -139,6 +139,13 @@ work from its result, instead of reading the file yourself.
 - When they ask how their search is going, call `list_applications` and mention the ones in
   `waiting`, which may deserve a follow-up.
 
+## Flow G: LinkedIn profile
+
+Call `linkedin_profile` for the variant that matches the roles they want. Offer to polish the
+headline and About in their voice, run `check_claims` on every text you change, and show each
+section with its character count. Mention any `left_out` bullets. F skills stay out of the skills
+list on purpose: LinkedIn can't label them as familiarity.
+
 ## Checking an existing CV
 
 Call `verify_pdf` on any PDF, including one made with another tool. Explain each failed check:
@@ -148,5 +155,5 @@ Call `verify_pdf` on any PDF, including one made with another tool. Explain each
 
 Show the person the extracted `text`: that is what the ATS reads.
 
-The same flows exist as MCP prompts: `interview`, `tailor_for_job`, `cover_letter` and
-`import_linkedin_pdf`.
+The same flows exist as MCP prompts: `interview`, `tailor_for_job`, `cover_letter`,
+`import_linkedin_pdf` and `linkedin_profile`.

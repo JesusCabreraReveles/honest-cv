@@ -8,7 +8,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from honest_cv import __version__, applications, checklist, export, importer, letter, store
+from honest_cv import __version__, applications, checklist, export, importer, letter, linkedin, store
 from honest_cv.build import FORMATS, build_cv
 from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, is_yes, load
 from honest_cv.score import Gap, Keyword, Status, score_job
@@ -227,6 +227,14 @@ def cmd_apps_list(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_linkedin(args: argparse.Namespace) -> int:
+    source = load(args.profile)
+    suggestion = linkedin.suggest(source, args.variant, args.lang)
+    print(suggestion.markdown())
+    print(f"Written to {linkedin.write(suggestion, source.profile.contact.name, Path(args.out))}", file=sys.stderr)
+    return 0
+
+
 def cmd_export(args: argparse.Namespace) -> int:
     source = load(args.profile)
     for variant in args.variant or list(source.variants):
@@ -377,6 +385,13 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("profile")
     c.add_argument("-s", "--status", action="append", choices=[s.value for s in applications.Status])
     c.set_defaults(func=cmd_apps_list)
+
+    p = sub.add_parser("linkedin", help="LinkedIn headline, About, positions and skills from a variant")
+    p.add_argument("profile")
+    p.add_argument("-v", "--variant", required=True)
+    p.add_argument("-l", "--lang", choices=LANGS, default="en")
+    p.add_argument("-o", "--out", default="out", help="output folder (default: out)")
+    p.set_defaults(func=cmd_linkedin)
 
     p = sub.add_parser("export", help="export variants as JSON Resume; X skills never appear")
     p.add_argument("profile")

@@ -22,7 +22,7 @@ from mcp.server.mcpserver.resolve import Elicit, Resolve
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field, ValidationError, create_model
 
-from honest_cv import __version__, applications, checklist, export, importer, letter, store
+from honest_cv import __version__, applications, checklist, export, importer, letter, linkedin, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
 from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
@@ -718,6 +718,26 @@ def export_json_resume(
     return {"path": str(export.export(load(folder), variant, lang, out))}
 
 
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def linkedin_profile(
+    variant: VariantId,
+    lang: LangArg = "en",
+    profile: Profile = None,
+    out_dir: Annotated[str | None, Field(description="Output folder. Default: <profile>/out.")] = None,
+) -> dict:
+    """LinkedIn texts from a variant, within LinkedIn's limits: headline, About, each position's
+    description from its bullets, and the skills (P and L only: LinkedIn can't label
+    familiarity). Also writes them to a Markdown file to copy from. Run `check_claims` on any
+    text you reword."""
+    folder = _profile_dir(profile)
+    source = load(folder)
+    suggestion = linkedin.suggest(source, variant, lang)
+    path = linkedin.write(suggestion, source.profile.contact.name,
+                          Path(out_dir).expanduser() if out_dir else folder / "out")
+    return {**suggestion.to_dict(), "path": str(path)}
+
+
 StatusArg = Literal["draft", "applied", "interview", "offer", "rejected", "withdrawn"]
 
 
@@ -812,6 +832,12 @@ def cover_letter(job_post: str, profile: str | None = None, lang: str = "en") ->
 def import_linkedin_pdf(path: str, profile: str | None = None) -> str:
     """Turn the PDF from LinkedIn's "Save to PDF" into a profile, with the person's approval."""
     return _prompt("import_linkedin_pdf", profile=_profile_label(profile), path=path)
+
+
+@mcp.prompt(name="linkedin_profile", title="LinkedIn profile from a variant")
+def linkedin_profile_prompt(variant: str, profile: str | None = None, lang: str = "en") -> str:
+    """Headline, About, positions and skills for LinkedIn, from a variant, without adding claims."""
+    return _prompt("linkedin_profile", profile=_profile_label(profile), lang=lang, variant=variant)
 
 
 @mcp.prompt(title="Honest CV interview")

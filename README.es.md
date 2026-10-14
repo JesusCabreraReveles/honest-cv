@@ -204,6 +204,15 @@ variante y qué archivos mandaste a qué empresa, y cada estado con su fecha (`d
 actualiza. Con un cliente MCP, tu asistente te ofrece registrar la postulación después de generar el
 CV o la carta, y `list_applications` te señala las que llevan dos semanas sin noticias.
 
+## LinkedIn
+
+`honest-cv linkedin` convierte una variante en los textos de LinkedIn, cada uno dentro de su límite:
+el titular (tu puesto y hasta cinco skills de producción), "Acerca de" (el resumen y los bullets de
+impacto), una descripción por puesto con sus bullets y la lista de skills. Los escribe en un archivo
+Markdown para copiarlos. Las skills son solo P y L: LinkedIn no puede etiquetar la familiaridad, así
+que las F quedan fuera, y las X nunca aparecen. Con un cliente MCP, el prompt `linkedin_profile`
+pule la redacción y la revisa con `check_claims`.
+
 ## Exportar
 
 En sentido contrario, `honest-cv export` escribe una variante como JSON Resume para otras
@@ -241,6 +250,7 @@ honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # o resume.j
 honest-cv export ~/cv-profile -v backend -l es                       # JSON Resume
 honest-cv apps log ~/cv-profile --company Acme --role "SRE" -s applied -v platform
 honest-cv apps list ~/cv-profile                                     # la más reciente primero
+honest-cv linkedin ~/cv-profile -v platform -l es                    # textos para pegar en LinkedIn
 honest-cv remove skill ~/cv-profile "Kafka"                          # te pide confirmar
 honest-cv letter check ~/cv-profile carta.txt -k "Kubernetes,Go"      # afirmaciones que tu perfil no respalda
 honest-cv letter build ~/cv-profile carta.txt --company Acme --role "Platform Engineer" -l es
@@ -282,8 +292,10 @@ parsers separan de su puesto.
 | `import_profile` | Importa JSON Resume o la exportación de datos de LinkedIn, agregando solo lo que falta. Con un PDF de LinkedIn devuelve el texto. |
 | `export_json_resume` | Exporta una variante como JSON Resume; las skills X nunca aparecen y las F conservan su etiqueta. |
 | `log_application` | Registra una postulación (empresa, puesto, variante del CV, archivos enviados) o un nuevo estado, con su fecha. |
+| `linkedin_profile` | Titular, "Acerca de", descripciones de puestos y skills (solo P y L) de LinkedIn a partir de una variante, dentro de sus límites. |
 | `list_applications` | Lista las postulaciones, la más reciente primero, con un conteo por estado y las que llevan 14 días o más sin noticias. |
 | prompt `import_linkedin_pdf` | Convierte el PDF de "Guardar como PDF" de LinkedIn en un perfil, sección por sección, con tu aprobación. |
+| prompt `linkedin_profile` | Pule los textos de LinkedIn de una variante sin agregar afirmaciones, revisados con `check_claims`. |
 
 ## Garantías ATS
 

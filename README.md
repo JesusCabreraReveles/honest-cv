@@ -197,6 +197,15 @@ files went to which company, and each status with its date (`draft`, `applied`, 
 client, your assistant offers to log an application after building the CV or letter, and
 `list_applications` points out the ones with no news for two weeks.
 
+## LinkedIn
+
+`honest-cv linkedin` turns a variant into LinkedIn's texts, each within its limit: the headline
+(your title and up to five production skills), About (the summary and impact bullets), one
+description per position from its bullets, and the skills list. It writes them to a Markdown file
+to copy from. The skills are P and L only: LinkedIn can't label familiarity, so F skills stay out,
+and X skills never appear. With an MCP client, the `linkedin_profile` prompt polishes the wording
+and checks it with `check_claims`.
+
 ## Export
 
 To go the other way, `honest-cv export` writes a variant as JSON Resume for other CV tools and
@@ -232,6 +241,7 @@ honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # or resume.
 honest-cv export ~/cv-profile -v backend -l en                       # JSON Resume
 honest-cv apps log ~/cv-profile --company Acme --role "SRE" -s applied -v platform
 honest-cv apps list ~/cv-profile                                     # latest first, with counts
+honest-cv linkedin ~/cv-profile -v platform -l en                    # texts to paste into LinkedIn
 honest-cv remove skill ~/cv-profile "Kafka"                          # asks you to confirm
 honest-cv letter check ~/cv-profile letter.txt -k "Kubernetes,Go"     # claims your profile doesn't support
 honest-cv letter build ~/cv-profile letter.txt --company Acme --role "Platform Engineer" -l en
@@ -273,8 +283,10 @@ split away from its role.
 | `import_profile` | Imports JSON Resume or a LinkedIn data export, adding only what is missing. For a LinkedIn PDF it returns the text. |
 | `export_json_resume` | Exports a variant as JSON Resume; X skills never appear and F skills keep their label. |
 | `log_application` | Records an application (company, role, CV variant, files sent) or a new status, with its date. |
+| `linkedin_profile` | LinkedIn headline, About, position descriptions and skills (P and L only) from a variant, within LinkedIn's limits. |
 | `list_applications` | Lists applications, latest first, with a count per status and the ones with no news for 14+ days. |
 | prompt `import_linkedin_pdf` | Turns the PDF from LinkedIn's "Save to PDF" into a profile, section by section, with your approval. |
+| prompt `linkedin_profile` | Polishes the LinkedIn texts of a variant without adding claims, checked with `check_claims`. |
 
 ## ATS guarantees
 

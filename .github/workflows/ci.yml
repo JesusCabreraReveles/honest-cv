@@ -53,3 +53,6 @@ jobs:
           run build out/imported -o out/imported-cv
           printf 'I led a 40-service migration to Kubernetes on AWS.\n' > out/letter.txt
           run letter check examples/ada out/letter.txt
+          run export examples/ada -v backend -l es -o out
+          run linkedin examples/ada -v platform -o out > /dev/null
+          cp -R examples/ada out/ada && run apps log out/ada --company Acme --role SRE -s applied && run apps list out/ada
