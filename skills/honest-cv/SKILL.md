@@ -81,6 +81,12 @@ A checklist is a Markdown list the person marks with one letter per skill:
    combine, e.g. backend-jvm and engineering-lead), and call `checklist_new`, which also takes the
    path to any template they share. It writes `<profile>/checklist.md`, prefilled from their
    inventory. If they already marked a file of their own, skip to step 3 with it.
+
+   For another profession, offer to write a template with them in `<profile>/checklists/<id>.md`,
+   like https://github.com/JesusCabreraReveles/honest-cv/blob/master/examples/checklists/project-management.md:
+   a `# Title`, a `## ★ Main skills` section, one `- [ ] Skill` per line, and `same: Main name =
+   other name` lines for the synonyms of their field. Ask them for the skills; don't fill it from
+   what you assume the job needs.
 2. **They mark it** in their own editor. Explain the letters, the evidence after " — ", and that
    one `evidence: ...` line under a heading covers that whole section. Wait for them.
 3. **Apply it.** Call `checklist_apply` with the file's path. The server shows the person a form

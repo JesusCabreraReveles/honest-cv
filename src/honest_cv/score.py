@@ -123,18 +123,23 @@ def _pattern(term: str) -> re.Pattern:
     return re.compile(rf"(?<!\w){re.escape(term)}(?!\w)", flags)
 
 
+def groups(source: Source | None = None) -> list[list[str]]:
+    """Synonym groups: the built-in ones, then the person's own from their templates."""
+    return SYNONYMS + (source.synonyms if source is not None else [])
+
+
 def spellings(term: str, source: Source | None = None) -> list[str]:
     """The term plus its synonyms and, if it maps to an inventory skill, its aliases."""
     found = [term]
     key = term.casefold()
-    for group in SYNONYMS:
+    for group in groups(source):
         if key in (g.casefold() for g in group):
             found += group
     if source is not None:
         skill = find_skill(term, source)
         if skill is not None:
             found += [skill.name, *skill.aliases]
-            for group in SYNONYMS:
+            for group in groups(source):
                 if skill.name.casefold() in (g.casefold() for g in group):
                     found += group
     seen, out = set(), []
@@ -147,7 +152,7 @@ def spellings(term: str, source: Source | None = None) -> list[str]:
 
 def find_skill(term: str, source: Source) -> Skill | None:
     names = {term.casefold()}
-    for group in SYNONYMS:
+    for group in groups(source):
         if term.casefold() in (g.casefold() for g in group):
             names |= {g.casefold() for g in group}
     for skill in source.inventory.skills:

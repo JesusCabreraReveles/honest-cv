@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from enum import StrEnum
 from pathlib import Path
@@ -23,6 +24,9 @@ LANGS: tuple[Lang, ...] = ("en", "es")
 Text = str | dict[Lang, str]
 
 FILES = ("profile.yaml", "bullets.yaml", "skills.yaml", "variants.yaml")
+TEMPLATES = "checklists"  # the person's own checklist templates: <profile>/checklists/*.md
+# A synonym line in a template: "same: Certified Public Accountant = CPA = Contador Público".
+SAME = re.compile(r"^\s*same:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
 
 
 class MissingTranslation(ValueError):
@@ -213,6 +217,10 @@ class Source(Strict):
     bullets: list[Bullet] = []
     inventory: Inventory = Field(default_factory=Inventory)
     variants: dict[str, Variant] = {}
+    # Read from the folder, not from the YAML files: where it came from, and the synonym
+    # groups of the person's own templates, used like score.SYNONYMS.
+    folder: Path | None = Field(None, exclude=True)
+    synonyms: list[list[str]] = Field(default_factory=list, exclude=True)
 
     @model_validator(mode="after")
     def _check_references(self) -> Source:
@@ -325,4 +333,24 @@ def load(folder: str | Path) -> Source:
         bullets=_read_yaml(folder / "bullets.yaml").get("bullets", []),
         inventory=_read_yaml(folder / "skills.yaml"),
         variants=_read_yaml(folder / "variants.yaml").get("variants", {}),
+        folder=folder,
+        synonyms=template_synonyms(folder),
     )
+
+
+def synonym_line(text: str) -> list[str] | None:
+    """The names on a `same:` line, the main one first; None if it is not one."""
+    m = SAME.match(text)
+    if not m:
+        return None
+    names = [x.strip() for x in m.group(1).split("=") if x.strip()]
+    return names if len(names) >= 2 else None
+
+
+def template_synonyms(folder: Path) -> list[list[str]]:
+    groups = []
+    for path in sorted((folder / TEMPLATES).glob("*.md")):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if (names := synonym_line(line)) is not None:
+                groups.append(names)
+    return groups

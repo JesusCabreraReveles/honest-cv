@@ -15,6 +15,10 @@ Work on `master`.
   `checklist_list` and combine with the built-in ones in `checklist_new`, which also takes a path.
 - `checklist_apply` returns `skills_without_achievements`: P and L skills no bullet shows, so the
   assistant asks for one real example of each.
+- Templates can declare synonyms (`same: Work Breakdown Structure = WBS = EDT`). Those in
+  `<profile>/checklists/` count in the job score, the gaps, checklist merging and the letter check,
+  which also learns their skill names, so it works for any profession.
+- An example template for another profession: `examples/checklists/project-management.md`.
 - Application tracking in `<profile>/applications.yaml`: `log_application`, `list_applications`
   and `honest-cv apps log|list`. Each status change keeps its date; open applications with no
   news for 14 days are listed as waiting.

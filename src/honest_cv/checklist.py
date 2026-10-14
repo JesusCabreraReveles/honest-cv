@@ -28,7 +28,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from honest_cv.model import LEVEL_RANK, Level, Source
+from honest_cv.model import LEVEL_RANK, TEMPLATES, Level, Source
 from honest_cv.score import find_skill
 from honest_cv.store import SkillChange
 
@@ -374,7 +374,7 @@ Then run: honest-cv checklist apply <profile> <this file> -->
 """
 
 
-OWN = "checklists"  # the person's own templates: <profile>/checklists/*.md
+OWN = TEMPLATES  # the person's own templates: <profile>/checklists/*.md
 
 
 @dataclass
@@ -393,7 +393,7 @@ def _template(path: Path, origin: str) -> Builtin:
     text = path.read_text(encoding="utf-8")
     lines = [x.strip() for x in text.splitlines() if x.strip()]
     title = next((x.lstrip("# ") for x in lines if x.startswith("# ")), path.stem)
-    description = next((x for x in lines if not x.startswith(("#", "-", "<!--", "evidence:"))), "")
+    description = next((x for x in lines if not x.startswith(("#", "-", "<!--", "evidence:", "same:"))), "")
     return Builtin(path.stem, title, description, len(parse(text).items), origin, str(path))
 
 
@@ -440,11 +440,11 @@ def unbacked(source: Source, names: list[str]) -> list[str]:
     return out
 
 
-def _canonical(name: str) -> str:
-    from honest_cv.score import SYNONYMS
+def _canonical(name: str, source: Source | None = None) -> str:
+    from honest_cv.score import groups
 
     key = name.casefold()
-    return next((g[0] for g in SYNONYMS if key in (x.casefold() for x in g)), name)
+    return next((g[0] for g in groups(source) if key in (x.casefold() for x in g)), name)
 
 
 def compose(ids: list[str], source: Source | None = None, extra: list[str] | None = None,
@@ -494,7 +494,7 @@ def compose(ids: list[str], source: Source | None = None, extra: list[str] | Non
 
 def _key(name: str, source: Source | None) -> str:
     skill = find_skill(name, source) if source is not None else None
-    return (skill.name if skill else _canonical(name)).casefold()
+    return (skill.name if skill else _canonical(name, source)).casefold()
 
 
 def _add(sections: dict[str, list[str]], heading: str, name: str, seen: set[str], source: Source | None = None) -> None:

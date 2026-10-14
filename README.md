@@ -147,7 +147,9 @@ honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
 **Any profession works.** The built-in checklists are for software roles, but a template is just a
 Markdown list in this format: save your own (or one someone shared) in `~/cv-profile/checklists/`
 and it shows up in `checklist list` and combines with the others in `checklist new`, which also
-takes a path. You can also apply a file you marked yourself, in English or Spanish (`años`,
+takes a path. A template can declare synonyms, such as `same: Work Breakdown Structure = WBS`,
+and the job score, the gaps and the letter check use them, along with its skill names. Start from
+[`examples/checklists/project-management.md`](https://github.com/JesusCabreraReveles/honest-cv/blob/master/examples/checklists/project-management.md). You can also apply a file you marked yourself, in English or Spanish (`años`,
 `último uso`). When you're done, honest-cv names the P and L skills that no achievement shows, and
 your assistant asks you for one real example of each.
 
