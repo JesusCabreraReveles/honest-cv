@@ -138,13 +138,17 @@ ASK_AT_ONCE = 10  # upgrades per question; the rest are asked on the next call
 NO, YES_ANSWER = "no", "sí"
 
 
-def _confirm_form(upgrades: list[tuple[store.SkillChange, Level]]) -> type[ConfirmUpgrade]:
+def _confirm_form(
+    upgrades: list[tuple[store.SkillChange, Level]], new: frozenset[str] = frozenset()
+) -> type[ConfirmUpgrade]:
+    """`new`: see `checklist.new_skills`. Clients cut long titles, so the evidence
+    goes in the description."""
     fields = {
         f"u{i}": (
             Literal["no", "sí"],
             Field(
-                title=f"{c.name}: {old.value} → {c.level.value} — {c.evidence}",
-                description="sí only if it is true and you can defend it in an interview.",
+                title=f"{c.name}: {'new' if c.name in new else old.value} → {c.level.value}",
+                description=f"{c.evidence} — sí only if it is true and you can defend it in an interview.",
             ),
         )
         for i, (c, old) in enumerate(upgrades[:ASK_AT_ONCE], start=1)
@@ -152,10 +156,11 @@ def _confirm_form(upgrades: list[tuple[store.SkillChange, Level]]) -> type[Confi
     return create_model("ConfirmUpgrade", __base__=ConfirmUpgrade, **fields)
 
 
-def _ask(upgrades: list[tuple[store.SkillChange, Level]]) -> Elicit[ConfirmUpgrade]:
+def _ask(upgrades: list[tuple[store.SkillChange, Level]], source: Source) -> Elicit[ConfirmUpgrade]:
     shown = min(len(upgrades), ASK_AT_ONCE)
     more = f" ({len(upgrades) - shown} more next time)" if len(upgrades) > shown else ""
-    return Elicit(f"honest-cv: confirm {shown} skill upgrade(s), one per field{more}.", _confirm_form(upgrades))
+    form = _confirm_form(upgrades, checklist.new_skills(upgrades, source))
+    return Elicit(f"honest-cv: confirm {shown} skill upgrade(s), one per field{more}.", form)
 
 
 class NotAsked(BaseModel):
@@ -198,7 +203,7 @@ def confirm_upgrade(
         return NotAsked()  # set_skill reports the real error
     if LEVEL_RANK[new] <= LEVEL_RANK[old] or not (evidence and evidence.strip()) or not _can_ask(ctx):
         return NotAsked()  # nothing to confirm, or set_skill refuses
-    return _ask(_single(name, level, evidence, old))
+    return _ask(_single(name, level, evidence, old), _load(profile))
 
 
 @mcp.tool(annotations=WRITE)
@@ -266,10 +271,10 @@ def _checklist_plan(profile: str | None, path: str) -> checklist.Plan:
     return checklist.plan(_load(profile), checklist.read(path))
 
 
-def _ask_for(ctx: Context, plan: checklist.Plan) -> Elicit[ConfirmUpgrade] | NotAsked:
+def _ask_for(ctx: Context, plan: checklist.Plan, profile: str | None) -> Elicit[ConfirmUpgrade] | NotAsked:
     if not plan.upgrades or not _can_ask(ctx):
         return NotAsked()  # the tool reports why
-    return _ask(plan.upgrades)
+    return _ask(plan.upgrades, _load(profile))
 
 
 def confirm_skills(ctx: Context, skills: list, profile: str | None) -> Elicit[ConfirmUpgrade] | NotAsked:
@@ -278,12 +283,12 @@ def confirm_skills(ctx: Context, skills: list, profile: str | None) -> Elicit[Co
     except (ToolError, ValueError):
         return NotAsked()
     # set_skills saves nothing when an upgrade lacks evidence, so don't ask then.
-    return NotAsked() if plan.missing_evidence else _ask_for(ctx, plan)
+    return NotAsked() if plan.missing_evidence else _ask_for(ctx, plan, profile)
 
 
 def confirm_checklist(ctx: Context, path: str, profile: str | None) -> Elicit[ConfirmUpgrade] | NotAsked:
     try:
-        return _ask_for(ctx, _checklist_plan(profile, path))
+        return _ask_for(ctx, _checklist_plan(profile, path), profile)
     except (ToolError, ValueError, OSError):
         return NotAsked()
 

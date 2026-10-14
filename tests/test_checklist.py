@@ -91,8 +91,9 @@ def test_duplicate_lines_keep_the_lower_level(profile):
 
 def test_describe_lists_every_upgrade(profile):
     plan = checklist.plan(load(profile), checklist.parse(SAMPLE))
-    text = checklist.describe(plan.upgrades)
-    assert "Go: L -> P. Evidence: FX service" in text and "RabbitMQ: X -> P" in text
+    text = checklist.describe(plan.upgrades, load(profile))
+    # RabbitMQ is not in the inventory: "new", never "X", which reads as "I don't have it".
+    assert "Go: L -> P. Evidence: FX service" in text and "RabbitMQ: new -> P" in text
 
 
 def test_line_round_trips(profile):

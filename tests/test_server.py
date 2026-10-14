@@ -85,7 +85,9 @@ async def test_upgrade_asks_the_person(profile):
     # One field per upgrade, shown by every client, with "no" first.
     assert cb.schemas[0]["required"] == ["u1"]
     field = cb.schemas[0]["properties"]["u1"]
-    assert field["title"] == "Rust: F → L — CLI tool" and field["enum"] == ["no", "sí"]
+    assert field["title"] == "Rust: F → L" and field["enum"] == ["no", "sí"]
+    # Clients cut long titles, so the evidence goes where it is read in full.
+    assert field["description"].startswith("CLI tool — sí only if it is true")
     assert load(profile).inventory.get("Rust").level is Level.LAB
 
 
@@ -202,7 +204,8 @@ async def test_set_skills_asks_once_for_every_upgrade(profile):
     assert not err and out["saved"] == ["Java", "Rust", "NATS"] and out["upgrades_confirmed"] == ["Rust", "NATS"]
     assert len(cb.asked) == 1
     titles = [f["title"] for f in cb.schemas[0]["properties"].values()]
-    assert titles == ["Rust: F → L — CLI tool on GitHub", "NATS: X → F — Read the docs, ran the demo"]
+    # NATS is not in the inventory: "new", never "X", which would read as "I don't have it".
+    assert titles == ["Rust: F → L", "NATS: new → F"]
     inv = load(profile).inventory
     assert (inv.get("Rust").level, inv.get("NATS").level, inv.get("Java").level) == (
         Level.LAB, Level.FAMILIARITY, Level.FAMILIARITY
@@ -344,3 +347,10 @@ async def test_remove_tools_are_marked_destructive(profile):
         assert tools[name].annotations.destructive_hint is True, name
     assert err and "with_bullets" in msg
 
+
+
+async def test_a_skill_marked_x_still_shows_as_x(profile):
+    cb = answer("accept")
+    async with Client(server, elicitation_callback=cb) as c:
+        await call(c, "set_skill", profile=profile, name="Scala", level="L", evidence="Spark job at Example Bank")
+    assert cb.schemas[0]["properties"]["u1"]["title"] == "Scala: X → L"

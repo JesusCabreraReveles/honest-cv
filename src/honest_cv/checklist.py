@@ -299,10 +299,18 @@ def _changes_something(change: SkillChange, skill) -> bool:
     return any(getattr(change, f) is not None and getattr(change, f) != getattr(skill, f) for f in fields)
 
 
-def describe(upgrades: list[tuple[SkillChange, Level]]) -> str:
+def new_skills(upgrades: list[tuple[SkillChange, Level]], source: Source) -> frozenset[str]:
+    """Upgrades of skills not in the inventory yet. They are shown as "new", never as
+    "X", which would read as if the person had said they don't have them."""
+    return frozenset(c.name for c, _ in upgrades if source.inventory.get(c.name) is None)
+
+
+def describe(upgrades: list[tuple[SkillChange, Level]], source: Source) -> str:
     """The confirmation text: every upgrade with its evidence, for the person to read."""
+    new = new_skills(upgrades, source)
     lines = [f"Confirm {len(upgrades)} skill upgrade(s):"]
-    lines += [f"- {c.name}: {old.value} -> {c.level.value}. Evidence: {c.evidence}" for c, old in upgrades]
+    lines += [f"- {c.name}: {'new' if c.name in new else old.value} -> {c.level.value}. Evidence: {c.evidence}"
+              for c, old in upgrades]
     lines.append('Type "yes" or "sí" and accept only if every line is true and you can defend it in an interview.')
     return "\n".join(lines)
 

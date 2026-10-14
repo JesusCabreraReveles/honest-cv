@@ -110,13 +110,14 @@ def cmd_checklist_new(args: argparse.Namespace) -> int:
 
 
 def cmd_checklist_apply(args: argparse.Namespace) -> int:
-    plan = checklist.plan(load(args.profile), checklist.read(args.file))
+    source = load(args.profile)
+    plan = checklist.plan(source, checklist.read(args.file))
     for problem in plan.problems:
         print(f"note: {problem}")
     if plan.updates:
         print(f"{len(plan.updates)} change(s) that keep or lower a level (X, same level, details).")
     if plan.upgrades:
-        print(checklist.describe(plan.upgrades))
+        print(checklist.describe(plan.upgrades, source))
     if plan.pending:
         print(f"\n{len(plan.pending)} marked line(s) need evidence before they can be saved:")
         for item in plan.pending[:PENDING_SHOWN]:
