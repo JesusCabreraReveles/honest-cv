@@ -111,7 +111,7 @@ work from its result, instead of reading the file yourself.
 
 ## Flow E: import an existing CV
 
-- **JSON Resume or a LinkedIn data export** (Settings → Data privacy → Get a copy of your data;
+- **JSON Resume or a LinkedIn data export** (Settings → Data privacy → Download your data;
   the ZIP of CSVs): call `import_profile` with `dry_run` first, show what would be added, then
   import. It only adds what is missing and creates a first variant, `main`, if there is none.
   Imported bullets are tagged `imported`: go over their wording with the person.

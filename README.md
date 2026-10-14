@@ -165,7 +165,7 @@ post and its keywords.
 ## Import what you already have
 
 `honest-cv import` reads a [JSON Resume](https://jsonresume.org) file or LinkedIn's data export
-(Settings → Data privacy → Get a copy of your data, a ZIP of CSVs). Contact, roles, education,
+(Settings → Data privacy → Download your data, a ZIP of CSVs). Contact, roles, education,
 certifications, languages and each role's achievements go into your profile; with a headline and
 a summary it also creates a first variant, so `build` works right away.
 
