@@ -3,7 +3,13 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] — unreleased
+## [0.2.0] — in development
+
+Work on `master`.
+
+## [0.1.0] — unreleased, frozen
+
+Frozen on the `release/0.1` branch on 2026-10-14; it will be published from there.
 
 The first release: an MCP server, a CLI and a Claude Code skill that turn one profile folder into
 honest, ATS-safe CVs and cover letters.

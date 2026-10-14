@@ -171,3 +171,10 @@ Calculado a razón de 2–3 h por día.
 | Confirmación en grupo | `set_skills` muestra una sola pregunta con la lista completa de cambios y su evidencia. Sigue siendo una confirmación humana. |
 | Evidencia en checklists | Sigue siendo obligatoria. Las líneas sin evidencia quedan pendientes y se preguntan en grupo. |
 | LinkedIn | Los dos caminos: el ZIP de exportación de datos, que es confiable, y el PDF del perfil, que es práctico. |
+
+## Decisiones tomadas (2026-10-14)
+
+| Tema | Decisión |
+|---|---|
+| v0.1 | Congelada en la rama `release/0.1`, sin publicar. Las pruebas en clientes que quedan (importar el ZIP real de LinkedIn, Claude Desktop) y la publicación salen de esa rama cuando el autor decida. Las correcciones que necesite se hacen ahí y se pasan a `master`. |
+| v0.2 | El desarrollo sigue en `master`, versión `0.2.0.dev0`. |
