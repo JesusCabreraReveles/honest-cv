@@ -64,7 +64,9 @@ curl -fsSL https://raw.githubusercontent.com/JesusCabreraReveles/honest-cv/maste
   -o ~/.claude/skills/honest-cv/SKILL.md
 ```
 
-Después empieza con *"entrevístame para mi CV"*, o ejecuta `/mcp__honest-cv__interview`.
+Después empieza con *"entrevístame para mi CV"*, o ejecuta `/mcp__honest-cv__interview`. Puedes
+contestar en voz con el dictado de tu sistema (en macOS: Ajustes del Sistema → Teclado → Dictado):
+la entrevista te lee los nombres y los números antes de guardarlos, porque el dictado los confunde.
 
 ### Cursor
 

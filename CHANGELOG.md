@@ -20,6 +20,8 @@ Work on `master`.
   news for 14 days are listed as waiting.
 - LinkedIn texts from a variant, within LinkedIn's limits: `linkedin_profile` (tool and prompt) and
   `honest-cv linkedin`. Headline, About, one description per position and the skills, P and L only.
+- The interview handles dictated answers: it reads names and numbers back before saving them, and
+  turns a long spoken answer into a bullet for the person to approve.
 
 ### Fixed
 

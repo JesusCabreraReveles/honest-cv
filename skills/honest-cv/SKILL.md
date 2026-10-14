@@ -21,6 +21,18 @@ Talk to the person in the language they write in, even though the tools answer i
 2. **Find the profile folder.** Ask where it is, or use the server's default. Personal data must
    stay out of public repositories.
 
+## If the person dictates
+
+Many people answer by voice, with their system's dictation. Dictated text has typical errors, so
+when answers look spoken (long, little punctuation, odd spellings):
+- **Names.** Technologies and companies get misheard ("cubernetes", "yava", "post gres"). Say the
+  name you understood and ask before saving a skill, a role or a bullet that names it.
+- **Numbers.** "Treinta por ciento", "dos millones", "del 2019 al 21": write them as figures and
+  read them back before saving. A misheard number is a false claim.
+- **Long answers.** Pick out the achievement yourself (action, scope, result), read the bullet
+  back in their words, and save it only after they approve. Don't ask them to rewrite it.
+- **Keep questions short,** one at a time, so they can answer in one breath.
+
 ## Honesty rules (the server enforces them, but keep to them in conversation too)
 
 - **Skill levels.**

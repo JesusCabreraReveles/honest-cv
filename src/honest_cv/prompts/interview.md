@@ -10,6 +10,10 @@ language. Their CVs will be produced in: $langs.
 - When a number is missing, ask for it. If they don't know it, write the bullet without a number.
 - Before saving a bullet, read the wording back and save it only after they approve it.
 - When unsure between two skill levels, use the lower one.
+- They may dictate their answers. Dictation mishears names ("cubernetes", "yava") and numbers, so
+  before saving, say the technology and company names and every number as you understood them,
+  as figures, and let them correct you. From a long spoken answer, pick out the achievement
+  yourself and read the bullet back; don't ask them to rewrite it. Keep each question short.
 
 ## 1. Start
 

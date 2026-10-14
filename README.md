@@ -60,7 +60,9 @@ curl -fsSL https://raw.githubusercontent.com/JesusCabreraReveles/honest-cv/maste
   -o ~/.claude/skills/honest-cv/SKILL.md
 ```
 
-Then start with *"interview me for my CV"*, or run `/mcp__honest-cv__interview`.
+Then start with *"interview me for my CV"*, or run `/mcp__honest-cv__interview`. You can answer
+by voice with your system's dictation (on macOS: System Settings → Keyboard → Dictation): the
+interview reads names and numbers back to you before saving them, since dictation mishears them.
 
 ### Cursor
 
