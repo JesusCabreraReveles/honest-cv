@@ -129,6 +129,16 @@ work from its result, instead of reading the file yourself.
 - **The other way:** `export_json_resume` writes a variant as JSON Resume for other CV tools and
   sites, with the same rules as the CV.
 
+## Flow F: track applications
+
+- After `build_cv` or `build_letter`, ask whether they will send it. If so, call `log_application`
+  with the company, the role, the variant, the language and the file paths, and the status
+  `applied` once they confirm it was sent.
+- When they mention news (an interview, an offer, a rejection), record it with `log_application`
+  and the same company and role. The date defaults to today: ask if it happened earlier.
+- When they ask how their search is going, call `list_applications` and mention the ones in
+  `waiting`, which may deserve a follow-up.
+
 ## Checking an existing CV
 
 Call `verify_pdf` on any PDF, including one made with another tool. Explain each failed check:

@@ -15,6 +15,9 @@ Work on `master`.
   `checklist_list` and combine with the built-in ones in `checklist_new`, which also takes a path.
 - `checklist_apply` returns `skills_without_achievements`: P and L skills no bullet shows, so the
   assistant asks for one real example of each.
+- Application tracking in `<profile>/applications.yaml`: `log_application`, `list_applications`
+  and `honest-cv apps log|list`. Each status change keeps its date; open applications with no
+  news for 14 days are listed as waiting.
 
 ### Fixed
 

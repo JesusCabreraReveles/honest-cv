@@ -196,6 +196,16 @@ El PDF de "Guardar como PDF" de LinkedIn cambia de formato sin aviso, así que n
 automáticamente: con un cliente MCP, el prompt `import_linkedin_pdf` lee su texto y te propone cada
 sección para que la apruebes.
 
+## Seguimiento de postulaciones
+
+`honest-cv apps` lleva un registro en `applications.yaml`, dentro de la carpeta de tu perfil: qué
+variante y qué archivos mandaste a qué empresa, y cada estado con su fecha (`draft`, `applied`,
+`interview`, `offer`, `rejected`, `withdrawn`). Si registras otra vez la misma empresa y puesto, se
+actualiza. Con un cliente MCP, tu asistente te ofrece registrar la postulación después de generar el
+CV o la carta, y `list_applications` te señala las que llevan dos semanas sin noticias.
+
+## Exportar
+
 En sentido contrario, `honest-cv export` escribe una variante como JSON Resume para otras
 herramientas y sitios de CV, con las mismas reglas que el CV: las skills X nunca aparecen y las F
 solo en un grupo "Familiaridad" con ese nivel.
@@ -229,6 +239,8 @@ honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # cobertura por vari
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI en GitHub"  # te pide confirmar
 honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # o resume.json
 honest-cv export ~/cv-profile -v backend -l es                       # JSON Resume
+honest-cv apps log ~/cv-profile --company Acme --role "SRE" -s applied -v platform
+honest-cv apps list ~/cv-profile                                     # la más reciente primero
 honest-cv remove skill ~/cv-profile "Kafka"                          # te pide confirmar
 honest-cv letter check ~/cv-profile carta.txt -k "Kubernetes,Go"      # afirmaciones que tu perfil no respalda
 honest-cv letter build ~/cv-profile carta.txt --company Acme --role "Platform Engineer" -l es
@@ -269,6 +281,8 @@ parsers separan de su puesto.
 | prompt `cover_letter` | Redacta una carta para una vacante con tus bullets, revisa sus afirmaciones y la genera. |
 | `import_profile` | Importa JSON Resume o la exportación de datos de LinkedIn, agregando solo lo que falta. Con un PDF de LinkedIn devuelve el texto. |
 | `export_json_resume` | Exporta una variante como JSON Resume; las skills X nunca aparecen y las F conservan su etiqueta. |
+| `log_application` | Registra una postulación (empresa, puesto, variante del CV, archivos enviados) o un nuevo estado, con su fecha. |
+| `list_applications` | Lista las postulaciones, la más reciente primero, con un conteo por estado y las que llevan 14 días o más sin noticias. |
 | prompt `import_linkedin_pdf` | Convierte el PDF de "Guardar como PDF" de LinkedIn en un perfil, sección por sección, con tu aprobación. |
 
 ## Garantías ATS

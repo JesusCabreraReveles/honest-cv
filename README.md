@@ -189,6 +189,16 @@ LinkedIn's "Save to PDF" profile changes layout without notice, so it isn't pars
 client, the `import_linkedin_pdf` prompt reads its text and proposes each section for you to
 approve.
 
+## Track your applications
+
+`honest-cv apps` keeps a log in `applications.yaml`, inside your profile folder: which variant and
+files went to which company, and each status with its date (`draft`, `applied`, `interview`,
+`offer`, `rejected`, `withdrawn`). Logging the same company and role again updates it. With an MCP
+client, your assistant offers to log an application after building the CV or letter, and
+`list_applications` points out the ones with no news for two weeks.
+
+## Export
+
 To go the other way, `honest-cv export` writes a variant as JSON Resume for other CV tools and
 sites, with the same rules as the CV: X skills never appear, and F skills only in a "Familiarity"
 group with that level.
@@ -220,6 +230,8 @@ honest-cv score ~/cv-profile -k "Kubernetes,Go" -p "Rust"   # coverage per varia
 honest-cv skill ~/cv-profile "Rust" L --evidence "CLI tool on GitHub"  # asks you to confirm
 honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # or resume.json
 honest-cv export ~/cv-profile -v backend -l en                       # JSON Resume
+honest-cv apps log ~/cv-profile --company Acme --role "SRE" -s applied -v platform
+honest-cv apps list ~/cv-profile                                     # latest first, with counts
 honest-cv remove skill ~/cv-profile "Kafka"                          # asks you to confirm
 honest-cv letter check ~/cv-profile letter.txt -k "Kubernetes,Go"     # claims your profile doesn't support
 honest-cv letter build ~/cv-profile letter.txt --company Acme --role "Platform Engineer" -l en
@@ -260,6 +272,8 @@ split away from its role.
 | prompt `cover_letter` | Drafts a letter for a job post from your bullets, checks its claims and builds it. |
 | `import_profile` | Imports JSON Resume or a LinkedIn data export, adding only what is missing. For a LinkedIn PDF it returns the text. |
 | `export_json_resume` | Exports a variant as JSON Resume; X skills never appear and F skills keep their label. |
+| `log_application` | Records an application (company, role, CV variant, files sent) or a new status, with its date. |
+| `list_applications` | Lists applications, latest first, with a count per status and the ones with no news for 14+ days. |
 | prompt `import_linkedin_pdf` | Turns the PDF from LinkedIn's "Save to PDF" into a profile, section by section, with your approval. |
 
 ## ATS guarantees

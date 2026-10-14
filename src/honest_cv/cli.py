@@ -3,11 +3,12 @@
 import argparse
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 from pydantic import ValidationError
 
-from honest_cv import __version__, checklist, export, importer, letter, store
+from honest_cv import __version__, applications, checklist, export, importer, letter, store
 from honest_cv.build import FORMATS, build_cv
 from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, is_yes, load
 from honest_cv.score import Gap, Keyword, Status, score_job
@@ -206,6 +207,26 @@ def cmd_import(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_apps_log(args: argparse.Namespace) -> int:
+    when = date.fromisoformat(args.date) if args.date else None
+    app = applications.log(args.profile, args.company, args.role, status=args.status, when=when, url=args.url,
+                           variant=args.variant, lang=args.lang, files=args.file, notes=args.notes)
+    print(f"{app.id}: {app.status} ({app.updated})")
+    return 0
+
+
+def cmd_apps_list(args: argparse.Namespace) -> int:
+    data = applications.listing(args.profile, args.status)
+    for a in data["applications"]:
+        print(f"{a['updated'] or '':<10}  {a['status']:<9}  {a['company']} — {a['role']}"
+              f"  ({a['days_since_update']} days)")
+    if data["counts"]:
+        print("\n" + ", ".join(f"{n} {s}" for s, n in data["counts"].items()))
+    if data["waiting"]:
+        print(f"No news for 14+ days: {', '.join(data['waiting'])}")
+    return 0
+
+
 def cmd_export(args: argparse.Namespace) -> int:
     source = load(args.profile)
     for variant in args.variant or list(source.variants):
@@ -337,6 +358,25 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("file", type=Path)
     p.add_argument("--dry-run", action="store_true", help="show what would be added, write nothing")
     p.set_defaults(func=cmd_import)
+
+    p = sub.add_parser("apps", help="track your job applications")
+    apps_sub = p.add_subparsers(dest="apps_command", required=True)
+    c = apps_sub.add_parser("log", help="add an application, or update the one for the same company and role")
+    c.add_argument("profile")
+    c.add_argument("--company", required=True)
+    c.add_argument("--role", required=True, help="job title, as in the post")
+    c.add_argument("-s", "--status", choices=[s.value for s in applications.Status])
+    c.add_argument("--date", help="date of this status, YYYY-MM-DD (default: today)")
+    c.add_argument("--url", help="link to the job post")
+    c.add_argument("-v", "--variant", help="variant id of the CV sent")
+    c.add_argument("-l", "--lang", choices=LANGS)
+    c.add_argument("--file", action="append", help="a file you sent; repeatable")
+    c.add_argument("--notes")
+    c.set_defaults(func=cmd_apps_log)
+    c = apps_sub.add_parser("list", help="your applications, latest first")
+    c.add_argument("profile")
+    c.add_argument("-s", "--status", action="append", choices=[s.value for s in applications.Status])
+    c.set_defaults(func=cmd_apps_list)
 
     p = sub.add_parser("export", help="export variants as JSON Resume; X skills never appear")
     p.add_argument("profile")

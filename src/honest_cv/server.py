@@ -7,6 +7,7 @@ Every tool takes a `profile` folder. When it is omitted, HONEST_CV_PROFILE is us
 
 from __future__ import annotations
 
+import datetime
 import functools
 import inspect
 import os
@@ -21,7 +22,7 @@ from mcp.server.mcpserver.resolve import Elicit, Resolve
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field, ValidationError, create_model
 
-from honest_cv import __version__, checklist, export, importer, letter, store
+from honest_cv import __version__, applications, checklist, export, importer, letter, store
 from honest_cv import build as build_mod
 from honest_cv import score as score_mod
 from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
@@ -715,6 +716,43 @@ def export_json_resume(
     folder = _profile_dir(profile)
     out = Path(out_dir).expanduser() if out_dir else folder / "out"
     return {"path": str(export.export(load(folder), variant, lang, out))}
+
+
+StatusArg = Literal["draft", "applied", "interview", "offer", "rejected", "withdrawn"]
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def log_application(
+    company: Annotated[str, Field(description="Company name, as in the job post.")],
+    role: Annotated[str, Field(description="Job title, as in the job post.")],
+    profile: Profile = None,
+    status: Annotated[StatusArg | None, Field(description="New status. A change is kept in the history.")] = None,
+    date: Annotated[str | None, Field(description="Date of this status, YYYY-MM-DD. Default: today.")] = None,
+    url: Annotated[str | None, Field(description="Link to the job post.")] = None,
+    variant: Annotated[str | None, Field(description="Variant id of the CV sent.")] = None,
+    lang: Annotated[Lang | None, Field(description="Language of the CV sent.")] = None,
+    files: Annotated[list[str] | None, Field(description="Paths of the CV and letter sent.")] = None,
+    notes: Annotated[str | None, Field(description="Contact person, salary range, next step...")] = None,
+) -> dict:
+    """Record a job application, or update the one for the same company and role. Fields not
+    given keep their value. Use it after build_cv or build_letter when the person sends them,
+    and when they tell you what happened (interview, offer, rejection)."""
+    when = datetime.date.fromisoformat(date) if date else None
+    app = applications.log(_profile_dir(profile), company, role, status=status, when=when, url=url,
+                           variant=variant, lang=lang, files=files, notes=notes)
+    return {"application": app.model_dump(mode="json", exclude_defaults=True)}
+
+
+@mcp.tool(annotations=READ)
+@_tool_errors
+def list_applications(
+    profile: Profile = None,
+    status: Annotated[list[StatusArg] | None, Field(description="Only these statuses. Default: all.")] = None,
+) -> dict:
+    """The person's applications, most recently updated first, with `days_since_update`, a count
+    per status, and `waiting`: open applications with no news for 14 days or more."""
+    return applications.listing(_profile_dir(profile), status)
 
 
 def _keywords(keywords: list[str], preferred: list[str] | None) -> list[score_mod.Keyword]:
