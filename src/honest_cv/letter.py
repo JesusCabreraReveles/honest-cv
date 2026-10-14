@@ -126,24 +126,37 @@ def _sentence(text: str, start: int) -> str:
     return text[lo:hi].strip()
 
 
+def _inside(span: tuple[int, int], spans: list[tuple[int, int]]) -> bool:
+    lo, hi = span
+    return any(s <= lo and hi <= e and e - s > hi - lo for s, e in spans)
+
+
 def check_claims(text: str, source: Source, keywords: list[str] | None = None) -> Claims:
     out = Claims()
     pool = _bullet_text(source)
+    hits = {}
     for term in _vocabulary(source, keywords or []):
         names = spellings(term, source)
-        hit = next((m for name in names if (m := _pattern(name).search(text))), None)
-        if hit is None:
+        if found := [m for name in names for m in _pattern(name).finditer(text)]:
+            hits[term] = (names, found)
+    spans = [m.span() for _, found in hits.values() for m in found]
+    for term, (names, found) in hits.items():
+        # "Spring" inside "Spring Boot" is a mention of Spring Boot, not of Spring.
+        found = sorted((m for m in found if not _inside(m.span(), spans)), key=lambda m: m.start())
+        if not found:
             continue
-        sentence = _sentence(text, hit.start())
+        sentence = _sentence(text, found[0].start())
         skill = find_skill(term, source)
         label = skill.name if skill else term
         if skill is not None and skill.level is Level.NONE:
             out.problems.append(Finding("not_held", label, sentence,
                                         "the inventory says the person does not have it (X)"))
         elif skill is not None and skill.level is Level.FAMILIARITY:
-            if not FAMILIARITY_WORDS.search(sentence):
-                out.problems.append(Finding("familiarity_as_experience", label, sentence,
-                                            "it is familiarity (F): say so in this sentence, or leave it out"))
+            # Every mention, not just the first: each sentence must say it is familiarity.
+            for s in dict.fromkeys(_sentence(text, m.start()) for m in found):
+                if not FAMILIARITY_WORDS.search(s):
+                    out.problems.append(Finding("familiarity_as_experience", label, s,
+                                                "it is familiarity (F): say so in this sentence, or leave it out"))
         elif skill is None and _match(names, pool) is None:
             out.warnings.append(Finding("not_in_inventory", label, sentence,
                                         "neither the inventory nor the bullets show it; ask the person"))
@@ -152,7 +165,8 @@ def check_claims(text: str, source: Source, keywords: list[str] | None = None) -
         n = _norm_number(m.group())
         if len(n.rstrip("%xkM")) >= 2 and n not in known:
             out.warnings.append(Finding("number_not_in_profile", m.group().strip(), _sentence(text, m.start()),
-                                        "this number appears nowhere in the profile; check where it comes from"))
+                                        "this number appears nowhere in the profile: fine if it is about the company, "
+                                        "otherwise check where it comes from"))
     return out
 
 

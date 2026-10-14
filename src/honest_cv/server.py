@@ -44,6 +44,11 @@ Typical flow: get_inventory and list_variants to learn the profile; for a job po
 keywords yourself, call score_job, then gap_report on the best variant; propose edits the person
 approves; build_cv, which also verifies the PDF. If a check fails, never reword the person's
 text to pass it: report it, since it is probably a bug in honest-cv.
+
+Cover letters: draft only the body paragraphs; build_letter adds the name, contact details,
+date, greeting and closing from the profile, so never ask for them or leave placeholders. Run
+check_claims on the draft and show its findings before showing the letter: a claim the person
+cannot back goes into the profile first, or out of the letter.
 """
 
 mcp = MCPServer("honest-cv", version=__version__, instructions=INSTRUCTIONS)

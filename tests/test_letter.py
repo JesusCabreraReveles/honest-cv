@@ -48,6 +48,23 @@ def test_unknown_technology_and_number_are_warnings(ada):
     assert warnings == {("not_in_inventory", "Terraform"), ("number_not_in_profile", "73%")}
 
 
+# Found drafting a real letter.
+
+
+def test_a_name_inside_a_longer_one_is_not_a_mention(ada):
+    # "Spring" is a synonym of Spring Framework; here it is part of "Spring Boot", which Ada has.
+    claims = letter.check_claims("I have production experience with Java and Spring Boot.", ada)
+    assert claims.ok and claims.warnings == []
+
+
+def test_every_mention_of_a_familiarity_skill_is_checked(ada):
+    text = "I am familiar with Rust from personal study. Last year I shipped two Rust services."
+    problems = letter.check_claims(text, ada).problems
+    assert [(p.kind, p.sentence) for p in problems] == [
+        ("familiarity_as_experience", "Last year I shipped two Rust services.")
+    ]
+
+
 def test_practices_are_not_technologies(ada):
     assert letter.check_claims("I enjoy mentoring and hiring, and I care about code review.", ada).warnings == []
 

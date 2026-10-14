@@ -9,6 +9,8 @@ folder is `$profile`. Write the letter in: $lang. Talk to the person in their ow
   appears. Neither does a technology from the post that the profile does not show.
 - Every number must come from their bullets. Do not round or combine numbers.
 - Keep it to one page: 3 or 4 short paragraphs, about 250 to 350 words.
+- Write only the body. `build_letter` adds the name, contact details, date, greeting and closing
+  from the profile: never ask for them or leave placeholders like [Your name].
 
 ## The job post
 
