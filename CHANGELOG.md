@@ -11,6 +11,15 @@ Work on `master`.
 
 - `export_json_resume` and `honest-cv export`: a variant as JSON Resume, in one language. X skills
   never appear and F skills keep their label; importing the file back gives the same profile.
+- Your own checklist templates, for any profession: files in `<profile>/checklists/` show up in
+  `checklist_list` and combine with the built-in ones in `checklist_new`, which also takes a path.
+- `checklist_apply` returns `skills_without_achievements`: P and L skills no bullet shows, so the
+  assistant asks for one real example of each.
+
+### Fixed
+
+- A composed checklist's title said "imported skills" whenever the inventory had skills outside
+  the chosen lists.
 
 ## [0.1.0] — unreleased, frozen
 

@@ -90,8 +90,10 @@ PENDING_SHOWN = 15
 
 
 def cmd_checklist_list(args: argparse.Namespace) -> int:
-    for b in checklist.available():
-        print(f"{b.id:<18} {b.skills:>3} skills  {b.title}: {b.description}")
+    folder = Path(args.profile).expanduser() if args.profile else None
+    for b in checklist.available(folder):
+        mark = "  (yours)" if b.origin == "yours" else ""
+        print(f"{b.id:<18} {b.skills:>3} skills  {b.title}: {b.description}{mark}")
     return 0
 
 
@@ -104,7 +106,8 @@ def cmd_checklist_new(args: argparse.Namespace) -> int:
     if out.exists() and not args.force:
         print(f"error: {out} exists; use --force to replace it, or --out for another file", file=sys.stderr)
         return 1
-    out.write_text(checklist.compose(ids, load(args.profile)), encoding="utf-8")
+    folder = Path(args.profile).expanduser()
+    out.write_text(checklist.compose(ids, load(folder), folder=folder), encoding="utf-8")
     print(f"{out}\nMark each line in your editor, then run: honest-cv checklist apply {args.profile} {out}")
     return 0
 
@@ -139,7 +142,14 @@ def cmd_checklist_apply(args: argparse.Namespace) -> int:
         return 1
     saved = store.upsert_skills(args.profile, plan.changes, confirmed=True)
     print(f"Saved {len(saved)} skill(s).")
+    _report_unbacked(load(args.profile), [c.name for c in plan.changes])
     return 0
+
+
+def _report_unbacked(source, names: list[str]) -> None:
+    if missing := checklist.unbacked(source, names):
+        print(f"\n{len(missing)} P/L skill(s) with no achievement that shows them: {', '.join(missing)}.\n"
+              "Add a real example for each one: ask your assistant for honest-cv's interview, or edit bullets.yaml.")
 
 
 def _paragraphs(path: Path) -> list[str]:
@@ -301,11 +311,12 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("checklist", help="mark many skills at once in a Markdown checklist")
     checklist_sub = p.add_subparsers(dest="checklist_command", required=True)
-    c = checklist_sub.add_parser("list", help="show the built-in checklists")
+    c = checklist_sub.add_parser("list", help="show the built-in checklists, and your own with a profile")
+    c.add_argument("profile", nargs="?", help=f"also list your templates in <profile>/{checklist.OWN}/")
     c.set_defaults(func=cmd_checklist_list)
-    c = checklist_sub.add_parser("new", help="merge built-in checklists into one, prefilled from your inventory")
+    c = checklist_sub.add_parser("new", help="merge checklists into one, prefilled from your inventory")
     c.add_argument("profile")
-    c.add_argument("lists", nargs="+", help="checklist ids, e.g. backend-jvm engineering-lead")
+    c.add_argument("lists", nargs="+", help="checklist ids (yours too) or .md paths, e.g. backend-jvm engineering-lead")
     c.add_argument("-o", "--out", help="file to write (default: <profile>/checklist.md)")
     c.add_argument("--force", action="store_true", help="replace the file if it exists")
     c.set_defaults(func=cmd_checklist_new)

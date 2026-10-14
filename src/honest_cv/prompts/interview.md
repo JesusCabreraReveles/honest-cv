@@ -46,10 +46,13 @@ Aim for 4 to 8 bullets per recent role and 2 to 3 per older role.
 
 ## 4. Skills
 
-If they have many skills, offer a checklist first: it is much faster than asking one by one. Call
-`checklist_list` and `checklist_new`, let them mark the file in their editor, then call
-`checklist_apply` and ask for the `pending_evidence` in groups, recording each group with
-`set_skills`. Ask only about those lines: unmarked lines stay for the person to mark in the file.
+If they have many skills, offer a checklist first: it is much faster than asking one by one. Any
+profession works: `checklist_list` shows the built-in templates and their own, saved in
+`$profile/checklists/`, and `checklist_new` also takes the path to a template they share. Let them
+mark the file in their editor, then call `checklist_apply` and ask for the `pending_evidence` in
+groups, recording each group with `set_skills`. Ask only about those lines: unmarked lines stay for
+the person to mark in the file. Then go through `skills_without_achievements` as in step 3: one
+real achievement per skill, or none.
 
 Otherwise, collect every technology mentioned in step 3, then ask about each one using these levels:
 - **P**: used in production at a job.

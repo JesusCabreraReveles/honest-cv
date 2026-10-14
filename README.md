@@ -142,7 +142,18 @@ honest-cv checklist new ~/cv-profile backend-jvm engineering-lead
 honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
 ```
 
-You can also apply a checklist you wrote yourself, in English or Spanish (`años`, `último uso`).
+**Any profession works.** The built-in checklists are for software roles, but a template is just a
+Markdown list in this format: save your own (or one someone shared) in `~/cv-profile/checklists/`
+and it shows up in `checklist list` and combines with the others in `checklist new`, which also
+takes a path. You can also apply a file you marked yourself, in English or Spanish (`años`,
+`último uso`). When you're done, honest-cv names the P and L skills that no achievement shows, and
+your assistant asks you for one real example of each.
+
+```bash
+honest-cv checklist list ~/cv-profile                        # yours too, e.g. accounting
+honest-cv checklist new ~/cv-profile accounting engineering-lead
+```
+
 New checklists for other kinds of roles are welcome: see [CONTRIBUTING.md](https://github.com/JesusCabreraReveles/honest-cv/blob/master/CONTRIBUTING.md).
 
 See [`examples/ada/`](https://github.com/JesusCabreraReveles/honest-cv/tree/master/examples/ada) for a complete, fictional profile with three variants, a job

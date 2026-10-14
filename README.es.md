@@ -146,8 +146,19 @@ honest-cv checklist new ~/cv-profile backend-jvm engineering-lead
 honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
 ```
 
-También puedes aplicar un checklist que hayas escrito tú, en inglés o en español (`años`,
-`último uso`). Los checklists nuevos para otros tipos de puesto son bienvenidos: consulta
+**Sirve para cualquier profesión.** Los checklists incluidos son para puestos de software, pero
+una plantilla es solo una lista Markdown con este formato: guarda la tuya (o una que te compartan)
+en `~/cv-profile/checklists/` y aparece en `checklist list` y se combina con las demás en
+`checklist new`, que también acepta una ruta. También puedes aplicar un archivo que ya marcaste tú,
+en inglés o en español (`años`, `último uso`). Al terminar, honest-cv te dice qué skills P y L no
+respalda ningún logro, y tu asistente te pide un ejemplo real de cada una.
+
+```bash
+honest-cv checklist list ~/cv-profile                        # también las tuyas, p. ej. contabilidad
+honest-cv checklist new ~/cv-profile contabilidad engineering-lead
+```
+
+Los checklists nuevos para otros tipos de puesto son bienvenidos: consulta
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 En [`examples/ada/`](examples/ada/) hay un perfil completo y ficticio, con tres variantes, una

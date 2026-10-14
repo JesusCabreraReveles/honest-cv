@@ -354,3 +354,11 @@ async def test_a_skill_marked_x_still_shows_as_x(profile):
     async with Client(server, elicitation_callback=cb) as c:
         await call(c, "set_skill", profile=profile, name="Scala", level="L", evidence="Spark job at Example Bank")
     assert cb.schemas[0]["properties"]["u1"]["title"] == "Scala: X → L"
+
+
+async def test_checklist_apply_names_skills_no_achievement_shows(profile, tmp_path):
+    path = tmp_path / "checklist.md"
+    path.write_text("- [P] Redis\n- [P] Kafka\n", encoding="utf-8")
+    async with Client(server) as c:
+        err, out = await call(c, "checklist_apply", profile=profile, path=str(path))
+    assert not err and out["skills_without_achievements"] == ["Redis"]

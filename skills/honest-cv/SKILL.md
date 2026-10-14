@@ -63,9 +63,12 @@ Talk to the person in the language they write in, even though the tools answer i
 A checklist is a Markdown list the person marks with one letter per skill:
 `- [P] Kafka — where they used it`. It is much faster than asking skill by skill.
 
-1. **Get one.** If they have their own, use it. Otherwise call `checklist_list`, ask which kinds of
-   role fit them (several can combine, e.g. backend-jvm and engineering-lead), and call
-   `checklist_new`. It writes `<profile>/checklist.md`, prefilled from their inventory.
+1. **Get one.** honest-cv works for any profession: a template is any Markdown list in this
+   format, and the built-in ones are only a start. Call `checklist_list`: it also shows the
+   person's own templates, saved in `<profile>/checklists/`. Ask which ones fit them (several
+   combine, e.g. backend-jvm and engineering-lead), and call `checklist_new`, which also takes the
+   path to any template they share. It writes `<profile>/checklist.md`, prefilled from their
+   inventory. If they already marked a file of their own, skip to step 3 with it.
 2. **They mark it** in their own editor. Explain the letters, the evidence after " — ", and that
    one `evidence: ...` line under a heading covers that whole section. Wait for them.
 3. **Apply it.** Call `checklist_apply` with the file's path. The server shows the person a form
@@ -76,6 +79,10 @@ A checklist is a Markdown list the person marks with one letter per skill:
    `set_skills`, which again asks "no / sí" for each upgrade. Use their words as evidence, never
    yours.
 5. Skip lines marked `[?]` or left `[ ]`; mention how many there were.
+6. **Achievements.** When the checklist is done, `skills_without_achievements` lists the P and L
+   skills no bullet shows. A skill with nothing behind it is a claim the CV can't support, so ask
+   for one real achievement per skill, one at a time (what they did, where, with what result), and
+   save it with `add_bullet` after they approve the wording. If they have none, leave it.
 
 Never turn the checklist back into an interview. Unmarked lines belong to the person: they mark
 them in the file when they want to, not in the chat. To resume, call `checklist_apply` first and

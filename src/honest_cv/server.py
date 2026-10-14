@@ -367,15 +367,23 @@ def import_profile(
 
 @mcp.tool(annotations=READ)
 @_tool_errors
-def checklist_list() -> dict:
-    """The built-in skill checklists, one per kind of profile, to combine with `checklist_new`."""
-    return {"checklists": [b.__dict__ for b in checklist.available()]}
+def checklist_list(profile: Profile = None) -> dict:
+    """The skill checklist templates to combine with `checklist_new`: the built-in ones, one per
+    kind of profile, and the person's own in <profile>/checklists/ (origin "yours"). Any
+    profession works: a template is a Markdown list in the same format."""
+    try:
+        folder = _profile_dir(profile)
+    except ToolError:
+        folder = None
+    return {"checklists": [b.__dict__ for b in checklist.available(folder)]}
 
 
 @mcp.tool(annotations=WRITE)
 @_tool_errors
 def checklist_new(
-    lists: Annotated[list[str], Field(description="Checklist ids from checklist_list, e.g. backend-jvm.")],
+    lists: Annotated[
+        list[str], Field(description="Ids from checklist_list, e.g. backend-jvm, or paths to .md templates.")
+    ],
     profile: Profile = None,
     path: Annotated[str | None, Field(description="File to write. Default: <profile>/checklist.md.")] = None,
     overwrite: Annotated[bool, Field(description="Replace the file if it exists.")] = False,
@@ -383,13 +391,14 @@ def checklist_new(
         list[str] | None, Field(description="More skill names to ask about, e.g. found in an imported profile.")
     ] = None,
 ) -> dict:
-    """Merge built-in checklists into one Markdown file, without duplicates and prefilled from the
+    """Merge checklist templates into one Markdown file, without duplicates and prefilled from the
     inventory. The person marks it in their editor; then call `checklist_apply`. `lists` may be
     empty when `extra` names the skills."""
     out = Path(path).expanduser() if path else _profile_dir(profile) / "checklist.md"
     if out.exists() and not overwrite:
         raise ToolError(f"{out} exists; ask the person before replacing it (overwrite=true)")
-    text = checklist.compose(lists, _load(profile), extra)
+    folder = _profile_dir(profile)
+    text = checklist.compose(lists, load(folder), extra, folder)
     out.write_text(text, encoding="utf-8")
     return {"path": str(out), "skills": len(checklist.parse(text).items)}
 
@@ -407,12 +416,18 @@ def checklist_apply(
     is not empty. Lines without evidence come back as `pending_evidence`: ask where they used
     them, in groups, and record them with `set_skills`. Ask about nothing else: unmarked lines
     are for the person to mark in the file, not to go through in the chat. To resume a checklist,
-    call this again rather than reading the file."""
+    call this again rather than reading the file.
+
+    `skills_without_achievements` are P and L skills from this checklist that no bullet shows:
+    once the checklist is done, ask for one real achievement per skill and save it with
+    `add_bullet`. If there is none, leave it; never write one for them."""
     plan = _checklist_plan(profile, path)
     result = _save_plan(ctx, profile, plan, confirmation) if plan.upgrades or plan.updates else {"saved": []}
     summary = plan.summary()
     del summary["upgrades"], summary["updates"]
-    return {**result, "saved": len(result["saved"]), **summary}
+    names = [i.name for i in checklist.read(path).items]
+    return {**result, "saved": len(result["saved"]), **summary,
+            "skills_without_achievements": checklist.unbacked(_load(profile), names)}
 
 
 @mcp.tool(annotations=WRITE)

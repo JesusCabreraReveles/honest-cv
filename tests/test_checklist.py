@@ -219,3 +219,66 @@ def test_two_names_for_one_skill_merge_at_the_lower_level(ada):
         ("OpenID Connect", Level.FAMILIARITY, "SSO for the portal")
     ]
     assert "using the lower" in plan.problems[0]
+
+
+# --- the person's own templates ---------------------------------------------
+
+ACCOUNTING = """\
+# Accounting
+Skills for an accountant. Any profession works: this is the same format.
+
+## ★ Main skills — years and last year used
+- [P] Month-end close — Example Corp
+- [ ] IFRS
+
+## Tools
+- [ ] SAP FI
+- [ ] Excel
+"""
+
+
+@pytest.fixture
+def own(profile):
+    (profile / checklist.OWN).mkdir()
+    (profile / checklist.OWN / "accounting.md").write_text(ACCOUNTING, encoding="utf-8")
+    return profile
+
+
+def test_own_templates_are_listed_with_the_built_in_ones(own):
+    found = {b.id: b for b in checklist.available(own)}
+    assert found["accounting"].origin == "yours" and found["accounting"].skills == 4
+    assert found["accounting"].description.startswith("Skills for an accountant")
+    assert found["backend-go"].origin == "built-in"
+    assert "accounting" not in {b.id for b in checklist.available()}
+
+
+def test_compose_an_own_template_with_a_built_in_one(own):
+    text = checklist.compose(["accounting", "engineering-lead"], load(own), folder=own)
+    items = by_name(checklist.parse(text))
+    assert text.startswith("# Skill checklist: Accounting, Engineering leadership\n")
+    # The template's own marks are not answers: the inventory prefills the lines.
+    assert items["Month-end close"].mark == "" and "★" in items["Month-end close"].section
+    assert items["SAP FI"].section == "Tools"
+
+
+def test_compose_takes_a_path(tmp_path, ada):
+    path = tmp_path / "shared.md"
+    path.write_text(ACCOUNTING, encoding="utf-8")
+    assert "- [ ] IFRS" in checklist.compose([str(path)], ada)
+    with pytest.raises(ValueError, match="or the path to a .md file"):
+        checklist.compose([str(tmp_path / "missing.md")], ada)
+
+
+def test_title_names_imported_skills_only_when_there_are_some(ada):
+    # The inventory's leftover skills once made every title say "imported skills".
+    assert checklist.compose(["platform-sre"], ada).splitlines()[0] == "# Skill checklist: Platform and SRE"
+
+
+def test_skills_no_achievement_shows(ada):
+    # Ada's bullets never mention Redis or AWS; Kafka has several. F and X never count.
+    assert checklist.unbacked(ada, ["Kafka", "Redis", "AWS", "Rust", "Scala", "Elixir"]) == ["Redis", "AWS"]
+
+
+def test_cli_lists_own_templates(own, capsys):
+    assert cli.main(["checklist", "list", str(own)]) == 0
+    assert "accounting" in capsys.readouterr().out

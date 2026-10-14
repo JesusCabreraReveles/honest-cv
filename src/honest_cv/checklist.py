@@ -374,22 +374,69 @@ Then run: honest-cv checklist apply <profile> <this file> -->
 """
 
 
+OWN = "checklists"  # the person's own templates: <profile>/checklists/*.md
+
+
 @dataclass
 class Builtin:
+    """A checklist template: built in, or the person's own."""
+
     id: str
     title: str
     description: str
     skills: int
+    origin: str = "built-in"
+    path: str = ""
 
 
-def available() -> list[Builtin]:
+def _template(path: Path, origin: str) -> Builtin:
+    text = path.read_text(encoding="utf-8")
+    lines = [x.strip() for x in text.splitlines() if x.strip()]
+    title = next((x.lstrip("# ") for x in lines if x.startswith("# ")), path.stem)
+    description = next((x for x in lines if not x.startswith(("#", "-", "<!--", "evidence:"))), "")
+    return Builtin(path.stem, title, description, len(parse(text).items), origin, str(path))
+
+
+def available(folder: Path | None = None) -> list[Builtin]:
+    """The built-in templates, plus the person's own in <folder>/checklists/. An own
+    template with a built-in's id replaces it: the person's file is the one they mean."""
+    out = {path.stem: _template(path, "built-in") for path in sorted(BUILTIN.glob("*.md"))}
+    if folder is not None:
+        out |= {path.stem: _template(path, "yours") for path in sorted((Path(folder) / OWN).glob("*.md"))}
+    return list(out.values())
+
+
+def _resolve(ids: list[str], folder: Path | None) -> list[Builtin]:
+    """Template ids from `available`, or paths to any Markdown file in the checklist format."""
+    known = {b.id: b for b in available(folder)}
+    out, unknown = [], []
+    for i in ids:
+        if i in known:
+            out.append(known[i])
+        elif i.endswith(".md") and (path := Path(i).expanduser()).is_file():
+            out.append(_template(path, "file"))
+        else:
+            unknown.append(i)
+    if unknown:
+        raise ValueError(f"unknown checklist(s): {', '.join(unknown)}; available: {', '.join(sorted(known))}, "
+                         "or the path to a .md file")
+    return out
+
+
+def unbacked(source: Source, names: list[str]) -> list[str]:
+    """P and L skills among `names` that no achievement mentions: each one needs a real
+    example from the person, or the CV claims it with nothing behind it."""
+    from honest_cv.score import _match, spellings
+
+    pool = "\n".join(
+        t for b in source.bullets for t in ([b.text] if isinstance(b.text, str) else list(b.text.values())) + b.tags
+    )
     out = []
-    for path in sorted(BUILTIN.glob("*.md")):
-        text = path.read_text(encoding="utf-8")
-        lines = [x.strip() for x in text.splitlines() if x.strip()]
-        title = next((x.lstrip("# ") for x in lines if x.startswith("# ")), path.stem)
-        description = next((x for x in lines if not x.startswith(("#", "-", "<!--"))), "")
-        out.append(Builtin(path.stem, title, description, len(parse(text).items)))
+    for name in names:
+        skill = find_skill(name, source)
+        if skill and skill.level in (Level.PRODUCTION, Level.LAB) and skill.name not in out:
+            if _match(spellings(skill.name, source), pool) is None:
+                out.append(skill.name)
     return out
 
 
@@ -400,19 +447,19 @@ def _canonical(name: str) -> str:
     return next((g[0] for g in SYNONYMS if key in (x.casefold() for x in g)), name)
 
 
-def compose(ids: list[str], source: Source | None = None, extra: list[str] | None = None) -> str:
-    """Merge built-in checklists into one, without duplicates, prefilled from the inventory.
+def compose(ids: list[str], source: Source | None = None, extra: list[str] | None = None,
+            folder: Path | None = None) -> str:
+    """Merge checklist templates into one, without duplicates, prefilled from the inventory.
 
-    Sections with the same heading merge. A skill keeps its first place, and the ★
-    sections come first, so a key skill is asked once with its years. `extra` names
-    skills found elsewhere, e.g. in an imported LinkedIn profile."""
+    `ids` are built-in or own templates (see `available`), or paths to .md files. Sections
+    with the same heading merge. A skill keeps its first place, and the ★ sections come
+    first, so a key skill is asked once with its years. Marks in a template are ignored:
+    the inventory prefills the lines. `extra` names skills found elsewhere, e.g. in an
+    imported LinkedIn profile."""
     if not ids and not extra:
         raise ValueError("name at least one checklist, or extra skills")
-    known = {b.id for b in available()}
-    unknown = [i for i in ids if i not in known]
-    if unknown:
-        raise ValueError(f"unknown checklist(s): {', '.join(unknown)}; available: {', '.join(sorted(known))}")
-    parsed = [parse((BUILTIN / f"{i}.md").read_text(encoding="utf-8")) for i in ids]
+    templates = _resolve(ids, folder)
+    parsed = [parse(Path(t.path).read_text(encoding="utf-8")) for t in templates]
     sections: dict[str, list[str]] = {STAR: []}
     seen: set[str] = set()
     for p in parsed:
@@ -427,14 +474,14 @@ def compose(ids: list[str], source: Source | None = None, extra: list[str] | Non
         _add(sections, "Found in your imported profile", name, seen, source)
     if source is not None:
         # X skills in no list stay out: asking again about what they don't have is noise.
-        extra = [
+        rest = [
             s.name for s in source.inventory.skills
             if _key(s.name, source) not in seen and s.level is not Level.NONE
         ]
-        for name in extra:
+        for name in rest:
             _add(sections, "Also in your inventory", name, seen, source)
 
-    titles = [b.title for b in available() if b.id in ids] + (["imported skills"] if extra else [])
+    titles = [t.title for t in templates] + (["imported skills"] if extra else [])
     out = [f"# Skill checklist: {', '.join(titles)}", "", LEGEND]
     for heading, names in sections.items():
         if not names:
