@@ -117,7 +117,7 @@ def cmd_checklist_apply(args: argparse.Namespace) -> int:
     source = load(args.profile)
     marked = checklist.read(args.file)
     plan = checklist.plan(source, marked)
-    names = [i.name for i in marked.items]
+    items = marked.items
     for problem in plan.problems:
         print(f"note: {problem}")
     if plan.updates:
@@ -136,7 +136,7 @@ def cmd_checklist_apply(args: argparse.Namespace) -> int:
         print(f"{len(plan.unsure)} line(s) marked [?] were skipped.")
     if not plan.changes:
         print("Nothing to save.")
-        _report_unbacked(source, names)
+        _report_unbacked(source, items)
         return 0
     if not sys.stdin.isatty():
         print("error: saving a checklist needs an interactive confirmation", file=sys.stderr)
@@ -146,14 +146,19 @@ def cmd_checklist_apply(args: argparse.Namespace) -> int:
         return 1
     saved = store.upsert_skills(args.profile, plan.changes, confirmed=True)
     print(f"Saved {len(saved)} skill(s).")
-    _report_unbacked(load(args.profile), names)
+    _report_unbacked(load(args.profile), items)
     return 0
 
 
-def _report_unbacked(source, names: list[str]) -> None:
-    if missing := checklist.unbacked(source, names):
-        print(f"\n{len(missing)} P/L skill(s) with no achievement that shows them: {', '.join(missing)}.\n"
-              "Add a real example for each one: ask your assistant for honest-cv's interview, or edit bullets.yaml.")
+def _report_unbacked(source, items: list[checklist.Item]) -> None:
+    if missing := checklist.unbacked(source, [i.name for i in items]):
+        key = set(checklist.unbacked(source, checklist.key_skills(source, items), levels=(Level.PRODUCTION,)))
+        first = [n for n in missing if n in key]
+        print(f"\n{len(missing)} P/L skill(s) with no achievement that shows them: {', '.join(missing)}.")
+        if first:
+            print(f"Start with these {len(first)}, your main P skills and those a variant shows: {', '.join(first)}.")
+        print("One real achievement usually covers several skills. The rest can wait for a job post\n"
+              "that asks for them. Ask your assistant for honest-cv's interview, or edit bullets.yaml.")
 
 
 def _paragraphs(path: Path) -> list[str]:

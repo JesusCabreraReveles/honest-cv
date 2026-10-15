@@ -364,3 +364,22 @@ async def test_checklist_apply_names_skills_no_achievement_shows(profile, tmp_pa
     async with Client(server) as c:
         err, out = await call(c, "checklist_apply", profile=profile, path=str(path))
     assert not err and out["skills_without_achievements"] == ["Redis"]
+
+
+async def test_only_main_p_skills_are_asked_now_the_rest_wait_for_a_post(profile, tmp_path):
+    from honest_cv import store
+    from honest_cv.store import SkillChange
+
+    store.upsert_skills(profile, [SkillChange("Terraform", Level.PRODUCTION, evidence="Fictional Fintech"),
+                                  SkillChange("Elixir", Level.LAB, evidence="A side project")], confirmed=True)
+    path = tmp_path / "checklist.md"
+    path.write_text("## ★ Main skills — years and last year used\n- [L] Elixir\n\n## Other\n"
+                    "- [P] Redis\n- [P] Terraform\n", encoding="utf-8")
+    async with Client(server) as c:
+        err, out = await call(c, "checklist_apply", profile=profile, path=str(path))
+        # Redis is P and a variant shows it; Elixir is only L; Terraform is in no variant.
+        assert not err and out["skills_without_achievements"] == ["Elixir", "Redis", "Terraform"]
+        assert out["key_skills_without_achievements"] == ["Redis"]
+        err, gaps = await call(c, "gap_report", profile=profile, variant="backend",
+                               keywords=["Terraform", "Kafka"], preferred=["Elixir"])
+    assert not err and gaps["no_achievement"] == ["Terraform", "Elixir"]

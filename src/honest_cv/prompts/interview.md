@@ -66,8 +66,11 @@ profession works: `checklist_list` shows the built-in templates and their own, s
 `$profile/checklists/`, and `checklist_new` also takes the path to a template they share. Let them
 mark the file in their editor, then call `checklist_apply` and ask for the `pending_evidence` in
 groups, recording each group with `set_skills`. Ask only about those lines: unmarked lines stay for
-the person to mark in the file. Then go through `skills_without_achievements` as in step 3: one
-real achievement per skill, or none.
+the person to mark in the file. Then fill in achievements as in step 3. The list
+`skills_without_achievements` can be long, so don't go skill by skill: ask first for their biggest
+achievements, since one usually covers several skills, and tag each bullet with all of them. Then
+ask about what is left in `key_skills_without_achievements`, their main P skills: one real
+achievement each, or none. The rest wait for a job post that asks for them; say so.
 
 Otherwise, collect every technology mentioned in step 3, then ask about each one using these levels:
 - **P**: used in production at a job.

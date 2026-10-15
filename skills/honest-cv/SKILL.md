@@ -106,9 +106,12 @@ A checklist is a Markdown list the person marks with one letter per skill:
    yours.
 5. Skip lines marked `[?]` or left `[ ]`; mention how many there were.
 6. **Achievements.** When the checklist is done, `skills_without_achievements` lists the P and L
-   skills no bullet shows. A skill with nothing behind it is a claim the CV can't support, so ask
-   for one real achievement per skill, one at a time (what they did, where, with what result), and
-   save it with `add_bullet` after they approve the wording. If they have none, leave it.
+   skills no bullet shows. A skill with nothing behind it is a claim the CV can't support. The list
+   can be long, so don't go skill by skill: ask first for their biggest achievements (what they
+   did, where, with what result), since one usually covers several skills, and tag each bullet
+   with all of them. Then ask about what is left in `key_skills_without_achievements`: the P skills
+   of the ★ section and those a variant shows. The rest wait for a job post that asks for them. Save with `add_bullet` after they approve
+   the wording. If they have none, leave it.
 
 Never turn the checklist back into an interview. Unmarked lines belong to the person: they mark
 them in the file when they want to, not in the chat. To resume, call `checklist_apply` first and

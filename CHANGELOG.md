@@ -13,8 +13,10 @@ Work on `master`.
   never appear and F skills keep their label; importing the file back gives the same profile.
 - Your own checklist templates, for any profession: files in `<profile>/checklists/` show up in
   `checklist_list` and combine with the built-in ones in `checklist_new`, which also takes a path.
-- `checklist_apply` returns `skills_without_achievements`: P and L skills no bullet shows, so the
-  assistant asks for one real example of each.
+- `checklist_apply` returns `skills_without_achievements`, the P and L skills no bullet shows, and
+  `key_skills_without_achievements`, the P ones in the ★ section or a variant. The assistant asks
+  first for the person's biggest achievements, then for the key skills still uncovered. The rest
+  wait for a job post: `gap_report` → `no_achievement` lists the ones it asks for.
 - Templates can declare synonyms (`same: Work Breakdown Structure = WBS = EDT`). Those in
   `<profile>/checklists/` count in the job score, the gaps, checklist merging and the letter check,
   which also learns their skill names, so it works for any profession.

@@ -430,9 +430,10 @@ def _resolve(ids: list[str], folder: Path | None) -> list[Builtin]:
     return out
 
 
-def unbacked(source: Source, names: list[str]) -> list[str]:
-    """P and L skills among `names` that no achievement mentions: each one needs a real
-    example from the person, or the CV claims it with nothing behind it."""
+def unbacked(source: Source, names: list[str],
+             levels: tuple[Level, ...] = (Level.PRODUCTION, Level.LAB)) -> list[str]:
+    """Skills among `names` at these levels that no achievement mentions: each one needs a
+    real example from the person, or the CV claims it with nothing behind it."""
     from honest_cv.score import _match, spellings
 
     pool = "\n".join(
@@ -441,10 +442,18 @@ def unbacked(source: Source, names: list[str]) -> list[str]:
     out = []
     for name in names:
         skill = find_skill(name, source)
-        if skill and skill.level in (Level.PRODUCTION, Level.LAB) and skill.name not in out:
+        if skill and skill.level in levels and skill.name not in out:
             if _match(spellings(skill.name, source), pool) is None:
                 out.append(skill.name)
     return out
+
+
+def key_skills(source: Source, items: list[Item]) -> list[str]:
+    """The names that matter most now: the ★ section's and every skill a variant shows."""
+    names = [i.name for i in items if i.section == STAR]
+    for vid in source.variants:
+        names += [n for g in source.resolve(vid).skills for n in g.skills]
+    return names
 
 
 def _canonical(name: str, source: Source | None = None) -> str:

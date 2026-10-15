@@ -49,7 +49,8 @@ text to pass it: report it, since it is probably a bug in honest-cv.
 
 Skills: for many at once, use a checklist (checklist_list, checklist_new, checklist_apply). Any
 profession works: the person's own templates in <profile>/checklists/ are listed too, with
-their synonyms. Then ask for one real achievement for each of `skills_without_achievements`.
+their synonyms. Then ask for their biggest achievements, which usually cover several skills, and
+after that for one real achievement for each of `key_skills_without_achievements`.
 
 The person may dictate: before saving, read back technology and company names and every
 number as you understood them, and let them correct you.
@@ -434,16 +435,23 @@ def checklist_apply(
     are for the person to mark in the file, not to go through in the chat. To resume a checklist,
     call this again rather than reading the file.
 
-    `skills_without_achievements` are P and L skills from this checklist that no bullet shows:
-    once the checklist is done, ask for one real achievement per skill and save it with
+    `skills_without_achievements` are P and L skills from this checklist that no bullet shows;
+    `key_skills_without_achievements` are the P ones among the ★ section and the skills a variant
+    shows. Once the checklist is done, ask for the person's biggest achievements first: one
+    usually covers several skills. Then ask about the key skills still uncovered. The rest wait
+    for a job post that asks for them (`gap_report` → `no_achievement`). Save each with
     `add_bullet`. If there is none, leave it; never write one for them."""
     plan = _checklist_plan(profile, path)
     result = _save_plan(ctx, profile, plan, confirmation) if plan.upgrades or plan.updates else {"saved": []}
     summary = plan.summary()
     del summary["upgrades"], summary["updates"]
-    names = [i.name for i in checklist.read(path).items]
+    items = checklist.read(path).items
+    source = _load(profile)
+    missing = checklist.unbacked(source, [i.name for i in items])
+    key = set(checklist.unbacked(source, checklist.key_skills(source, items), levels=(Level.PRODUCTION,)))
     return {**result, "saved": len(result["saved"]), **summary,
-            "skills_without_achievements": checklist.unbacked(_load(profile), names)}
+            "key_skills_without_achievements": [n for n in missing if n in key],
+            "skills_without_achievements": missing}
 
 
 @mcp.tool(annotations=WRITE)
@@ -867,9 +875,13 @@ def gap_report(
     """Missing keywords grouped by what can honestly be done:
     in_inventory_not_in_cv (a P/L skill or a pool bullet shows it: add it, see unused_bullets;
     if that list is empty, the term only needs to appear in the summary or competencies),
-    familiarity_only (only claim it as familiarity), not_in_inventory (do not claim it)."""
-    groups = score_mod.gap_report(_load(profile), variant, lang, _keywords(keywords, preferred))
-    return {k: [r.__dict__ for r in v] for k, v in groups.items()}
+    familiarity_only (only claim it as familiarity), not_in_inventory (do not claim it).
+    `no_achievement`: skills the post asks for that the person has at P or L but no bullet
+    shows; this is the moment to ask for one real achievement each."""
+    source = _load(profile)
+    groups = score_mod.gap_report(source, variant, lang, _keywords(keywords, preferred))
+    out = {k: [r.__dict__ for r in v] for k, v in groups.items()}
+    return {**out, "no_achievement": checklist.unbacked(source, [*keywords, *(preferred or [])])}
 
 
 PROMPTS = Path(__file__).parent / "prompts"
