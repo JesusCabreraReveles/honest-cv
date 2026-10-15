@@ -27,11 +27,15 @@ Work on `master`.
 - The interview handles dictated answers: it reads names and numbers back before saving them, and
   turns a long spoken answer into a bullet for the person to approve.
 
+### Changed
+
+- The server's instructions cover checklists, dictated answers, applications, LinkedIn and export,
+  for clients that don't load the skill.
+- `checklist list` shows "(yours)" next to the title of your own templates.
+- Clearer error for an application date that isn't YYYY-MM-DD.
+
 ### Fixed
 
-- Import accepts the folder of an unzipped LinkedIn export (Safari unzips downloads), and a
-  profile without an email. It says which files the export lacks: LinkedIn's basic export has
-  only the profile.
 - A composed checklist's title said "imported skills" whenever the inventory had skills outside
   the chosen lists.
 
@@ -92,6 +96,9 @@ honest, ATS-safe CVs and cover letters.
   Skills arrive without a level, as a checklist to mark.
 - LinkedIn's profile PDF: the server returns its text and the client proposes each section for
   the person to approve.
+- The export may be a ZIP or the folder a browser unzipped it into, and a profile may have no
+  email. The report names the files the export lacks: LinkedIn's basic export has only the
+  profile, without roles or email.
 
 ### Clients
 

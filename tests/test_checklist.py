@@ -281,7 +281,7 @@ def test_skills_no_achievement_shows(ada):
 
 def test_cli_lists_own_templates(own, capsys):
     assert cli.main(["checklist", "list", str(own)]) == 0
-    assert "accounting" in capsys.readouterr().out
+    assert "accounting           4 skills  Accounting (yours): Skills for an accountant." in capsys.readouterr().out
 
 
 def test_cli_apply_names_unbacked_skills_even_with_nothing_to_save(profile, tmp_path, capsys):

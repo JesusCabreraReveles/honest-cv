@@ -12,7 +12,7 @@ skill que no tienes.
 
 [Read in English](README.md)
 
-![Demo: un checklist de skills, el puntaje contra una vacante, un build verificado y una carta que rechaza una skill que la persona no tiene](docs/assets/demo.gif)
+![Demo: checklists de skills, incluida una propia, el puntaje contra una vacante, un build verificado, una carta que rechaza una skill que la persona no tiene, los textos de LinkedIn y el registro de la postulación](docs/assets/demo.gif)
 
 ## Por qué
 

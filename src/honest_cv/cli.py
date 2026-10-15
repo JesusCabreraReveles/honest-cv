@@ -93,8 +93,8 @@ PENDING_SHOWN = 15
 def cmd_checklist_list(args: argparse.Namespace) -> int:
     folder = Path(args.profile).expanduser() if args.profile else None
     for b in checklist.available(folder):
-        mark = "  (yours)" if b.origin == "yours" else ""
-        print(f"{b.id:<18} {b.skills:>3} skills  {b.title}: {b.description}{mark}")
+        mark = " (yours)" if b.origin == "yours" else ""
+        print(f"{b.id:<18} {b.skills:>3} skills  {b.title}{mark}: {b.description}")
     return 0
 
 
