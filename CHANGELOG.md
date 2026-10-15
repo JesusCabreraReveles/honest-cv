@@ -49,6 +49,8 @@ Work on `master`.
 
 ### Fixed
 
+- A checklist mark typed with spaces, like `[ P]`, was skipped in silence; it now counts, and
+  any other text in the brackets is reported as a problem.
 - A composed checklist's title said "imported skills" whenever the inventory had skills outside
   the chosen lists.
 

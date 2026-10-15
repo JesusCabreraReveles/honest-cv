@@ -32,7 +32,9 @@ from honest_cv.model import LEVEL_RANK, TEMPLATES, Level, Source, without_commen
 from honest_cv.score import find_skill
 from honest_cv.store import SkillChange
 
-ITEM = re.compile(r"^\s*[-*+]\s*\[(?P<mark>[^\]]?)\]\s*(?P<body>.+?)\s*$")
+# Spaces around the mark are fine: typing a letter into "[ ]" gives "[ P]". Any other
+# text in the brackets is reported as a problem, never skipped in silence.
+ITEM = re.compile(r"^\s*[-*+]\s*\[(?P<mark>[^\]]{0,8})\]\s*(?P<body>.+?)\s*$")
 HEADING = re.compile(r"^\s*#{1,6}\s+(?P<title>.+?)\s*$")
 SECTION_EVIDENCE = re.compile(r"^\s*>?\s*(?:evidence|evidencia)\s*:\s*(?P<text>.+?)\s*$", re.I)
 MAX_SPLIT_WORDS = 3  # "Kafka / Redpanda" is two skills; "LLMs / agents others used" is one

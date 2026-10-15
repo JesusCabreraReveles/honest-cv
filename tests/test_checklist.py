@@ -307,3 +307,14 @@ def test_the_header_examples_parse_as_they_say():
     text = checklist.compose(["backend-python"])
     first = checklist.parse(text.replace("- [ ] Python", "- [P] Python", 1)).items[0]
     assert text.splitlines()[first.line - 1].endswith("Python — years: __ · last year: ____")
+
+
+@pytest.mark.parametrize("line", ["- [ P] Git", "- [P ] Git", "- [ p ] Git"])
+def test_spaces_around_the_mark_are_fine(line):
+    assert [(i.name, i.mark) for i in checklist.parse(line).items] == [("Git", "P")]
+
+
+@pytest.mark.parametrize("line", ["- [PL] Git", "- [Y] Git", "- [yes] Git"])
+def test_an_unreadable_mark_is_a_problem_not_a_skip(line):
+    parsed = checklist.parse(line)
+    assert not parsed.items and parsed.problems and "use P, L, F or X" in parsed.problems[0]
