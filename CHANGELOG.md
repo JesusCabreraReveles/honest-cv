@@ -39,6 +39,11 @@ Work on `master`.
   `remove_publication`), in their own CV section. A variant shows all of them or the ones it lists.
   The LinkedIn and JSON Resume imports read publications (and LinkedIn's courses), and the JSON
   Resume export writes them.
+- Spanish spellings of leadership and practice terms in job posts (liderazgo de equipos, revisión
+  de código, patrones de diseño, agentes de IA…) match the skill. In a letter, practices are not
+  claims to check.
+- Evidence must say where and how: the assistant asks for each skill instead of taking a bare
+  "yes" to a list.
 - The interview warns that it can take hours, proposes a first session that is enough for a CV,
   and picks up where it stopped. The READMEs say so too.
 - The interview asks once for certifications, courses and anything the person wrote, which people

@@ -37,6 +37,9 @@ Honesty rules, enforced by this server:
 - Skill levels: P (production), L (own project/lab), F (familiarity, always labeled), X (never shown).
 - Raising a skill's level needs written evidence and the person's own confirmation, which the
   server asks for directly. Never invent experience, metrics or skills.
+- Evidence is where and how, in the person's words. A bare "yes, I used them" to a list is not
+  evidence: ask where and how for each one before recording it, and never fill the gap with a
+  guess like their current employer or "(confirmed by the person)".
 
 Edit the profile through the tools (set_contact, upsert_role, upsert_education,
 set_profile_details, add_bullet, set_skill, save_variant), not by writing its files: the tools

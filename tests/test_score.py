@@ -130,3 +130,11 @@ def test_spanish_spellings_match():
 ])
 def test_architecture_synonyms(term, text):
     assert _match(spellings(term), text) is not None
+
+
+@pytest.mark.parametrize(("keyword", "skill"), [
+    ("liderazgo de equipos", "Team leadership"), ("revisión de código", "Code review culture"),
+    ("patrones de diseño", "Design patterns"), ("agentes de IA", "AI agents"),
+])
+def test_spanish_posts_name_practices_their_own_way(keyword, skill):
+    assert skill in spellings(keyword)

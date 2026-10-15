@@ -103,7 +103,7 @@ A checklist is a Markdown list the person marks with one letter per skill:
 4. **Pending lines.** The result lists `pending_evidence`: lines marked without evidence. Ask in
    groups ("where did you use Kafka, RabbitMQ and Redis?"), then record each group with
    `set_skills`, which again asks "no / sí" for each upgrade. Use their words as evidence, never
-   yours.
+   yours. A bare "yes, I used them" to a list is not evidence: ask where and how for each one.
 5. Skip lines marked `[?]` or left `[ ]`; mention how many there were.
 6. **Achievements.** When the checklist is done, `skills_without_achievements` lists the P and L
    skills no bullet shows. A skill with nothing behind it is a claim the CV can't support. The list

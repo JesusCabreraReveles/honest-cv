@@ -15,6 +15,21 @@ from honest_cv import document
 from honest_cv.document import FAMILIARITY, Document
 from honest_cv.model import Lang, Level, Skill, Source
 
+# Practices, not technologies: they count in the score like any synonym, but a letter
+# that mentions "code review" or "mentoring" is not making a claim to check.
+PRACTICES: list[list[str]] = [
+    ["Team leadership", "team lead", "liderazgo de equipos", "liderazgo de equipo"],
+    ["People management", "gestión de personas", "gestión de personal"],
+    ["Hiring", "recruiting", "reclutamiento", "contratación de talento"],
+    ["Mentoring", "mentorship", "mentoría"],
+    ["Project management", "gestión de proyectos", "administración de proyectos"],
+    ["Stakeholder management", "gestión de stakeholders", "gestión de interesados"],
+    ["Code review culture", "code review", "code reviews", "revisión de código", "revisiones de código"],
+    ["Design patterns", "patrones de diseño"],
+    ["System integration", "integración de sistemas"],
+
+]
+
 # Each group lists spellings of the same thing. The first one is the canonical name.
 SYNONYMS: list[list[str]] = [
     ["Kubernetes", "k8s"],
@@ -72,6 +87,8 @@ SYNONYMS: list[list[str]] = [
     ["Amazon Bedrock", "AWS Bedrock", "Bedrock"],
     ["Amazon Cognito", "AWS Cognito", "Cognito"],
     ["Google Cloud Pub/Sub", "GCP Pub/Sub", "Pub/Sub"],
+    ["AI agents", "agentes de IA", "agentes de inteligencia artificial", "LLM agents"],
+    *PRACTICES,
 ]
 
 # Short tokens like "Go", "AI" or "CI" collide with ordinary words, so they only
