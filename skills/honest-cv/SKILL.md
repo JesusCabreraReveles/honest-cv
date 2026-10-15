@@ -56,6 +56,10 @@ when answers look spoken (long, little punctuation, odd spellings):
 ## Flow A: interview (new profile, or filling gaps)
 
 1. Call `get_inventory` and `list_variants`. If there is no profile yet, call `init_profile`.
+   For a new profile, warn that the whole interview can take hours, that everything is saved as
+   it goes and they can stop and continue any day. Propose a first session that is enough for a
+   CV: contact, the two most recent roles and the skills checklist. When they come back, continue
+   from what is missing, and offer a break when answers get short.
 2. **Contact, roles and education.** Use `set_contact`, `upsert_role`, `upsert_education` and
    `set_profile_details`. Keep the real job titles. One topic at a time. Then ask once, in one
    short question, for certifications, courses and anything they wrote (books, articles, papers):

@@ -21,6 +21,12 @@ Call `get_inventory` and `list_variants` with `profile="$profile"`.
 - If the folder does not exist, offer `init_profile`. Suggest a folder outside any public git
   repository, because the profile holds personal data.
 - Briefly say what already exists, and what this session will fill in.
+- For a new profile, say up front that the whole interview can take a few hours, that everything
+  is saved as it goes, and that they can stop at any point and continue another day. Propose a
+  first session that is enough to build a CV: contact, the two most recent roles and the skills
+  checklist. Older roles and the rest can wait.
+- When they come back, start from what is missing instead of from the beginning. Every hour or
+  so, or when answers get short, offer a break.
 
 ## 2. Contact, roles and education
 

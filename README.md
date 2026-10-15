@@ -64,6 +64,12 @@ Then start with *"interview me for my CV"*, or run `/mcp__honest-cv__interview`.
 by voice with your system's dictation (on macOS: System Settings → Keyboard → Dictation): the
 interview reads names and numbers back to you before saving them, since dictation mishears them.
 
+> **The first interview is long.** With a long career and many skills it can take several hours.
+> You don't have to do it in one sitting: everything is saved as you go, so stop whenever you like
+> and say *"let's continue my CV interview"* later. A good first session covers your contact
+> details, your two most recent roles and the skills checklist; with that you can already build a
+> CV, and older roles can wait.
+
 ### Cursor
 
 Add this to `~/.cursor/mcp.json`, or to `.cursor/mcp.json` in a project:

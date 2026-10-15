@@ -68,6 +68,12 @@ Después empieza con *"entrevístame para mi CV"*, o ejecuta `/mcp__honest-cv__i
 contestar en voz con el dictado de tu sistema (en macOS: Ajustes del Sistema → Teclado → Dictado):
 la entrevista te lee los nombres y los números antes de guardarlos, porque el dictado los confunde.
 
+> **La primera entrevista es larga.** Con una carrera larga y muchas skills puede llevar varias
+> horas. No tienes que hacerla de una vez: todo se guarda sobre la marcha, así que puedes parar
+> cuando quieras y después decir *"sigamos con la entrevista de mi CV"*. Una buena primera sesión
+> cubre tus datos de contacto, tus dos puestos más recientes y el checklist de skills; con eso ya
+> puedes generar un CV, y los puestos más antiguos pueden esperar.
+
 ### Cursor
 
 Agrega esto a `~/.cursor/mcp.json`, o a `.cursor/mcp.json` dentro de un proyecto:
