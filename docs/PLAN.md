@@ -179,7 +179,7 @@ Calculado a razón de 2–3 h por día.
 | Tema | Decisión |
 |---|---|
 | v0.1 | Congelada en la rama `release/0.1`, sin publicar. Las pruebas en clientes que quedan (importar el ZIP real de LinkedIn, Claude Desktop) y la publicación salen de esa rama cuando el autor decida. Las correcciones que necesite se hacen ahí y se pasan a `master`. |
-| v0.2 | El desarrollo sigue en `master`, versión `0.2.0.dev0`. |
+| v0.2 | El desarrollo sigue en `master`, versión `0.2.0.dev0`. Cerrada el 2026-10-15 como `0.2.0`, sin publicar (ver abajo). |
 
 ## Alcance de la v0.2
 
@@ -196,3 +196,26 @@ honestidad la aplica el código y nada de esto hace llamadas de red.
 
 Orden: exportar (reutiliza el documento del CV y el importador para la prueba de ida y vuelta),
 plantillas propias, postulaciones, LinkedIn.
+
+### Lo que agregó la prueba como usuario nuevo (2026-10-14 y 15)
+
+La prueba completa desde cero, con un perfil real de desarrollador, arquitecto y gerente, sacó
+huecos que entraron a la v0.2:
+
+| Pieza | Detalle |
+|---|---|
+| Cursos | Sección propia (`courses`). Un curso sin examen no es una certificación ni una skill. |
+| Publicaciones | Libros, artículos y papers (`upsert_publication`, `remove_publication`), cada variante elige cuáles muestra. Lo autopublicado se dice en `venue`. Se importan de LinkedIn y JSON Resume. La entrevista pregunta una vez por certificaciones, cursos y publicaciones. |
+| Checklist | Ejemplos marcados en el encabezado, que el lector ignora por estar en un comentario. Una marca con espacios (`[ P]`) cuenta, y un texto que no entiende se reporta en vez de saltarse en silencio. |
+| Logros por vacante | Ahora solo se piden logros de las skills P principales (★ o en una variante). El resto espera a una vacante que las pida: `gap_report` → `no_achievement`. |
+| Postulaciones | Guardan el texto de la vacante en `<perfil>/posts/`, porque los enlaces caducan, y qué preparar para la entrevista (`prep`). |
+| Sinónimos en español | Liderazgo, gestión de personas, revisión de código, patrones de diseño, agentes de IA… En una carta, las prácticas no son afirmaciones que verificar. |
+| Conversación | El cliente mantiene el idioma de la persona aunque las herramientas respondan en inglés. Un "sí" a una lista no es evidencia. La entrevista avisa que es larga y se puede hacer por sesiones. |
+
+### Pendiente para publicar
+
+- Decidir si se publica directo la 0.2 como primera versión en PyPI, sin publicar la 0.1. La
+  recomendación es que sí: la 0.1 nunca salió y la 0.2 trae arreglos que la 0.1 no tiene.
+- Cuenta de PyPI con trusted publishing, prueba opcional en TestPyPI, PyPI y registro de MCP.
+- Después de publicar, abrir issues: preparar entrevistas, más plantillas, checklists por idioma y
+  avisar en `gap_report` cuando una skill está marcada en el checklist pero le falta evidencia.

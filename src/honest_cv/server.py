@@ -158,16 +158,24 @@ NO, YES_ANSWER = "no", "sí"
 
 
 def _confirm_form(
-    upgrades: list[tuple[store.SkillChange, Level]], new: frozenset[str] = frozenset()
+    upgrades: list[tuple[store.SkillChange, Level]], new: frozenset[str] = frozenset(),
+    notes: dict[str, str] | None = None,
 ) -> type[ConfirmUpgrade]:
-    """`new`: see `checklist.new_skills`. Clients cut long titles, so the evidence
-    goes in the description."""
+    """`new`: see `checklist.new_skills`. `notes`: the person's own notes on these skills,
+    shown first, since one may say why they lowered it. Clients cut long titles, so the
+    evidence goes in the description."""
+    notes = notes or {}
+
+    def description(c: store.SkillChange) -> str:
+        note = f"Your note: {notes[c.name]}. " if notes.get(c.name) else ""
+        return f"{note}{c.evidence} — sí only if it is true and you can defend it in an interview."
+
     fields = {
         f"u{i}": (
             Literal["no", "sí"],
             Field(
                 title=f"{c.name}: {'new' if c.name in new else old.value} → {c.level.value}",
-                description=f"{c.evidence} — sí only if it is true and you can defend it in an interview.",
+                description=description(c),
             ),
         )
         for i, (c, old) in enumerate(upgrades[:ASK_AT_ONCE], start=1)
@@ -178,7 +186,8 @@ def _confirm_form(
 def _ask(upgrades: list[tuple[store.SkillChange, Level]], source: Source) -> Elicit[ConfirmUpgrade]:
     shown = min(len(upgrades), ASK_AT_ONCE)
     more = f" ({len(upgrades) - shown} more next time)" if len(upgrades) > shown else ""
-    form = _confirm_form(upgrades, checklist.new_skills(upgrades, source))
+    notes = {c.name: s.notes for c, _ in upgrades if (s := source.inventory.get(c.name)) and s.notes}
+    form = _confirm_form(upgrades, checklist.new_skills(upgrades, source), notes)
     return Elicit(f"honest-cv: confirm {shown} skill upgrade(s), one per field{more}.", form)
 
 

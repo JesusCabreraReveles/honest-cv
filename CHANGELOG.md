@@ -3,9 +3,9 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [0.2.0] — in development
+## [0.2.0] — unreleased, feature complete
 
-Work on `master`.
+Closed on 2026-10-15 after a full test as a new user. Published when the author decides.
 
 ### Added
 
@@ -60,6 +60,10 @@ Work on `master`.
 
 ### Fixed
 
+- Lowering a skill now lowers its mark in `<profile>/checklist.md` too. Before, the file kept
+  the old mark, and applying it again proposed the upgrade the person had undone. The
+  confirmation form also shows the person's own note on a skill first, since it may say why
+  they lowered it.
 - A checklist mark typed with spaces, like `[ P]`, was skipped in silence; it now counts, and
   any other text in the brackets is reported as a problem.
 - A composed checklist's title said "imported skills" whenever the inventory had skills outside

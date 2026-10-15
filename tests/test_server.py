@@ -89,7 +89,8 @@ async def test_upgrade_asks_the_person(profile):
     field = cb.schemas[0]["properties"]["u1"]
     assert field["title"] == "Rust: F → L" and field["enum"] == ["no", "sí"]
     # Clients cut long titles, so the evidence goes where it is read in full.
-    assert field["description"].startswith("CLI tool — sí only if it is true")
+    # The person's own note comes first: it may say why they lowered the skill.
+    assert field["description"].startswith("Your note: Read the book, small exercises. CLI tool — sí only if")
     assert load(profile).inventory.get("Rust").level is Level.LAB
 
 

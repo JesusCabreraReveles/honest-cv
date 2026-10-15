@@ -14,7 +14,7 @@ from pathlib import Path
 
 import yaml
 
-from honest_cv.model import FILES, Bullet, Contact, Education, Level, Publication, Role, Skill, Source, Variant, set_skill_level
+from honest_cv.model import FILES, LEVEL_RANK, Bullet, Contact, Education, Level, Publication, Role, Skill, Source, Variant, set_skill_level
 
 TEMPLATES = Path(__file__).parent / "templates" / "profile"
 
@@ -93,11 +93,13 @@ def upsert_skills(folder: str | Path, changes: list[SkillChange], *, confirmed: 
     folder = Path(folder).expanduser()
     raw = _raw(folder)
     skills = raw["skills.yaml"].setdefault("skills", [])
-    saved = []
+    saved, lowered = [], {}
     for change in changes:
         index = next((i for i, s in enumerate(skills) if s["name"].casefold() == change.name.casefold()), None)
         current = Skill(**skills[index]) if index is not None else Skill(name=change.name, level=Level.NONE)
         updated = set_skill_level(current, change.level, evidence=change.evidence, confirmed=confirmed)
+        if LEVEL_RANK[updated.level] < LEVEL_RANK[current.level]:
+            lowered[updated.name] = updated.level
         fields = {k: getattr(change, k) for k in ("years", "last_used_year", "aliases", "notes")}
         updated = Skill(**{**updated.model_dump(), **{k: v for k, v in fields.items() if v is not None}})
         if index is None:
@@ -107,6 +109,12 @@ def upsert_skills(folder: str | Path, changes: list[SkillChange], *, confirmed: 
         saved.append(updated)
     _validate(raw)
     _write(folder, "skills.yaml", raw["skills.yaml"])
+    if lowered:
+        # Otherwise the checklist still says the old level, and applying it again would
+        # propose the upgrade the person just undid.
+        from honest_cv import checklist
+
+        checklist.follow_downgrades(folder, lowered)
     return saved
 
 

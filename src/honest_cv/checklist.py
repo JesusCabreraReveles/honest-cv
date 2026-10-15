@@ -456,6 +456,39 @@ def key_skills(source: Source, items: list[Item]) -> list[str]:
     return names
 
 
+CHECKLIST = "checklist.md"  # the person's checklist: <profile>/checklist.md
+BRACKETS = re.compile(r"\[[^\]]{0,8}\]")
+
+
+def follow_downgrades(folder: Path, lowered: dict[str, Level]) -> list[int]:
+    """Lower the marks of `<profile>/checklist.md` to match skills just lowered, so the file
+    never proposes again an upgrade the person undid. Returns the lines changed."""
+    from honest_cv.model import load
+
+    path = Path(folder) / CHECKLIST
+    if not path.exists():
+        return []
+    source = load(folder)
+    wanted = {_key(name, source): level for name, level in lowered.items()}
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines(keepends=True)
+    items = parse(text).items
+    per_line: dict[int, int] = {}
+    for item in items:
+        per_line[item.line] = per_line.get(item.line, 0) + 1
+    changed = []
+    for item in items:
+        level = wanted.get(_key(item.name, source))
+        # "A / B" lines hold two skills under one mark: leave those to the person.
+        if level is None or per_line[item.line] > 1 or LEVEL_RANK[item.level] <= LEVEL_RANK[level]:
+            continue
+        lines[item.line - 1] = BRACKETS.sub(f"[{level.value}]", lines[item.line - 1], count=1)
+        changed.append(item.line)
+    if changed:
+        path.write_text("".join(lines), encoding="utf-8")
+    return changed
+
+
 def _canonical(name: str, source: Source | None = None) -> str:
     from honest_cv.score import groups
 

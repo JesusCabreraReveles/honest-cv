@@ -16,7 +16,10 @@ language the whole time, even after English tool results or texts.
 1. **Get the draft.** Call `linkedin_profile` with `variant="$variant"`, `lang="$lang"` and
    `profile="$profile"`. Mention any `left_out` bullets: they did not fit a position's limit.
 2. **Polish, if they want.** Offer a warmer About in the first person and a headline that reads
-   naturally. Keep their wording where you can.
+   naturally. Keep their wording where you can. Skill names come from the inventory, usually in
+   English: in a headline in another language, translate them (e.g. "Liderazgo de equipos"). The
+   skills list can stay as it is, since LinkedIn matches skills across languages. Suggest pinning
+   the few that matter most for the roles they want: LinkedIn shows those first.
 3. **Check.** Call `check_claims` with every text you changed. Fix each problem by removing or
    qualifying the claim; show each warning to the person. Repeat until there are no problems.
 4. **Hand over.** Show each section with its character count, ready to paste into LinkedIn. The

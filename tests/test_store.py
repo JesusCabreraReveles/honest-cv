@@ -3,6 +3,7 @@ import yaml
 from pydantic import ValidationError
 
 from honest_cv import store
+from honest_cv.store import SkillChange
 from honest_cv.model import Bullet, Level, SkillUpgradeError, load
 
 
@@ -192,3 +193,14 @@ def test_publications_are_picked_per_variant_and_removed_everywhere(profile):
     assert source.variants[vid].publications == []
     assert "post" not in [p.id for p in source.profile.publications]
     assert isinstance(source.variants[vid], Variant)
+
+
+def test_lowering_a_skill_lowers_its_mark_in_the_checklist(profile):
+    (profile / "checklist.md").write_text(
+        "<!-- - [P] Redis — an example -->\n## Data\n- [P] Redis — ledger\n- [P] Kafka — events\n"
+        "- [P] Go / Rust — tools\n", encoding="utf-8")
+    store.upsert_skills(profile, [SkillChange("Redis", Level.FAMILIARITY), SkillChange("Go", Level.FAMILIARITY)])
+    assert (profile / "checklist.md").read_text(encoding="utf-8") == (
+        "<!-- - [P] Redis — an example -->\n## Data\n- [F] Redis — ledger\n- [P] Kafka — events\n"
+        "- [P] Go / Rust — tools\n"  # two skills under one mark: left to the person
+    )
