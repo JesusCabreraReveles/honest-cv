@@ -3,7 +3,7 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [0.2.0] — unreleased, feature complete
+## [0.2.0] — 2026-10-15
 
 Closed on 2026-10-15 after a full test as a new user. Published when the author decides.
 
