@@ -39,6 +39,16 @@ hc build imported -o imported-out | head -1
 echo "== cover letter"
 printf 'I am applying for the Platform Engineer role.\n\nI led a 40-service migration to Kubernetes.\n' > letter.txt
 hc letter build /examples/ada letter.txt --company "Acme" --role "Platform Engineer" -o letter-out
+echo "== own template, with its synonyms"
+cp -R /examples/ada ada && mkdir ada/checklists && cp /examples/checklists/project-management.md ada/checklists/
+hc checklist list ada | grep yours
+printf '# SRE extras\nsame: Service Level Objectives = SLOs\n- [ ] SLOs\n' > ada/checklists/sre.md
+hc score ada -v platform -k "Service Level Objectives" | grep "as 'SLOs'"
+echo "== export, LinkedIn, applications"
+hc export ada -v backend -l es -o out
+hc linkedin ada -v platform -o out | head -4
+hc apps log ada --company Acme --role SRE -s applied -v platform
+hc apps list ada
 echo "== MCP stdio handshake"
 # Keep stdin open a moment: a real client does, and on EOF the server stops
 # before answering requests still in flight.
