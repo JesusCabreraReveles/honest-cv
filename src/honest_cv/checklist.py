@@ -28,7 +28,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from honest_cv.model import LEVEL_RANK, TEMPLATES, Level, Source
+from honest_cv.model import LEVEL_RANK, TEMPLATES, Level, Source, without_comments
 from honest_cv.score import find_skill
 from honest_cv.store import SkillChange
 
@@ -391,9 +391,9 @@ class Builtin:
 
 def _template(path: Path, origin: str) -> Builtin:
     text = path.read_text(encoding="utf-8")
-    lines = [x.strip() for x in text.splitlines() if x.strip()]
+    lines = [x.strip() for x in without_comments(text).splitlines() if x.strip()]
     title = next((x.lstrip("# ") for x in lines if x.startswith("# ")), path.stem)
-    description = next((x for x in lines if not x.startswith(("#", "-", "<!--", "evidence:", "same:"))), "")
+    description = next((x for x in lines if not x.startswith(("#", "-", "evidence:", "same:"))), "")
     return Builtin(path.stem, title, description, len(parse(text).items), origin, str(path))
 
 

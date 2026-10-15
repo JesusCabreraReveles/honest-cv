@@ -73,7 +73,8 @@ def log(
     lang: Lang | None = None, files: list[str] | None = None, notes: str | None = None,
 ) -> Application:
     """Add an application, or update the one for the same company and role. Fields left
-    as None keep their value; files add to the list; a new status goes to the history."""
+    as None keep their value; files and notes add to what is there; a new status goes to
+    the history, which stays in date order, so the current status is the latest one."""
     folder = Path(folder)
     source = load(folder)
     if variant is not None and variant not in source.variants:
@@ -84,16 +85,19 @@ def log(
     if app is None:
         app = Application(id=key, company=company.strip(), role=role.strip())
         data.applications.append(app)
-    for name, value in (("url", url), ("variant", variant), ("lang", lang), ("notes", notes)):
+    for name, value in (("url", url), ("variant", variant), ("lang", lang)):
         if value is not None:
             setattr(app, name, value)
+    if notes and notes.strip() and notes.strip() not in (app.notes or ""):
+        app.notes = "\n".join(x for x in (app.notes, notes.strip()) if x)
     app.files += [f for f in files or [] if f not in app.files]
     new = Status(status) if status is not None else None
     if new is not None and (new != app.status or not app.history):
-        app.status = new
         app.history.append(Change(status=new, date=when or date.today()))
     elif not app.history:
         app.history.append(Change(status=app.status, date=when or date.today()))
+    app.history.sort(key=lambda c: c.date)  # stable: same-day changes keep their order
+    app.status = app.history[-1].status
     Applications.model_validate(data.model_dump())  # validate before writing
     _write(folder, FILE, data.model_dump(mode="json", exclude_defaults=True))
     return app

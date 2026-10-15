@@ -754,7 +754,7 @@ def log_application(
     variant: Annotated[str | None, Field(description="Variant id of the CV sent.")] = None,
     lang: Annotated[Lang | None, Field(description="Language of the CV sent.")] = None,
     files: Annotated[list[str] | None, Field(description="Paths of the CV and letter sent.")] = None,
-    notes: Annotated[str | None, Field(description="Contact person, salary range, next step...")] = None,
+    notes: Annotated[str | None, Field(description="Contact person, salary range, next step... Added to the notes already there.")] = None,
 ) -> dict:
     """Record a job application, or update the one for the same company and role. Fields not
     given keep their value. Use it after build_cv or build_letter when the person sends them,

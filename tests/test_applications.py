@@ -41,6 +41,19 @@ def test_the_same_status_again_adds_no_history(profile):
     assert len(app.history) == 1 and app.url == "https://acme.example/jobs/1"
 
 
+def test_notes_add_up(profile):
+    applications.log(profile, "Acme", "SRE", notes="Salary range 60-70k")
+    app = applications.log(profile, "Acme", "SRE", notes="Call with the CTO")
+    assert app.notes == "Salary range 60-70k\nCall with the CTO"
+    assert applications.log(profile, "Acme", "SRE", notes="Call with the CTO").notes == app.notes
+
+
+def test_a_backdated_status_keeps_the_history_in_order(profile):
+    applications.log(profile, "Acme", "SRE", status="interview", when=SEP_10)
+    app = applications.log(profile, "Acme", "SRE", status="applied", when=SEP_1)
+    assert [c.status for c in app.history] == ["applied", "interview"] and app.status == "interview"
+
+
 def test_an_unknown_variant_is_refused(profile):
     with pytest.raises(ValueError, match="unknown variant 'mobile'"):
         applications.log(profile, "Acme", "SRE", variant="mobile")

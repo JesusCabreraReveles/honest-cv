@@ -13,6 +13,10 @@ from tests.conftest import ADA
 EXAMPLES = sorted((Path(__file__).parent.parent / "examples" / "checklists").glob("*.md"))
 ACCOUNTING = """\
 # Accounting
+<!-- A comment over several lines, with an example that is not real:
+same: Excel = Spreadsheets
+-->
+Skills for an accountant.
 same: Certified Public Accountant = CPA = Contador Público
 same: Service Level Objectives = SLOs
 - [ ] SAP FI
@@ -32,6 +36,12 @@ def test_synonym_lines():
     assert synonym_line("same: Work Breakdown Structure = WBS = EDT") == ["Work Breakdown Structure", "WBS", "EDT"]
     assert synonym_line("Same:  PMP =  ") is None  # one name is not a group
     assert synonym_line("- [ ] same: as above") is None
+
+
+def test_comments_are_neither_description_nor_synonyms(profile):
+    own = {b.id: b for b in checklist.available(profile)}["accounting"]
+    assert own.description == "Skills for an accountant."
+    assert ["Excel", "Spreadsheets"] not in load(profile).synonyms
 
 
 def test_own_synonyms_count_in_the_job_score(profile):

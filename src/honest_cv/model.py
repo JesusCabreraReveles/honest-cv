@@ -27,6 +27,12 @@ FILES = ("profile.yaml", "bullets.yaml", "skills.yaml", "variants.yaml")
 TEMPLATES = "checklists"  # the person's own checklist templates: <profile>/checklists/*.md
 # A synonym line in a template: "same: Certified Public Accountant = CPA = Contador Público".
 SAME = re.compile(r"^\s*same:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
+COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+
+
+def without_comments(text: str) -> str:
+    """A template's text without its HTML comments, which may hold examples."""
+    return COMMENT.sub("", text)
 
 
 class MissingTranslation(ValueError):
@@ -350,7 +356,7 @@ def synonym_line(text: str) -> list[str] | None:
 def template_synonyms(folder: Path) -> list[list[str]]:
     groups = []
     for path in sorted((folder / TEMPLATES).glob("*.md")):
-        for line in path.read_text(encoding="utf-8").splitlines():
+        for line in without_comments(path.read_text(encoding="utf-8")).splitlines():
             if (names := synonym_line(line)) is not None:
                 groups.append(names)
     return groups

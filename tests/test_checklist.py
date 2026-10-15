@@ -282,3 +282,11 @@ def test_skills_no_achievement_shows(ada):
 def test_cli_lists_own_templates(own, capsys):
     assert cli.main(["checklist", "list", str(own)]) == 0
     assert "accounting" in capsys.readouterr().out
+
+
+def test_cli_apply_names_unbacked_skills_even_with_nothing_to_save(profile, tmp_path, capsys):
+    path = tmp_path / "checklist.md"
+    path.write_text("- [P] Redis\n- [P] Kafka\n", encoding="utf-8")
+    assert cli.main(["checklist", "apply", str(profile), str(path)]) == 0
+    out = capsys.readouterr().out
+    assert "Nothing to save." in out and "1 P/L skill(s) with no achievement that shows them: Redis." in out

@@ -115,7 +115,9 @@ def cmd_checklist_new(args: argparse.Namespace) -> int:
 
 def cmd_checklist_apply(args: argparse.Namespace) -> int:
     source = load(args.profile)
-    plan = checklist.plan(source, checklist.read(args.file))
+    marked = checklist.read(args.file)
+    plan = checklist.plan(source, marked)
+    names = [i.name for i in marked.items]
     for problem in plan.problems:
         print(f"note: {problem}")
     if plan.updates:
@@ -134,6 +136,7 @@ def cmd_checklist_apply(args: argparse.Namespace) -> int:
         print(f"{len(plan.unsure)} line(s) marked [?] were skipped.")
     if not plan.changes:
         print("Nothing to save.")
+        _report_unbacked(source, names)
         return 0
     if not sys.stdin.isatty():
         print("error: saving a checklist needs an interactive confirmation", file=sys.stderr)
@@ -143,7 +146,7 @@ def cmd_checklist_apply(args: argparse.Namespace) -> int:
         return 1
     saved = store.upsert_skills(args.profile, plan.changes, confirmed=True)
     print(f"Saved {len(saved)} skill(s).")
-    _report_unbacked(load(args.profile), [c.name for c in plan.changes])
+    _report_unbacked(load(args.profile), names)
     return 0
 
 
@@ -219,6 +222,8 @@ def cmd_apps_log(args: argparse.Namespace) -> int:
 
 def cmd_apps_list(args: argparse.Namespace) -> int:
     data = applications.listing(args.profile, args.status)
+    if not data["applications"]:
+        print("No applications yet." if not args.status else "None with that status.")
     for a in data["applications"]:
         print(f"{a['updated'] or '':<10}  {a['status']:<9}  {a['company']} — {a['role']}"
               f"  ({a['days_since_update']} days)")
