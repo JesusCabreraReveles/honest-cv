@@ -42,6 +42,8 @@ class Imported:
     roles: list[dict] = field(default_factory=list)  # each with "highlights": list[str]
     education: list[dict] = field(default_factory=list)
     certifications: list[str] = field(default_factory=list)
+    publications: list[dict] = field(default_factory=list)  # title, venue, year, url
+    courses: list[str] = field(default_factory=list)
     languages: list[str] = field(default_factory=list)
     skills: list[str] = field(default_factory=list)
     title: str | None = None  # headline, e.g. "Backend Engineer"
@@ -122,6 +124,10 @@ def from_json_resume(data: dict) -> Imported:
     for c in data.get("certificates") or []:
         if c.get("name"):
             out.certifications.append(", ".join(x for x in (c["name"], c.get("issuer")) if x))
+    for x in data.get("publications") or []:
+        if x.get("name"):
+            out.publications.append({"title": x["name"], "venue": x.get("publisher"),
+                                     "year": x.get("releaseDate"), "url": x.get("url")})
     for lang in data.get("languages") or []:
         if lang.get("language"):
             out.languages.append(f"{lang['language']} ({lang['fluency']})" if lang.get("fluency") else lang["language"])
@@ -191,6 +197,13 @@ def from_linkedin(zf: dict[str, bytes]) -> Imported:
     for c in _csv(zf, "Certifications.csv", "Name"):
         if c.get("Name"):
             out.certifications.append(", ".join(x for x in (c["Name"], c.get("Authority")) if x))
+    for x in _csv(zf, "Publications.csv", "Name"):
+        if x.get("Name"):
+            out.publications.append({"title": x["Name"], "venue": x.get("Publisher") or None,
+                                     "year": norm_date(x.get("Published On")), "url": x.get("Url") or None})
+    for x in _csv(zf, "Courses.csv", "Name"):
+        if x.get("Name"):
+            out.courses.append(x["Name"])
     for lang in _csv(zf, "Languages.csv", "Name"):
         if lang.get("Name"):
             out.languages.append(f"{lang['Name']} ({lang['Proficiency']})" if lang.get("Proficiency") else lang["Name"])
@@ -310,6 +323,23 @@ def merge(folder: str | Path, data: Imported, *, dry_run: bool = False) -> Repor
         if c not in certifications:
             certifications.append(c)
             report.add("certifications", c)
+    courses = profile.setdefault("courses", [])
+    for c in data.courses:
+        if c not in courses:
+            courses.append(c)
+            report.add("courses", c)
+    publications = profile.setdefault("publications", [])
+    for x in data.publications:
+        if any(p.get("title", "").casefold() == x["title"].casefold() for p in publications):
+            report.skip("publications", f"{x['title']} (already there)")
+            continue
+        taken = {p.get("id") for p in publications}
+        pid = base = _slug(x["title"])
+        n = 2
+        while pid in taken:
+            pid, n = f"{base}_{n}", n + 1
+        publications.append({"id": pid, **{k: v for k, v in x.items() if v}})
+        report.add("publications", x["title"])
     if data.languages and not profile.get("languages"):
         profile["languages"] = ", ".join(data.languages)
         report.add("languages", profile["languages"])

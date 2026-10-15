@@ -106,7 +106,7 @@ the `interview` prompt fill it in with you. Keep it out of public repositories.
 
 | File | What it holds |
 |---|---|
-| `profile.yaml` | Contact details, roles, education, certifications, courses and languages. |
+| `profile.yaml` | Contact details, roles, education, certifications, publications, courses and languages. |
 | `bullets.yaml` | A pool of achievements, each with an `id`, a `role` and `tags`. |
 | `skills.yaml` | Your skill inventory, with levels and evidence. |
 | `variants.yaml` | One CV plan per type of role. A variant can inherit from another with `extends:`. |
@@ -270,11 +270,12 @@ split away from its role.
 | `checklist_new` | Merges built-in checklists into one file, prefilled from your inventory. |
 | `checklist_apply` | Saves the skills marked in a checklist and returns the lines that still need evidence. |
 | `add_bullet` | Adds an achievement to the pool. |
-| `remove_skill`, `remove_bullet`, `remove_role` | Delete for good, and remove every use in the variants. A role with bullets needs `with_bullets`. Clients ask before running them. |
+| `remove_skill`, `remove_bullet`, `remove_role`, `remove_publication` | Delete for good, and remove every use in the variants. A role with bullets needs `with_bullets`. Clients ask before running them. |
 | `set_contact` | Changes contact details: name, email, phone, location, links. |
 | `set_profile_details` | Replaces the certifications list, the courses list and the spoken-languages line. |
 | `upsert_role` | Adds a role in date order, or changes fields of an existing one. |
 | `upsert_education` | Adds or changes an education entry. |
+| `upsert_publication` | Adds or changes a book, article or paper the person wrote. Each variant shows all of them, or the ones it lists. |
 | `save_variant` | Adds or replaces a variant. Every reference is checked before saving. |
 | `list_variants` | Lists the variants after inheritance, with their bullet texts and the bullets no variant uses. |
 | `build_cv` | Renders a PDF and/or DOCX and verifies it. |

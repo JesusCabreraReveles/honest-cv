@@ -22,6 +22,13 @@ education: []
 #   end: "2014"
 
 certifications: []
+publications: []                  # books, articles, papers you wrote
+# - id: my_book                   # variants pick by id; a variant without a list shows all
+#   title: The Title as Published
+#   venue: Amazon (self-published)   # or Medium, a journal...; never a publisher you didn't have
+#   year: "2024"
+#   url: example.com/my-book
+
 courses: []                       # trainings without an exam
 # - {en: "Leadership course, Some Institute, 2021", es: "Curso de liderazgo, Algún Instituto, 2021"}
 # languages: {en: "Spanish (native), English (C1)", es: "Español (nativo), inglés (C1)"}

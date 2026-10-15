@@ -35,4 +35,15 @@ certifications:
   - AWS Certified Solutions Architect – Associate
   - Certified Kubernetes Application Developer (CKAD)
 
+publications:
+  - id: ledger_book
+    title: Double-Entry Ledgers for Software Engineers
+    venue: Amazon (self-published)
+    year: "2024"
+  - id: idempotency_post
+    title: Idempotent Payment APIs in Practice
+    venue: Medium
+    year: "2023"
+    url: medium.com/@ada-example/idempotent-payment-apis
+
 languages: {en: "Spanish (native), English (C1)", es: "Español (nativo), inglés (C1)"}

@@ -1,6 +1,6 @@
 """Data model: a profile folder holds four YAML files validated with pydantic.
 
-    profile.yaml   contact, roles, education, certifications, courses, languages
+    profile.yaml   contact, roles, education, certifications, publications, courses, languages
     bullets.yaml   pool of achievements, each with an id, role and tags
     skills.yaml    skill inventory with honesty levels (P/L/F/X)
     variants.yaml  per-role-type CV plans, with `extends:` inheritance
@@ -81,17 +81,30 @@ class Education(Strict):
     end: str | None = None
 
 
+class Publication(Strict):
+    """A book, article or paper the person wrote. Self-published is fine; say so in
+    `venue` rather than naming a publisher there was not."""
+
+    id: str
+    title: str
+    venue: str | None = None  # e.g. "Amazon (self-published)", "Medium"
+    year: str | None = None
+    url: str | None = None
+
+
 class Profile(Strict):
     contact: Contact
     roles: list[Role] = []
     education: list[Education] = []
     certifications: list[Text] = []
+    publications: list[Publication] = []
     courses: list[Text] = []  # training without an exam, e.g. a company leadership course
     languages: Text | None = None
 
     @model_validator(mode="after")
-    def _unique_role_ids(self) -> Profile:
+    def _unique_ids(self) -> Profile:
         _check_unique([r.id for r in self.roles], "role id")
+        _check_unique([p.id for p in self.publications], "publication id")
         return self
 
 
@@ -197,6 +210,7 @@ class Variant(Strict):
     impact: list[str] | None = None
     roles: dict[str, list[str]] | None = None
     skills: list[SkillGroup] | None = None
+    publications: list[str] | None = None  # ids to show; not set means all of them
     max_pages: int | None = Field(default=None, ge=1)
 
 
@@ -210,6 +224,7 @@ class ResolvedVariant(Strict):
     impact: list[str] = []
     roles: dict[str, list[str]] = {}
     skills: list[SkillGroup] = []
+    publications: list[str] | None = None  # None: every publication in the profile
     max_pages: int = 2
 
 
@@ -240,6 +255,13 @@ class Source(Strict):
         for vid in self.variants:
             self.resolve(vid)  # surfaces broken references and cycles at load time
         return self
+
+    def publications(self, v: ResolvedVariant) -> list[Publication]:
+        """The publications a variant shows, in its order; all of them if it names none."""
+        if v.publications is None:
+            return list(self.profile.publications)
+        by_id = {p.id: p for p in self.profile.publications}
+        return [by_id[pid] for pid in v.publications]
 
     def bullet(self, bid: str) -> Bullet:
         for b in self.bullets:
@@ -286,6 +308,10 @@ class Source(Strict):
             for bid in ids:
                 if self.bullet(bid).role != rid:
                     raise ProfileError(f"variant '{v.id}': bullet '{bid}' does not belong to role '{rid}'")
+        known = {p.id for p in self.profile.publications}
+        for pid in v.publications or []:
+            if pid not in known:
+                raise ProfileError(f"variant '{v.id}': unknown publication '{pid}'")
         for group in v.skills:
             for name in group.skills:
                 if self.inventory.get(name) is None:

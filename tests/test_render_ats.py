@@ -166,3 +166,15 @@ def test_contact_items_never_split_across_lines(ada):
     doc.contact = [f"{'x' * n}" for n in range(1, 25)] + [url]
     lines = [line.strip() for line in extract_text(io.BytesIO(render_pdf(doc))).splitlines()]
     assert any(url in line for line in lines)
+
+
+@pytest.mark.parametrize("lang", ["en", "es"])
+def test_a_variant_shows_its_publications(ada, lang):
+    backend = document.build(ada, "backend", lang)
+    assert backend.publications == [
+        "Double-Entry Ledgers for Software Engineers · Amazon (self-published) · 2024",
+        "Idempotent Payment APIs in Practice · Medium · 2023 · medium.com/@ada-example/idempotent-payment-apis",
+    ]
+    assert document.build(ada, "platform", lang).publications == []
+    text = extract_text(io.BytesIO(render_pdf(backend)))
+    assert text.index(backend.headings["publications"]) < text.index("Double-Entry Ledgers")

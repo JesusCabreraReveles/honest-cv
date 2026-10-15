@@ -167,3 +167,28 @@ def test_remove_unknown_is_an_error(profile):
     for fn, arg in ((store.remove_bullet, "nope"), (store.remove_skill, "COBOL"), (store.remove_role, "nope")):
         with pytest.raises(ValueError, match="unknown"):
             fn(profile, arg)
+
+
+def test_publications_are_picked_per_variant_and_removed_everywhere(profile):
+    store.upsert_publication(profile, "book", title="Ledgers", venue="Amazon (self-published)", year="2024")
+    store.upsert_publication(profile, "post", title="Idempotency", venue="Medium")
+    store.upsert_publication(profile, "post", year="2023")
+    source = load(profile)
+    vid = next(iter(source.variants))
+    assert [p.id for p in source.publications(source.resolve(vid))][-2:] == ["book", "post"]
+    assert source.profile.publications[1].year == "2023"
+
+    from honest_cv.model import Variant
+
+    variant = source.variants[vid].model_copy(update={"publications": ["post"]})
+    with pytest.raises(ValidationError, match="unknown publication 'talk'"):
+        store.save_variant(profile, vid, variant.model_copy(update={"publications": ["talk"]}))
+    store.save_variant(profile, vid, variant)
+    source = load(profile)
+    assert [p.id for p in source.publications(source.resolve(vid))] == ["post"]
+
+    assert store.remove_publication(profile, "post") == {"removed": "post", "variants_updated": [vid]}
+    source = load(profile)
+    assert source.variants[vid].publications == []
+    assert "post" not in [p.id for p in source.profile.publications]
+    assert isinstance(source.variants[vid], Variant)

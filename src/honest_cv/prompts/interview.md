@@ -26,7 +26,11 @@ Call `get_inventory` and `list_variants` with `profile="$profile"`.
 
 Save them with `set_contact`, `upsert_role`, `upsert_education` and `set_profile_details`
 (certifications, courses and spoken languages). A course or training without an exam goes in
-`courses`, never in `certifications` or the skill checklist. Each role needs an `id`, `title`, `company` and `start`, plus
+`courses`, never in `certifications` or the skill checklist.
+
+Then ask once, in one short question, whether they have certifications, courses, or anything they
+wrote: books, articles, papers, a blog. People rarely mention these unasked. Save what they wrote
+with `upsert_publication`; when self-published, say so in `venue` (e.g. "Amazon (self-published)"). Each role needs an `id`, `title`, `company` and `start`, plus
 `end` unless it is the current role, and an optional one-line `context`. Use `{"en": ..., "es": ...}`
 for texts when they want CVs in both languages. Say honestly whether a degree was completed.
 
@@ -73,7 +77,8 @@ If the server says the client cannot ask, give them the `honest-cv skill` comman
 
 Ask which kinds of roles they apply to: for example backend, platform or leadership. Propose one
 variant per kind, each with a title, a 2–3 sentence summary, competencies, impact bullets, the
-bullets for each role, and skill groups. Use `extends` so that each variant only states what
+bullets for each role, skill groups and, if they have publications, which ones fit that kind of
+role (`publications`; leave it out to show all). Use `extends` so that each variant only states what
 differs from another. Show it, and call `save_variant` once they approve.
 
 ## 6. First build

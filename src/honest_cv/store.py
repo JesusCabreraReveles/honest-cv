@@ -14,7 +14,7 @@ from pathlib import Path
 
 import yaml
 
-from honest_cv.model import FILES, Bullet, Contact, Education, Level, Role, Skill, Source, Variant, set_skill_level
+from honest_cv.model import FILES, Bullet, Contact, Education, Level, Publication, Role, Skill, Source, Variant, set_skill_level
 
 TEMPLATES = Path(__file__).parent / "templates" / "profile"
 
@@ -218,6 +218,20 @@ def upsert_education(folder: str | Path, institution: str, **fields) -> Educatio
     return _save_profile(folder, raw).profile.education[index]
 
 
+def upsert_publication(folder: str | Path, id: str, **fields) -> Publication:
+    """Add a publication, or change the fields given of the one with this id."""
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    entries = raw["profile.yaml"].setdefault("publications", [])
+    index = next((i for i, e in enumerate(entries) if e.get("id") == id), None)
+    if index is not None:
+        entries[index] = _merge(entries[index], fields)
+    else:
+        entries.append(_merge({"id": id}, fields))
+        index = len(entries) - 1
+    return _save_profile(folder, raw).profile.publications[index]
+
+
 def save_variant(folder: str | Path, id: str, variant: Variant) -> Variant:
     """Add a variant, or replace it whole."""
     folder = Path(folder).expanduser()
@@ -294,6 +308,25 @@ def remove_skill(folder: str | Path, name: str) -> dict:
     if changed:
         _write(folder, "variants.yaml", raw["variants.yaml"])
     return {"removed": match["name"], "level": match["level"], "variants_updated": changed}
+
+
+def remove_publication(folder: str | Path, publication_id: str) -> dict:
+    folder = Path(folder).expanduser()
+    raw = _raw(folder)
+    entries = raw["profile.yaml"].get("publications") or []
+    if not any(e.get("id") == publication_id for e in entries):
+        raise StoreError(f"unknown publication '{publication_id}'")
+    raw["profile.yaml"]["publications"] = [e for e in entries if e.get("id") != publication_id]
+    changed = []
+    for vid, v in _variants(raw).items():
+        if publication_id in (v.get("publications") or []):
+            v["publications"].remove(publication_id)
+            changed.append(vid)
+    _validate(raw)
+    _write(folder, "profile.yaml", raw["profile.yaml"])
+    if changed:
+        _write(folder, "variants.yaml", raw["variants.yaml"])
+    return {"removed": publication_id, "variants_updated": sorted(changed)}
 
 
 def remove_role(folder: str | Path, role_id: str, *, with_bullets: bool = False) -> dict:

@@ -20,6 +20,7 @@ HEADINGS: dict[Lang, dict[str, str]] = {
         "skills": "Skills",
         "education": "Education",
         "certifications": "Certifications",
+        "publications": "Publications",
         "courses": "Courses",
         "languages": "Languages",
     },
@@ -31,6 +32,7 @@ HEADINGS: dict[Lang, dict[str, str]] = {
         "skills": "Habilidades",
         "education": "Educación",
         "certifications": "Certificaciones",
+        "publications": "Publicaciones",
         "courses": "Cursos",
         "languages": "Idiomas",
     },
@@ -69,6 +71,7 @@ class Document:
     skills: list[SkillLine]
     education: list[str]
     certifications: list[str]
+    publications: list[str]
     courses: list[str]
     languages: str | None
     headings: dict[str, str] = field(default_factory=dict)
@@ -137,6 +140,10 @@ def build(source: Source, variant_id: str, lang: Lang) -> Document:
             for e in p.education
         ],
         certifications=[loc(x, "certifications") for x in p.certifications],
+        publications=[
+            " · ".join(x for x in (pub.title, pub.venue, pub.year, pub.url) if x)
+            for pub in source.publications(v)
+        ],
         courses=[loc(x, "courses") for x in p.courses],
         languages=loc(p.languages, "languages") if p.languages else None,
         headings=HEADINGS[lang],

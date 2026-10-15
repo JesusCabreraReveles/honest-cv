@@ -110,7 +110,7 @@ que el prompt `interview` lo llene contigo. Mantenlo fuera de repositorios públ
 
 | Archivo | Qué guarda |
 |---|---|
-| `profile.yaml` | Datos de contacto, puestos, educación, certificaciones, cursos e idiomas. |
+| `profile.yaml` | Datos de contacto, puestos, educación, certificaciones, publicaciones, cursos e idiomas. |
 | `bullets.yaml` | Un pool de logros, cada uno con `id`, `role` y `tags`. |
 | `skills.yaml` | Tu inventario de skills, con niveles y evidencia. |
 | `variants.yaml` | Un plan de CV por tipo de puesto. Una variante puede heredar de otra con `extends:`. |
@@ -280,11 +280,12 @@ parsers separan de su puesto.
 | `checklist_new` | Combina checklists incluidos en un archivo, prellenado con tu inventario. |
 | `checklist_apply` | Guarda las skills marcadas en un checklist y devuelve las líneas que todavía necesitan evidencia. |
 | `add_bullet` | Agrega un logro al pool. |
-| `remove_skill`, `remove_bullet`, `remove_role` | Borran definitivamente y quitan cada uso en las variantes. Un puesto con bullets necesita `with_bullets`. Los clientes piden permiso antes de usarlas. |
+| `remove_skill`, `remove_bullet`, `remove_role`, `remove_publication` | Borran definitivamente y quitan cada uso en las variantes. Un puesto con bullets necesita `with_bullets`. Los clientes piden permiso antes de usarlas. |
 | `set_contact` | Cambia los datos de contacto: nombre, email, teléfono, ubicación y links. |
 | `set_profile_details` | Reemplaza la lista de certificaciones, la de cursos y la línea de idiomas. |
 | `upsert_role` | Agrega un puesto en orden de fechas, o cambia campos de uno existente. |
 | `upsert_education` | Agrega o cambia una entrada de formación. |
+| `upsert_publication` | Agrega o cambia un libro, artículo o paper que la persona escribió. Cada variante muestra todos, o los que liste. |
 | `save_variant` | Agrega o reemplaza una variante. Revisa todas sus referencias antes de guardar. |
 | `list_variants` | Lista las variantes ya con la herencia aplicada, con el texto de sus bullets y los bullets que ninguna usa. |
 | `build_cv` | Genera el PDF y/o el DOCX y lo verifica. |

@@ -82,6 +82,10 @@ def render_docx(doc: Document) -> bytes:
         heading(H["certifications"])
         for c in doc.certifications:
             para(c)
+    if doc.publications:
+        heading(H["publications"])
+        for x in doc.publications:
+            para(x)
     if doc.courses:
         heading(H["courses"])
         for c in doc.courses:

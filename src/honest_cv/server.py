@@ -545,6 +545,26 @@ def upsert_education(
 
 @mcp.tool(annotations=WRITE)
 @_tool_errors
+def upsert_publication(
+    id: Annotated[str, Field(description="Short id, e.g. book_adr_kit. Variants list these ids.")],
+    profile: Profile = None,
+    title: Annotated[str | None, Field(description="The title as published.")] = None,
+    venue: Annotated[
+        str | None,
+        Field(description='Where it is published, e.g. "Amazon (self-published)" or "Medium". '
+                          "Never a publisher it did not have."),
+    ] = None,
+    year: Year = None,
+    url: Annotated[str | None, Field(description="A link to it.")] = None,
+) -> dict:
+    """Add a book, article or paper the person wrote, or change the fields given of the one with
+    this id. Every variant shows all publications unless it lists the ones it wants."""
+    entry = store.upsert_publication(_profile_dir(profile), id, title=title, venue=venue, year=year, url=url)
+    return {"publication": entry.model_dump(mode="json", exclude_none=True)}
+
+
+@mcp.tool(annotations=WRITE)
+@_tool_errors
 def save_variant(
     id: Annotated[str, Field(description="Variant id, e.g. backend.")],
     profile: Profile = None,
@@ -557,13 +577,18 @@ def save_variant(
         dict[str, list[str]] | None, Field(description="Role id -> bullet ids to show, in order.")
     ] = None,
     skills: Annotated[list[SkillGroup] | None, Field(description="Skill groups: a label and skill names.")] = None,
+    publications: Annotated[
+        list[str] | None,
+        Field(description="Publication ids to show, in order; [] shows none. Not set: all of them."),
+    ] = None,
     max_pages: Annotated[int | None, Field(description="Page limit, usually 1 or 2.", ge=1)] = None,
 ) -> dict:
     """Add a variant or replace it whole: pass every field it should define. A variant without
     `extends` needs `title` and `summary`. See `list_variants` → `own` for what it defines now."""
     fields = {
         "extends": extends, "title": title, "summary": summary, "competencies": competencies,
-        "impact": impact, "roles": roles, "skills": skills, "max_pages": max_pages,
+        "impact": impact, "roles": roles, "skills": skills, "publications": publications,
+        "max_pages": max_pages,
     }
     variant = Variant(**{k: v for k, v in fields.items() if v is not None})
     saved = store.save_variant(_profile_dir(profile), id, variant)
@@ -590,6 +615,16 @@ def remove_bullet(
 ) -> dict:
     """Delete an achievement from the pool and from every variant that uses it. Ask the person first."""
     return store.remove_bullet(_profile_dir(profile), id)
+
+
+@mcp.tool(annotations=REMOVE)
+@_tool_errors
+def remove_publication(
+    id: Annotated[str, Field(description="Publication id from profile.yaml.")],
+    profile: Profile = None,
+) -> dict:
+    """Delete a publication and its place in every variant. Ask the person first."""
+    return store.remove_publication(_profile_dir(profile), id)
 
 
 @mcp.tool(annotations=REMOVE)
@@ -623,6 +658,7 @@ def list_variants(profile: Profile = None) -> dict:
             "impact": {b: source.bullet(b).text for b in v.impact},
             "roles": {rid: {b: source.bullet(b).text for b in ids} for rid, ids in v.roles.items()},
             "skills": [g.model_dump(mode="json") for g in v.skills],
+            "publications": [p.id for p in source.publications(v)],
         }
     unused = sorted({b.id for b in source.bullets} - {
         b for v in out.values() for b in [*v["impact"], *(x for r in v["roles"].values() for x in r)]

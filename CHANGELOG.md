@@ -33,6 +33,12 @@ Work on `master`.
   without an exam, which is not a certification. JSON Resume has no field for it, so the export
   leaves it out.
 - The checklist header shows a marked example line.
+- Publications: books, articles and papers the person wrote (`upsert_publication`,
+  `remove_publication`), in their own CV section. A variant shows all of them or the ones it lists.
+  The LinkedIn and JSON Resume imports read publications (and LinkedIn's courses), and the JSON
+  Resume export writes them.
+- The interview asks once for certifications, courses and anything the person wrote, which people
+  rarely mention unasked.
 
 ### Changed
 

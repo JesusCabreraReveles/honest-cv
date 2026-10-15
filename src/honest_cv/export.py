@@ -101,6 +101,10 @@ def json_resume(source: Source, variant_id: str, lang: Lang) -> dict:
         "work": work,
         "education": education,
         "certificates": [{"name": loc(x, "certifications")} for x in p.certifications],
+        "publications": [
+            _clean({"name": x.title, "publisher": x.venue, "releaseDate": x.year, "url": x.url})
+            for x in source.publications(v)
+        ],
         "skills": skills,
         "languages": languages,
         "meta": {"version": "v1.0.0", "generator": f"honest-cv {__version__}", "variant": v.id, "lang": lang},

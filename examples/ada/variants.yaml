@@ -54,6 +54,7 @@ variants:
         skills: [Java, Python, Go, Rust]
       - label: {en: Data & Messaging, es: Datos y mensajería}
         skills: [Kafka, PostgreSQL, Redis]
+    publications: []  # both are about payments
 
   leadership:
     extends: backend

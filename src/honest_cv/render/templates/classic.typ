@@ -79,6 +79,11 @@
   #for c in d.certifications { par(c) }
 ]
 
+#if d.publications.len() > 0 [
+  == #d.headings.publications
+  #for x in d.publications { par(x) }
+]
+
 #if d.courses.len() > 0 [
   == #d.headings.courses
   #for c in d.courses { par(c) }

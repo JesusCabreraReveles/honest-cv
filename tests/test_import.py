@@ -34,6 +34,9 @@ def linkedin_zip() -> bytes:
         "Skills.csv": "Name\nKubernetes\nGo\nkubernetes\n",
         "Languages.csv": "Name,Proficiency\nEnglish,Professional working proficiency\n",
         "Certifications.csv": "Name,Url,Authority,Started On,Finished On,License Number\nCKA,,CNCF,,,\n",
+        "Publications.csv": "Name,Published On,Description,Publisher,Url\n"
+                            "Running Freight on Kubernetes,Mar 2024,,Medium,https://medium.com/@lin/freight\n",
+        "Courses.csv": "Name,Number\nIncident Command,\n",
     }
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as zf:
@@ -89,6 +92,11 @@ def test_linkedin_export(tmp_path):
         "Moved 30 services to Kubernetes.", "Wrote the on-call runbook."
     ]
     assert source.profile.certifications == ["CKA, CNCF"]
+    assert source.profile.courses == ["Incident Command"]
+    pub = source.profile.publications[0]
+    assert (pub.id, pub.title, pub.venue, pub.year) == (
+        "running_freight_on_kubernetes", "Running Freight on Kubernetes", "Medium", "2024-03"
+    )
     assert [i.name for i in checklist.read(report.skills_checklist).items] == ["Kubernetes", "Go"]
 
 

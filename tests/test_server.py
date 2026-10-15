@@ -61,7 +61,8 @@ async def test_lists_the_planned_tools():
                      "set_skills", "checklist_apply", "checklist_list", "checklist_new",
                      "check_claims", "build_letter", "import_profile",
                      "remove_skill", "remove_bullet", "remove_role", "export_json_resume",
-                     "log_application", "list_applications", "linkedin_profile"}
+                     "log_application", "list_applications", "linkedin_profile",
+                     "upsert_publication", "remove_publication"}
 
 
 async def test_every_tool_argument_is_described():

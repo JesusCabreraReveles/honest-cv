@@ -62,6 +62,9 @@ def test_importing_the_export_gives_the_same_profile(ada, lang, tmp_path):
     assert (c.name, c.email, c.phone) == (d.name, d.email, d.phone)
     assert [text(e.degree) for e in back.profile.education] == [text(e.degree) for e in ada.profile.education]
     assert back.profile.certifications == [text(x) for x in ada.profile.certifications]
+    assert [(p.title, p.venue, p.year, p.url) for p in back.profile.publications] == [
+        (p.title, p.venue, p.year, p.url) for p in ada.profile.publications
+    ]
 
 
 def test_cli_export(tmp_path, capsys):
