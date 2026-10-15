@@ -22,5 +22,8 @@ language the whole time, even after English tool results or texts.
    the few that matter most for the roles they want: LinkedIn shows those first.
 3. **Check.** Call `check_claims` with every text you changed. Fix each problem by removing or
    qualifying the claim; show each warning to the person. Repeat until there are no problems.
-4. **Hand over.** Show each section with its character count, ready to paste into LinkedIn. The
-   file honest-cv wrote has the unpolished version; say where it is.
+4. **Save.** Once they approve, call `linkedin_profile` again with the polished `headline` and
+   `about`. The server checks them again and writes them into the file, so the final version
+   lives in their profile, not in a temporary file.
+5. **Hand over.** Show each section with its character count, ready to paste into LinkedIn, and
+   say where the file is.

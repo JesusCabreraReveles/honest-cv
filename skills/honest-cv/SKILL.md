@@ -176,7 +176,9 @@ work from its result, instead of reading the file yourself.
 Call `linkedin_profile` for the variant that matches the roles they want. Offer to polish the
 headline and About in their voice, run `check_claims` on every text you change, and show each
 section with its character count. Mention any `left_out` bullets. F skills stay out of the skills
-list on purpose: LinkedIn can't label them as familiarity.
+list on purpose: LinkedIn can't label them as familiarity. Once they approve the polished
+headline and About, call `linkedin_profile` again with them, so the final version is saved in
+their profile's `out/` folder and not only in the chat or a temporary file.
 
 ## Checking an existing CV
 

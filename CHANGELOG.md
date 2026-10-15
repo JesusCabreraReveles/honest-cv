@@ -31,6 +31,8 @@ Closed on 2026-10-15 after a full test as a new user. Published when the author 
   points to prepare for its interview (`prep`).
 - LinkedIn texts from a variant, within LinkedIn's limits: `linkedin_profile` (tool and prompt) and
   `honest-cv linkedin`. Headline, About, one description per position and the skills, P and L only.
+  An approved, polished headline and About go back through the tool, which checks them like a
+  letter and saves them in the file.
 - The interview handles dictated answers: it reads names and numbers back before saving them, and
   turns a long spoken answer into a bullet for the person to approve.
 - A Courses section (`courses` in `profile.yaml`, set with `set_profile_details`) for training

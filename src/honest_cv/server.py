@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime
 import functools
 import inspect
+import json
 import os
 from pathlib import Path
 from string import Template
@@ -803,17 +804,37 @@ def linkedin_profile(
     lang: LangArg = "en",
     profile: Profile = None,
     out_dir: Annotated[str | None, Field(description="Output folder. Default: <profile>/out.")] = None,
+    headline: Annotated[
+        str | None, Field(description="A polished headline the person approved, to save instead of the draft.")
+    ] = None,
+    about: Annotated[
+        str | None, Field(description="A polished About the person approved, to save instead of the draft.")
+    ] = None,
 ) -> dict:
     """LinkedIn texts from a variant, within LinkedIn's limits: headline, About, each position's
     description from its bullets, and the skills (P and L only: LinkedIn can't label
-    familiarity). Also writes them to a Markdown file to copy from. Run `check_claims` on any
-    text you reword."""
+    familiarity). Also writes them to a Markdown file to copy from. Once the person approves a
+    polished headline or About, call it again with them: they are checked like a letter and
+    saved in that file, so the person keeps the final version."""
     folder = _profile_dir(profile)
     source = load(folder)
     suggestion = linkedin.suggest(source, variant, lang)
+    warnings = []
+    for name, text, limit in (("headline", headline, linkedin.HEADLINE), ("about", about, linkedin.ABOUT)):
+        if text is None:
+            continue
+        text = text.strip()
+        if len(text) > limit:
+            raise ToolError(f"{name} has {len(text)} characters; LinkedIn allows {limit}. Nothing was saved.")
+        claims = letter.check_claims(text, source)
+        if not claims.ok:
+            raise ToolError(f"{name} makes claims the profile does not support; nothing was saved: "
+                            + json.dumps(claims.to_dict()["problems"], ensure_ascii=False))
+        warnings += [{**w, "text": name} for w in claims.to_dict()["warnings"]]
+        setattr(suggestion, name, linkedin.Text(text, limit))
     path = linkedin.write(suggestion, source.profile.contact.name,
                           Path(out_dir).expanduser() if out_dir else folder / "out")
-    return {**suggestion.to_dict(), "path": str(path)}
+    return {**suggestion.to_dict(), "path": str(path), **({"warnings": warnings} if warnings else {})}
 
 
 StatusArg = Literal["draft", "applied", "interview", "offer", "rejected", "withdrawn"]

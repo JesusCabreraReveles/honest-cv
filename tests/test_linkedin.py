@@ -53,3 +53,35 @@ def test_cli(tmp_path, capsys):
     assert cli.main(["linkedin", "examples/ada", "-v", "backend", "-l", "es", "-o", str(tmp_path)]) == 0
     assert "## Headline" in capsys.readouterr().out
     assert (tmp_path / "Ada_Example_LinkedIn_backend_ES.md").exists()
+
+
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
+
+
+@pytest.mark.anyio
+async def test_an_approved_polish_is_checked_and_saved(tmp_path):
+    import shutil
+
+    from mcp import Client
+
+    from honest_cv.server import mcp as server
+    from tests.conftest import ADA
+    from tests.test_server import call
+
+    shutil.copytree(ADA, tmp_path / "ada")
+    profile = str(tmp_path / "ada")
+    async with Client(server) as c:
+        err, out = await call(c, "linkedin_profile", profile=profile, variant="backend",
+                              headline="Backend engineer · payments and ledgers",
+                              about="I build payment systems that keep their books straight.")
+        assert not err and out["headline"]["text"] == "Backend engineer · payments and ledgers"
+        saved = (tmp_path / "ada" / "out").glob("*LinkedIn*.md").__next__().read_text(encoding="utf-8")
+        assert "I build payment systems that keep their books straight." in saved
+        # Scala is X in Ada's inventory: claiming it saves nothing.
+        err, msg = await call(c, "linkedin_profile", profile=profile, variant="backend",
+                              about="Years of Scala in production.")
+        assert err and "Scala" in msg and "nothing was saved" in msg
+        err, msg = await call(c, "linkedin_profile", profile=profile, variant="backend", headline="x" * 221)
+        assert err and "221 characters" in msg
