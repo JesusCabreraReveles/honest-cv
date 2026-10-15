@@ -214,8 +214,11 @@ huecos que entraron a la v0.2:
 
 ### Pendiente para publicar
 
-- Decidir si se publica directo la 0.2 como primera versión en PyPI, sin publicar la 0.1. La
-  recomendación es que sí: la 0.1 nunca salió y la 0.2 trae arreglos que la 0.1 no tiene.
-- Cuenta de PyPI con trusted publishing, prueba opcional en TestPyPI, PyPI y registro de MCP.
+- Decidido el 2026-10-15: se publica directo la 0.2 como primera versión. La 0.1 nunca sale; la
+  rama `release/0.1` queda como registro.
+- `.github/workflows/release.yml` publica sin contraseñas (trusted publishing): a mano va a
+  TestPyPI; un tag `vX.Y.Z` va a PyPI y luego al registro de MCP. Antes hace falta la cuenta de
+  PyPI con un "pending publisher" para este workflow (entorno `pypi`) y, para la prueba, lo mismo
+  en TestPyPI (entorno `testpypi`).
 - Después de publicar, abrir issues: preparar entrevistas, más plantillas, checklists por idioma y
   avisar en `gap_report` cuando una skill está marcada en el checklist pero le falta evidencia.
