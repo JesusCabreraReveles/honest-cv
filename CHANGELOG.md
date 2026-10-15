@@ -5,7 +5,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [0.2.0] — 2026-10-15
 
-Closed on 2026-10-15 after a full test as a new user. Published when the author decides.
+Closed on 2026-10-15 after a full test as a new user. The first release on PyPI.
 
 ### Added
 
