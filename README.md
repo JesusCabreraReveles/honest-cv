@@ -207,7 +207,9 @@ approve.
 files went to which company, and each status with its date (`draft`, `applied`, `interview`,
 `offer`, `rejected`, `withdrawn`). Logging the same company and role again updates it. With an MCP
 client, your assistant offers to log an application after building the CV or letter, and
-`list_applications` points out the ones with no news for two weeks.
+`list_applications` points out the ones with no news for two weeks. It also keeps the job post's
+text in `posts/`, since links expire, and what to prepare for the interview: ask your assistant
+*"what did I need to prepare for Acme?"*.
 
 ## LinkedIn
 
@@ -295,7 +297,7 @@ split away from its role.
 | prompt `cover_letter` | Drafts a letter for a job post from your bullets, checks its claims and builds it. |
 | `import_profile` | Imports JSON Resume or a LinkedIn data export, adding only what is missing. For a LinkedIn PDF it returns the text. |
 | `export_json_resume` | Exports a variant as JSON Resume; X skills never appear and F skills keep their label. |
-| `log_application` | Records an application (company, role, CV variant, files sent) or a new status, with its date. |
+| `log_application` | Records an application (company, role, CV variant, files sent, the post's text, what to prepare) or a new status, with its date. |
 | `linkedin_profile` | LinkedIn headline, About, position descriptions and skills (P and L only) from a variant, within LinkedIn's limits. |
 | `list_applications` | Lists applications, latest first, with a count per status and the ones with no news for 14+ days. |
 | prompt `import_linkedin_pdf` | Turns the PDF from LinkedIn's "Save to PDF" into a profile, section by section, with your approval. |

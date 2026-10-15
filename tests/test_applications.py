@@ -35,6 +35,16 @@ def test_logging_the_same_job_again_updates_it(profile):
     assert len(applications.read(profile).applications) == 1
 
 
+def test_the_post_and_the_prep_are_kept(profile):
+    app = applications.log(profile, "Acme", "SRE", post="Acme is hiring an SRE.\n",
+                           prep=["An example of C", "  ", "Why Querétaro"])
+    assert app.post == "posts/acme_sre.md" and app.prep == ["An example of C", "Why Querétaro"]
+    assert (profile / app.post).read_text(encoding="utf-8") == "Acme is hiring an SRE.\n"
+    app = applications.log(profile, "Acme", "SRE", prep=["Why Querétaro"])
+    assert app.prep == ["Why Querétaro"] and app.post == "posts/acme_sre.md"
+    assert applications.listing(profile)["applications"][0]["prep"] == ["Why Querétaro"]
+
+
 def test_the_same_status_again_adds_no_history(profile):
     applications.log(profile, "Acme", "SRE", status="applied", when=SEP_1)
     app = applications.log(profile, "Acme", "SRE", status="applied", when=SEP_10, url="https://acme.example/jobs/1")
@@ -94,4 +104,11 @@ def test_cli(profile, capsys):
     assert cli.main(["apps", "list", str(profile)]) == 0
     out = capsys.readouterr().out
     assert "acme_sre: applied (2026-09-01)" in out and "Acme — SRE" in out and "1 applied" in out
+    post = profile / "post.txt"
+    post.write_text("We need an SRE.", encoding="utf-8")
+    assert cli.main(["apps", "log", str(profile), "--company", "Acme", "--role", "SRE", "--post", str(post),
+                     "--prep", "An example of C"]) == 0
+    assert cli.main(["apps", "list", str(profile)]) == 0
+    out = capsys.readouterr().out
+    assert "prepare: An example of C" in out and "posts/acme_sre.md" in out
     assert cli.main(["apps", "log", str(profile), "--company", "Acme", "--role", "SRE", "--date", "sept 1"]) == 1

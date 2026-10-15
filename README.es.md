@@ -215,7 +215,9 @@ sección para que la apruebes.
 variante y qué archivos mandaste a qué empresa, y cada estado con su fecha (`draft`, `applied`,
 `interview`, `offer`, `rejected`, `withdrawn`). Si registras otra vez la misma empresa y puesto, se
 actualiza. Con un cliente MCP, tu asistente te ofrece registrar la postulación después de generar el
-CV o la carta, y `list_applications` te señala las que llevan dos semanas sin noticias.
+CV o la carta, y `list_applications` te señala las que llevan dos semanas sin noticias. También
+guarda el texto de la vacante en `posts/`, porque los enlaces caducan, y lo que te conviene preparar
+para la entrevista; pregúntale a tu asistente "¿qué tenía que preparar para Acme?".
 
 ## LinkedIn
 
@@ -305,7 +307,7 @@ parsers separan de su puesto.
 | prompt `cover_letter` | Redacta una carta para una vacante con tus bullets, revisa sus afirmaciones y la genera. |
 | `import_profile` | Importa JSON Resume o la exportación de datos de LinkedIn, agregando solo lo que falta. Con un PDF de LinkedIn devuelve el texto. |
 | `export_json_resume` | Exporta una variante como JSON Resume; las skills X nunca aparecen y las F conservan su etiqueta. |
-| `log_application` | Registra una postulación (empresa, puesto, variante del CV, archivos enviados) o un nuevo estado, con su fecha. |
+| `log_application` | Registra una postulación (empresa, puesto, variante del CV, archivos enviados, el texto de la vacante, qué preparar) o un nuevo estado, con su fecha. |
 | `linkedin_profile` | Titular, "Acerca de", descripciones de puestos y skills (solo P y L) de LinkedIn a partir de una variante, dentro de sus límites. |
 | `list_applications` | Lista las postulaciones, la más reciente primero, con un conteo por estado y las que llevan 14 días o más sin noticias. |
 | prompt `import_linkedin_pdf` | Convierte el PDF de "Guardar como PDF" de LinkedIn en un perfil, sección por sección, con tu aprobación. |

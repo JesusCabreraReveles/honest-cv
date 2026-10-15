@@ -1,6 +1,7 @@
 """Track job applications: which CV and letter went to which post, and what happened.
 
-They live in <profile>/applications.yaml, next to the profile they were built from.
+They live in <profile>/applications.yaml, next to the profile they were built from. The
+text of each job post is kept in <profile>/posts/<id>.md, since post links expire.
 Logging the same company and role again updates that application; each status
 change is kept in its history with its date.
 """
@@ -19,6 +20,7 @@ from honest_cv.model import Lang, Strict, load
 from honest_cv.store import _write
 
 FILE = "applications.yaml"
+POSTS = "posts"
 
 
 class Status(StrEnum):
@@ -46,6 +48,8 @@ class Application(Strict):
     status: Status = Status.DRAFT
     history: list[Change] = []
     notes: str | None = None
+    post: str | None = None  # path of the saved job post, relative to the profile
+    prep: list[str] = []  # what to prepare for the interview
 
     @property
     def updated(self) -> date | None:
@@ -71,10 +75,12 @@ def log(
     folder: str | Path, company: str, role: str, *, status: Status | str | None = None,
     when: date | None = None, url: str | None = None, variant: str | None = None,
     lang: Lang | None = None, files: list[str] | None = None, notes: str | None = None,
+    post: str | None = None, prep: list[str] | None = None,
 ) -> Application:
     """Add an application, or update the one for the same company and role. Fields left
-    as None keep their value; files and notes add to what is there; a new status goes to
-    the history, which stays in date order, so the current status is the latest one."""
+    as None keep their value; files and notes add to what is there; `post` (the job post's
+    text) is saved to a file, and `prep` replaces the list. A new status goes to the
+    history, which stays in date order, so the current status is the latest one."""
     folder = Path(folder)
     source = load(folder)
     if variant is not None and variant not in source.variants:
@@ -91,6 +97,13 @@ def log(
     if notes and notes.strip() and notes.strip() not in (app.notes or ""):
         app.notes = "\n".join(x for x in (app.notes, notes.strip()) if x)
     app.files += [f for f in files or [] if f not in app.files]
+    if prep is not None:
+        app.prep = [x.strip() for x in prep if x.strip()]
+    if post and post.strip():
+        path = Path(POSTS) / f"{key}.md"
+        (folder / POSTS).mkdir(exist_ok=True)
+        (folder / path).write_text(post.strip() + "\n", encoding="utf-8")
+        app.post = path.as_posix()
     new = Status(status) if status is not None else None
     if new is not None and (new != app.status or not app.history):
         app.history.append(Change(status=new, date=when or date.today()))

@@ -223,7 +223,9 @@ def cmd_apps_log(args: argparse.Namespace) -> int:
     except ValueError:
         raise ValueError(f"--date must be YYYY-MM-DD, e.g. 2026-10-14; got {args.date!r}") from None
     app = applications.log(args.profile, args.company, args.role, status=args.status, when=when, url=args.url,
-                           variant=args.variant, lang=args.lang, files=args.file, notes=args.notes)
+                           variant=args.variant, lang=args.lang, files=args.file, notes=args.notes,
+                           post=Path(args.post).read_text(encoding="utf-8") if args.post else None,
+                           prep=args.prep)
     print(f"{app.id}: {app.status} ({app.updated})")
     return 0
 
@@ -235,6 +237,10 @@ def cmd_apps_list(args: argparse.Namespace) -> int:
     for a in data["applications"]:
         print(f"{a['updated'] or '':<10}  {a['status']:<9}  {a['company']} — {a['role']}"
               f"  ({a['days_since_update']} days)")
+        for point in a.get("prep", []):
+            print(f"{'':<12}prepare: {point}")
+        if a.get("post"):
+            print(f"{'':<12}post: {Path(args.profile) / a['post']}")
     if data["counts"]:
         print("\n" + ", ".join(f"{n} {s}" for s, n in data["counts"].items()))
     if data["waiting"]:
@@ -395,6 +401,8 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("-l", "--lang", choices=LANGS)
     c.add_argument("--file", action="append", help="a file you sent; repeatable")
     c.add_argument("--notes")
+    c.add_argument("--post", help="a text file with the job post; a copy is kept in <profile>/posts/")
+    c.add_argument("--prep", action="append", help="something to prepare for the interview; repeatable")
     c.set_defaults(func=cmd_apps_log)
     c = apps_sub.add_parser("list", help="your applications, latest first")
     c.add_argument("profile")

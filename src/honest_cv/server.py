@@ -823,16 +823,26 @@ def log_application(
     lang: Annotated[Lang | None, Field(description="Language of the CV sent.")] = None,
     files: Annotated[list[str] | None, Field(description="Paths of the CV and letter sent.")] = None,
     notes: Annotated[str | None, Field(description="Contact person, salary range, next step... Added to the notes already there.")] = None,
+    post: Annotated[
+        str | None, Field(description="The job post's full text, as the person gave it. Saved to <profile>/posts/.")
+    ] = None,
+    prep: Annotated[
+        list[str] | None,
+        Field(description="What to prepare for the interview: skills to back with an example, gaps to "
+                          "explain, questions to ask. Replaces the list."),
+    ] = None,
 ) -> dict:
     """Record a job application, or update the one for the same company and role. Fields not
     given keep their value. Use it after build_cv or build_letter when the person sends them,
-    and when they tell you what happened (interview, offer, rejection)."""
+    and when they tell you what happened (interview, offer, rejection). Save the post's text,
+    since links expire, and any advice you gave for the interview as `prep`, so the person
+    can find both later."""
     try:
         when = datetime.date.fromisoformat(date) if date else None
     except ValueError:
         raise ToolError(f"date must be YYYY-MM-DD, e.g. 2026-10-14; got {date!r}") from None
     app = applications.log(_profile_dir(profile), company, role, status=status, when=when, url=url,
-                           variant=variant, lang=lang, files=files, notes=notes)
+                           variant=variant, lang=lang, files=files, notes=notes, post=post, prep=prep)
     return {"application": app.model_dump(mode="json", exclude_defaults=True)}
 
 

@@ -27,6 +27,8 @@ Work on `master`.
 - Application tracking in `<profile>/applications.yaml`: `log_application`, `list_applications`
   and `honest-cv apps log|list`. Each status change keeps its date; open applications with no
   news for 14 days are listed as waiting.
+  Each application keeps the job post's text in `<profile>/posts/`, since links expire, and the
+  points to prepare for its interview (`prep`).
 - LinkedIn texts from a variant, within LinkedIn's limits: `linkedin_profile` (tool and prompt) and
   `honest-cv linkedin`. Headline, About, one description per position and the skills, P and L only.
 - The interview handles dictated answers: it reads names and numbers back before saving them, and

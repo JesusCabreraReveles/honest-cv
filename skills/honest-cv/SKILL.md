@@ -164,7 +164,8 @@ work from its result, instead of reading the file yourself.
 
 - After `build_cv` or `build_letter`, ask whether they will send it. If so, call `log_application`
   with the company, the role, the variant, the language and the file paths, and the status
-  `applied` once they confirm it was sent.
+  `applied` once they confirm it was sent. Pass the post's full text as `post`, since links
+  expire, and the advice you gave for the interview as `prep`, so they can look both up later.
 - When they mention news (an interview, an offer, a rejection), record it with `log_application`
   and the same company and role. The date defaults to today: ask if it happened earlier.
 - When they ask how their search is going, call `list_applications` and mention the ones in
