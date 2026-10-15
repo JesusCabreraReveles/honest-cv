@@ -19,6 +19,9 @@ Work on `master`.
   `<profile>/checklists/` count in the job score, the gaps, checklist merging and the letter check,
   which also learns their skill names, so it works for any profession.
 - An example template for another profession: `examples/checklists/project-management.md`.
+- A built-in `software-architecture` checklist: styles and patterns, integration, quality
+  attributes, data architecture and the practice (ADRs, reviews, technical debt). New synonyms:
+  ADRs, ports and adapters, diseño de sistemas, CDC.
 - Application tracking in `<profile>/applications.yaml`: `log_application`, `list_applications`
   and `honest-cv apps log|list`. Each status change keeps its date; open applications with no
   news for 14 days are listed as waiting.

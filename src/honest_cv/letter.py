@@ -42,8 +42,9 @@ FAMILIARITY_WORDS = re.compile(
 )
 SENTENCE = re.compile(r"(?<=[.!?;])\s+|\n+")
 NUMBER = re.compile(r"(?<![\w.])\d+(?:[.,]\d+)*\s?(?:%|x|k|K|M)?(?![\w])")
-# Checklists about people and process name practices, not technologies.
-NOT_TECHNOLOGY = {"engineering-lead"}
+# Checklists of practices (people, process, design), not technologies: in a letter,
+# words like "scalability" or "mentoring" are not claims to check.
+NOT_TECHNOLOGY = {"engineering-lead", "software-architecture"}
 
 GREETING: dict[Lang, str] = {"en": "Dear Hiring Team,", "es": "Estimado equipo de selección:"}
 CLOSING: dict[Lang, str] = {"en": "Sincerely,", "es": "Atentamente,"}

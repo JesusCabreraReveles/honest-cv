@@ -71,6 +71,7 @@ El servidor es determinista. El LLM del cliente extrae las palabras clave y cond
 |---|---|
 | Exportar a JSON Resume | v0.2 (ver "Alcance de la v0.2") |
 | Preparar entrevistas | Después de la v0.2 |
+| Checklists en varios idiomas | Después de la v0.2: una carpeta por idioma, p. ej. `checklists/en/` y `checklists/es/`, para que cada quien marque en su idioma. Los sinónimos entre idiomas (`same:`) ya permiten que el puntaje cruce una vacante en inglés con skills en español. |
 | Más plantillas | v0.3, con contribuciones |
 | UI web o servicio hospedado | No está previsto. honest-cv guarda los datos en local y no hace llamadas de red. |
 
@@ -191,6 +192,7 @@ honestidad la aplica el código y nada de esto hace llamadas de red.
 | Plantillas propias | honest-cv es genérico: sirve para cualquier profesión, no solo desarrollo. Una plantilla de skills es cualquier Markdown con el formato de los checklists. Las que la persona guarda en `<perfil>/checklists/` aparecen en `checklist_list` junto a las incluidas y se combinan con `checklist_new`, que también acepta una ruta. Después de aplicarla, `checklist_apply` devuelve las skills P y L que ningún bullet respalda, y la entrevista pide un logro real por cada una. Así la plantilla sirve para llenar rápido o como guion de la entrevista. |
 | Seguimiento de postulaciones | Un `applications.yaml` en la carpeta del perfil: empresa, puesto, enlace, fecha, variante e idioma, archivos enviados (CV y carta), estado (`draft`, `applied`, `interview`, `offer`, `rejected`, `withdrawn`) con su historial de fechas, y notas. Herramientas `log_application` y `list_applications`, y `honest-cv apps`. |
 | Sugerencias para LinkedIn | Desde una variante: titular (máx. 220 caracteres), "Acerca de" (máx. 2,600), la descripción de cada puesto con sus bullets (máx. 2,000) y las skills P y L, nunca F ni X. Cada texto lleva su conteo contra el límite. El cliente puede pulir la redacción con un prompt, pero el texto final pasa por `check_claims`. Herramienta `linkedin_profile`, prompt `linkedin_profile` y `honest-cv linkedin`. |
+| Checklist de arquitectura | Uno incluido, `software-architecture`, para quien diseña sistemas: estilos y patrones, integración, atributos de calidad, datos y la práctica (ADRs, revisiones, deuda técnica). Pedido al probar como usuario nuevo con un perfil de desarrollador, arquitecto y gerente. |
 
 Orden: exportar (reutiliza el documento del CV y el importador para la prueba de ida y vuelta),
 plantillas propias, postulaciones, LinkedIn.

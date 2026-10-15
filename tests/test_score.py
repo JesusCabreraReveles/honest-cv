@@ -2,7 +2,7 @@ import pytest
 import yaml
 
 from tests.conftest import ADA
-from honest_cv.score import Gap, Keyword, Status, _pattern, gap_report, score_job, score_variant, spellings
+from honest_cv.score import Gap, Keyword, Status, _match, _pattern, gap_report, score_job, score_variant, spellings
 
 
 def by_keyword(score):
@@ -120,3 +120,13 @@ def test_spanish_spellings_match():
     for term in ("Observability", "Infrastructure as Code", "CI/CD"):
         assert _match(spellings(term), text), term
 
+
+
+@pytest.mark.parametrize("term,text", [
+    ("Architecture Decision Records", "introduced design reviews based on ADRs"),
+    ("Hexagonal architecture", "services built with ports and adapters"),
+    ("System design", "lideré el diseño de sistemas de telemetría"),
+    ("Change data capture", "replicated orders with CDC into the warehouse"),
+])
+def test_architecture_synonyms(term, text):
+    assert _match(spellings(term), text) is not None
