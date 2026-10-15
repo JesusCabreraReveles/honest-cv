@@ -88,7 +88,9 @@ Ask which kinds of roles they apply to: for example backend, platform or leaders
 variant per kind, each with a title, a 2–3 sentence summary, competencies, impact bullets, the
 bullets for each role, skill groups and, if they have publications, which ones fit that kind of
 role (`publications`; leave it out to show all). Use `extends` so that each variant only states what
-differs from another. Show it, and call `save_variant` once they approve.
+differs from another. If every role has an end date, the person is not working there now: write
+the summaries in the past tense ("led", not "I lead"). Show it, and call `save_variant` once they
+approve.
 
 ## 6. First build
 

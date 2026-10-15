@@ -8,6 +8,8 @@ folder is `$profile`. Write the letter in: $lang. Talk to the person in their ow
 - A familiarity (F) skill may appear only as familiarity, in those words. An X skill never
   appears. Neither does a technology from the post that the profile does not show.
 - Every number must come from their bullets. Do not round or combine numbers.
+- If every role has an end date, they are not working now: speak of that work in the past tense
+  ("led", not "I lead").
 - Keep it to one page: 3 or 4 short paragraphs, about 250 to 350 words.
 - Write only the body. `build_letter` adds the name, contact details, date, greeting and closing
   from the profile: never ask for them or leave placeholders like [Your name].

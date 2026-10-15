@@ -38,6 +38,8 @@ Honesty rules, enforced by this server:
 - Skill levels: P (production), L (own project/lab), F (familiarity, always labeled), X (never shown).
 - Raising a skill's level needs written evidence and the person's own confirmation, which the
   server asks for directly. Never invent experience, metrics or skills.
+- If every role has an end date, the person is not working now: summaries, letters and LinkedIn
+  texts speak of that work in the past tense ("led", not "I lead").
 - Evidence is where and how, in the person's words. A bare "yes, I used them" to a list is not
   evidence: ask where and how for each one before recording it, and never fill the gap with a
   guess like their current employer or "(confirmed by the person)".

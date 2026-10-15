@@ -46,6 +46,8 @@ Closed on 2026-10-15 after a full test as a new user. Published when the author 
 - Spanish spellings of leadership and practice terms in job posts (liderazgo de equipos, revisión
   de código, patrones de diseño, agentes de IA…) match the skill. In a letter, practices are not
   claims to check.
+- When every role has ended, summaries, letters and LinkedIn texts speak of that work in the
+  past tense.
 - Evidence must say where and how: the assistant asks for each skill instead of taking a bare
   "yes" to a list.
 - The interview warns that it can take hours, proposes a first session that is enough for a CV,
