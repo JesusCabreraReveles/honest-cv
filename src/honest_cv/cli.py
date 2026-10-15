@@ -213,7 +213,10 @@ def cmd_import(args: argparse.Namespace) -> int:
 
 
 def cmd_apps_log(args: argparse.Namespace) -> int:
-    when = date.fromisoformat(args.date) if args.date else None
+    try:
+        when = date.fromisoformat(args.date) if args.date else None
+    except ValueError:
+        raise ValueError(f"--date must be YYYY-MM-DD, e.g. 2026-10-14; got {args.date!r}") from None
     app = applications.log(args.profile, args.company, args.role, status=args.status, when=when, url=args.url,
                            variant=args.variant, lang=args.lang, files=args.file, notes=args.notes)
     print(f"{app.id}: {app.status} ({app.updated})")

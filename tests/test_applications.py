@@ -83,7 +83,7 @@ async def test_tools(profile):
         assert not err and out["application"]["status"] == "applied"
         err, msg = await call(c, "log_application", profile=str(profile), company="Acme", role="SRE",
                               date="1st of September")
-        assert err
+        assert err and "YYYY-MM-DD" in msg
         err, out = await call(c, "list_applications", profile=str(profile))
     assert not err and out["counts"] == {"applied": 1}
 

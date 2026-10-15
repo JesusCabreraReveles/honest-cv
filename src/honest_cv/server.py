@@ -772,7 +772,10 @@ def log_application(
     """Record a job application, or update the one for the same company and role. Fields not
     given keep their value. Use it after build_cv or build_letter when the person sends them,
     and when they tell you what happened (interview, offer, rejection)."""
-    when = datetime.date.fromisoformat(date) if date else None
+    try:
+        when = datetime.date.fromisoformat(date) if date else None
+    except ValueError:
+        raise ToolError(f"date must be YYYY-MM-DD, e.g. 2026-10-14; got {date!r}") from None
     app = applications.log(_profile_dir(profile), company, role, status=status, when=when, url=url,
                            variant=variant, lang=lang, files=files, notes=notes)
     return {"application": app.model_dump(mode="json", exclude_defaults=True)}
