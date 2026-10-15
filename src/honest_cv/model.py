@@ -1,6 +1,6 @@
 """Data model: a profile folder holds four YAML files validated with pydantic.
 
-    profile.yaml   contact, roles, education, languages, certifications
+    profile.yaml   contact, roles, education, certifications, courses, languages
     bullets.yaml   pool of achievements, each with an id, role and tags
     skills.yaml    skill inventory with honesty levels (P/L/F/X)
     variants.yaml  per-role-type CV plans, with `extends:` inheritance
@@ -30,9 +30,10 @@ SAME = re.compile(r"^\s*same:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
 COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 
 
-def without_comments(text: str) -> str:
-    """A template's text without its HTML comments, which may hold examples."""
-    return COMMENT.sub("", text)
+def without_comments(text: str, *, keep_lines: bool = False) -> str:
+    """A template's text without its HTML comments, which may hold examples. With
+    `keep_lines`, each comment leaves its line breaks, so line numbers stay right."""
+    return COMMENT.sub(lambda m: "\n" * m.group().count("\n") if keep_lines else "", text)
 
 
 class MissingTranslation(ValueError):
@@ -85,6 +86,7 @@ class Profile(Strict):
     roles: list[Role] = []
     education: list[Education] = []
     certifications: list[Text] = []
+    courses: list[Text] = []  # training without an exam, e.g. a company leadership course
     languages: Text | None = None
 
     @model_validator(mode="after")

@@ -290,3 +290,20 @@ def test_cli_apply_names_unbacked_skills_even_with_nothing_to_save(profile, tmp_
     assert cli.main(["checklist", "apply", str(profile), str(path)]) == 0
     out = capsys.readouterr().out
     assert "Nothing to save." in out and "1 P/L skill(s) with no achievement that shows them: Redis." in out
+
+
+def test_the_header_examples_parse_as_they_say():
+    header = checklist.compose(["backend-python"]).split("## ")[0]
+    examples = [line.strip().removesuffix("(★ section)").strip() for line in header.splitlines()
+                if line.strip().startswith("- [")]
+    items = [checklist.parse(line).items[0] for line in examples]
+    assert [(i.mark, i.evidence, i.years, i.last_used_year) for i in items] == [
+        ("P", "Acme, 2019–2024: ran the yearly budget of a 12-person team", None, None),
+        ("P", "Acme: ran the yearly budget", 5.0, 2024),
+        ("F", None, None, None),
+    ]
+    # Inside the comment they are only examples.
+    assert not checklist.parse(header).items
+    text = checklist.compose(["backend-python"])
+    first = checklist.parse(text.replace("- [ ] Python", "- [P] Python", 1)).items[0]
+    assert text.splitlines()[first.line - 1].endswith("Python — years: __ · last year: ____")

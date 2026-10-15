@@ -79,6 +79,11 @@
   #for c in d.certifications { par(c) }
 ]
 
+#if d.courses.len() > 0 [
+  == #d.headings.courses
+  #for c in d.courses { par(c) }
+]
+
 #if d.languages != none [
   == #d.headings.languages
   #d.languages

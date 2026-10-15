@@ -20,6 +20,7 @@ HEADINGS: dict[Lang, dict[str, str]] = {
         "skills": "Skills",
         "education": "Education",
         "certifications": "Certifications",
+        "courses": "Courses",
         "languages": "Languages",
     },
     "es": {
@@ -30,6 +31,7 @@ HEADINGS: dict[Lang, dict[str, str]] = {
         "skills": "Habilidades",
         "education": "Educación",
         "certifications": "Certificaciones",
+        "courses": "Cursos",
         "languages": "Idiomas",
     },
 }
@@ -67,6 +69,7 @@ class Document:
     skills: list[SkillLine]
     education: list[str]
     certifications: list[str]
+    courses: list[str]
     languages: str | None
     headings: dict[str, str] = field(default_factory=dict)
     max_pages: int = 2
@@ -134,6 +137,7 @@ def build(source: Source, variant_id: str, lang: Lang) -> Document:
             for e in p.education
         ],
         certifications=[loc(x, "certifications") for x in p.certifications],
+        courses=[loc(x, "courses") for x in p.courses],
         languages=loc(p.languages, "languages") if p.languages else None,
         headings=HEADINGS[lang],
         max_pages=v.max_pages,

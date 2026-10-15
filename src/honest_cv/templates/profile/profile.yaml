@@ -22,4 +22,6 @@ education: []
 #   end: "2014"
 
 certifications: []
+courses: []                       # trainings without an exam
+# - {en: "Leadership course, Some Institute, 2021", es: "Curso de liderazgo, Algún Instituto, 2021"}
 # languages: {en: "Spanish (native), English (C1)", es: "Español (nativo), inglés (C1)"}

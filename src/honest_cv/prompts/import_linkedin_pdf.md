@@ -20,7 +20,7 @@ language.
      year-month), and the location if given;
    - the achievements under each position with `add_bullet`, one per statement, in their words;
    - education with `upsert_education`, saying honestly whether a degree was completed;
-   - certifications and spoken languages with `set_profile_details`.
+   - certifications, courses and spoken languages with `set_profile_details`.
    Skip anything the profile already has, and say so.
 4. Collect the skills the PDF lists and call `checklist_new` with them as `extra` (and `lists`
    empty, or the built-in lists that fit the person). Ask them to mark the file in their editor,

@@ -29,6 +29,10 @@ Work on `master`.
   `honest-cv linkedin`. Headline, About, one description per position and the skills, P and L only.
 - The interview handles dictated answers: it reads names and numbers back before saving them, and
   turns a long spoken answer into a bullet for the person to approve.
+- A Courses section (`courses` in `profile.yaml`, set with `set_profile_details`) for training
+  without an exam, which is not a certification. JSON Resume has no field for it, so the export
+  leaves it out.
+- The checklist header shows a marked example line.
 
 ### Changed
 

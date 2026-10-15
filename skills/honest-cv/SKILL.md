@@ -56,7 +56,8 @@ when answers look spoken (long, little punctuation, odd spellings):
 
 1. Call `get_inventory` and `list_variants`. If there is no profile yet, call `init_profile`.
 2. **Contact, roles and education.** Use `set_contact`, `upsert_role`, `upsert_education` and
-   `set_profile_details`. Keep the real job titles. One topic at a time.
+   `set_profile_details`. Keep the real job titles. One topic at a time. Courses without an exam
+   go in `courses`, never in `certifications` or the skill checklist.
 3. **Achievements.** Go role by role, newest first, one question at a time:
    - what the product did and at what scale;
    - what they personally built or decided;

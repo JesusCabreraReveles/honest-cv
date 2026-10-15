@@ -185,7 +185,7 @@ def cv_text(doc: Document) -> tuple[str, str]:
             familiar = ", ".join(s.skills)
         else:
             parts.append(f"{s.label}: {', '.join(s.skills)}")
-    parts += [*doc.education, *doc.certifications]
+    parts += [*doc.education, *doc.certifications, *doc.courses]
     return "\n".join(parts), familiar
 
 

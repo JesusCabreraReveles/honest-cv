@@ -25,7 +25,8 @@ Call `get_inventory` and `list_variants` with `profile="$profile"`.
 ## 2. Contact, roles and education
 
 Save them with `set_contact`, `upsert_role`, `upsert_education` and `set_profile_details`
-(certifications and spoken languages). Each role needs an `id`, `title`, `company` and `start`, plus
+(certifications, courses and spoken languages). A course or training without an exam goes in
+`courses`, never in `certifications` or the skill checklist. Each role needs an `id`, `title`, `company` and `start`, plus
 `end` unless it is the current role, and an optional one-line `context`. Use `{"en": ..., "es": ...}`
 for texts when they want CVs in both languages. Say honestly whether a degree was completed.
 

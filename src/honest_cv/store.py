@@ -164,13 +164,15 @@ def set_contact(folder: str | Path, **fields) -> Contact:
     return _save_profile(folder, raw).profile.contact
 
 
-def set_profile_details(folder: str | Path, *, certifications=None, languages=None) -> dict:
-    """Replace the certifications list and/or the languages line."""
+def set_profile_details(folder: str | Path, *, certifications=None, courses=None, languages=None) -> dict:
+    """Replace the certifications list, the courses list and/or the languages line."""
     folder = Path(folder).expanduser()
     raw = _raw(folder)
-    raw["profile.yaml"] = _merge(raw["profile.yaml"], {"certifications": certifications, "languages": languages})
+    raw["profile.yaml"] = _merge(
+        raw["profile.yaml"], {"certifications": certifications, "courses": courses, "languages": languages}
+    )
     profile = _save_profile(folder, raw).profile
-    return {"certifications": profile.certifications, "languages": profile.languages}
+    return {"certifications": profile.certifications, "courses": profile.courses, "languages": profile.languages}
 
 
 def upsert_role(folder: str | Path, id: str, **fields) -> Role:

@@ -108,6 +108,18 @@ def test_fit_pages_reports_overflow(ada):
     assert not result.fits and result.pages > 1
 
 
+@pytest.mark.parametrize(("lang", "heading"), [("en", "Courses"), ("es", "Cursos")])
+def test_courses_get_their_own_section(ada, lang, heading):
+    source = ada.model_copy(deep=True)
+    source.profile.courses = [{"en": "Situational leadership course, 2021", "es": "Curso de liderazgo situacional, 2021"}]
+    doc = document.build(source, "backend", lang)
+    course = doc.courses[0]
+    pdf = extract_text(io.BytesIO(render_pdf(doc)))
+    docx = "\n".join(p.text for p in DocxDocument(io.BytesIO(render_docx(doc))).paragraphs)
+    for text in (pdf, docx):
+        assert text.index(doc.headings["certifications"]) < text.index(heading) < text.index(course)
+
+
 def test_docx_is_single_column_without_tables_images_or_header(ada):
     for lang in ("en", "es"):
         d = DocxDocument(io.BytesIO(render_docx(document.build(ada, "backend", lang))))

@@ -113,6 +113,9 @@ def test_profile_details(profile):
     store.set_profile_details(profile, certifications=["CKA"], languages={"en": "English (C1)", "es": "Inglés (C1)"})
     p = load(profile).profile
     assert p.certifications == ["CKA"] and p.languages == {"en": "English (C1)", "es": "Inglés (C1)"}
+    store.set_profile_details(profile, courses=[{"en": "Leadership course, 2021", "es": "Curso de liderazgo, 2021"}])
+    p = load(profile).profile
+    assert p.certifications == ["CKA"] and p.courses == [{"en": "Leadership course, 2021", "es": "Curso de liderazgo, 2021"}]
 
 
 def test_save_variant_checks_references_and_children(profile):

@@ -110,7 +110,7 @@ que el prompt `interview` lo llene contigo. Mantenlo fuera de repositorios públ
 
 | Archivo | Qué guarda |
 |---|---|
-| `profile.yaml` | Datos de contacto, puestos, educación, certificaciones e idiomas. |
+| `profile.yaml` | Datos de contacto, puestos, educación, certificaciones, cursos e idiomas. |
 | `bullets.yaml` | Un pool de logros, cada uno con `id`, `role` y `tags`. |
 | `skills.yaml` | Tu inventario de skills, con niveles y evidencia. |
 | `variants.yaml` | Un plan de CV por tipo de puesto. Una variante puede heredar de otra con `extends:`. |
@@ -282,7 +282,7 @@ parsers separan de su puesto.
 | `add_bullet` | Agrega un logro al pool. |
 | `remove_skill`, `remove_bullet`, `remove_role` | Borran definitivamente y quitan cada uso en las variantes. Un puesto con bullets necesita `with_bullets`. Los clientes piden permiso antes de usarlas. |
 | `set_contact` | Cambia los datos de contacto: nombre, email, teléfono, ubicación y links. |
-| `set_profile_details` | Reemplaza la lista de certificaciones y la línea de idiomas. |
+| `set_profile_details` | Reemplaza la lista de certificaciones, la de cursos y la línea de idiomas. |
 | `upsert_role` | Agrega un puesto en orden de fechas, o cambia campos de uno existente. |
 | `upsert_education` | Agrega o cambia una entrada de formación. |
 | `save_variant` | Agrega o reemplaza una variante. Revisa todas sus referencias antes de guardar. |

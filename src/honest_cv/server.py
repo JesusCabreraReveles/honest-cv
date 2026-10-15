@@ -489,10 +489,17 @@ def set_profile_details(
     certifications: Annotated[
         list[Text] | None, Field(description="The full list of certifications, replacing the current one.")
     ] = None,
+    courses: Annotated[
+        list[Text] | None,
+        Field(description="The full list of courses and trainings without an exam, replacing the current one. "
+                          "A course is never a certification."),
+    ] = None,
     languages: TextArg = None,
 ) -> dict:
-    """Replace the certifications list and/or the spoken-languages line."""
-    return store.set_profile_details(_profile_dir(profile), certifications=certifications, languages=languages)
+    """Replace the certifications list, the courses list and/or the spoken-languages line."""
+    return store.set_profile_details(
+        _profile_dir(profile), certifications=certifications, courses=courses, languages=languages
+    )
 
 
 @mcp.tool(annotations=WRITE)

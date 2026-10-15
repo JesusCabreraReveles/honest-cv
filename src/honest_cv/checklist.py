@@ -87,7 +87,8 @@ class Parsed:
 def parse(text: str) -> Parsed:
     out = Parsed()
     section, section_evidence = "", None
-    for n, line in enumerate(text.splitlines(), start=1):
+    # The header comment holds example lines; they are not marks.
+    for n, line in enumerate(without_comments(text, keep_lines=True).splitlines(), start=1):
         if m := HEADING.match(line):
             section, section_evidence = m["title"], None
             continue
@@ -368,6 +369,10 @@ LEGEND = """\
   F = familiarity (you tried or read about it)      X = you don't have it
   [ ] = not marked yet (skipped)       [?] = unsure (skipped)
 After " — " write where and how you used it: that is the evidence an upgrade needs.
+For example:
+  - [P] Budgeting — Acme, 2019–2024: ran the yearly budget of a 12-person team
+  - [P] Budgeting — years: 5 · last year: 2024 · Acme: ran the yearly budget   (★ section)
+  - [F] Forecasting (took a course, never used it at work)
 A line "evidence: ..." under a heading applies to every line in that section without its own.
 Text in (parentheses) is a private note. Years and last year are asked only in the ★ section.
 Then run: honest-cv checklist apply <profile> <this file> -->
