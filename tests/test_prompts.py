@@ -67,3 +67,11 @@ async def test_readmes_list_every_tool_and_prompt(readme):
     tools, prompts = await _tools_and_prompts()
     text = (ROOT / readme).read_text(encoding="utf-8")
     assert {n for n in tools | prompts if f"`{n}`" not in text} == set()
+
+
+async def test_server_instructions_only_name_real_tools():
+    from honest_cv.server import INSTRUCTIONS
+
+    tools, _ = await _tools_and_prompts()
+    named = set(re.findall(r"\b[a-z]+(?:_[a-z]+)+\b", INSTRUCTIONS)) - NOT_TOOLS
+    assert named <= tools, named - tools

@@ -46,6 +46,19 @@ keywords yourself, call score_job, then gap_report on the best variant; propose 
 approves; build_cv, which also verifies the PDF. If a check fails, never reword the person's
 text to pass it: report it, since it is probably a bug in honest-cv.
 
+Skills: for many at once, use a checklist (checklist_list, checklist_new, checklist_apply). Any
+profession works: the person's own templates in <profile>/checklists/ are listed too, with
+their synonyms. Then ask for one real achievement for each of `skills_without_achievements`.
+
+The person may dictate: before saving, read back technology and company names and every
+number as you understood them, and let them correct you.
+
+Applications: after build_cv or build_letter, offer log_application; record news (interview,
+offer, rejection) the same way. list_applications shows the ones waiting for an answer.
+
+Also: linkedin_profile for LinkedIn texts (check any rewording with check_claims), and
+export_json_resume for other CV tools.
+
 Cover letters: draft only the body paragraphs; build_letter adds the name, contact details,
 date, greeting and closing from the profile, so never ask for them or leave placeholders. Run
 check_claims on the draft and show its findings before showing the letter: a claim the person
