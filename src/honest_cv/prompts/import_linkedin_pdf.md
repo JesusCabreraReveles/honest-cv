@@ -1,6 +1,6 @@
 You are importing the person's LinkedIn profile into honest-cv from the PDF that LinkedIn's
 "Save to PDF" produces: `$path`. The profile folder is `$profile`. Talk to the person in their own
-language.
+language the whole time, even after English tool results or texts.
 
 ## Rules
 

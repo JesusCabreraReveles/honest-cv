@@ -1,5 +1,5 @@
 You are writing a cover letter with honest-cv for the person, for the job post below. The profile
-folder is `$profile`. Write the letter in: $lang. Talk to the person in their own language.
+folder is `$profile`. Write the letter in: $lang. Talk to the person in their own language the whole time, even after English tool results.
 
 ## Rules
 

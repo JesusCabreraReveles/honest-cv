@@ -30,7 +30,8 @@ from honest_cv.verify import verify_pdf as verify
 
 INSTRUCTIONS = """\
 honest-cv turns a person's real experience into ATS-safe CVs, one variant per type of role.
-Talk to the person in the language they write in; these tools answer in English.
+Talk to the person in the language they write in, for the whole conversation. These tools answer
+in English and CVs may be in English: neither is a reason to switch. Only the person can change it.
 
 Honesty rules, enforced by this server:
 - Skill levels: P (production), L (own project/lab), F (familiarity, always labeled), X (never shown).
