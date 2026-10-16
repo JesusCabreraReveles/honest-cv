@@ -159,7 +159,8 @@ mismo es `uvx honest-cv build ~/cv-profile -v platform -l es`.
 > **Tú:** Esta es una vacante: *(pégala)*. ¿Qué tanto encajo y qué debería cambiar?
 
 Recibes la cobertura de cada variante, las palabras clave que faltan separadas en *la tienes pero
-este CV no la muestra*, *solo familiaridad* y *no la tienes*, una variante adaptada para aprobar y
+este CV no la muestra*, *solo familiaridad* y *no la tienes*, además de las que marcaste en tu
+checklist pero aún sin evidencia (te pregunta dónde las usaste), una variante adaptada para aprobar y
 el build. Después puede redactar una carta de presentación, que `check_claims` revisa antes de
 generarla, y registrar la postulación con el texto de la vacante y lo que conviene preparar para
 la entrevista.

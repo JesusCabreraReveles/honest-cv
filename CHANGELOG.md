@@ -3,6 +3,13 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `gap_report` and `honest-cv score` name the post's keywords you already marked in your
+  checklist but haven't backed with evidence yet, so the assistant asks where you used them
+  instead of treating them as skills you lack (#5).
+
 ## [0.2.1] — 2026-10-15
 
 ### Changed

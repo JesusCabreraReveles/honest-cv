@@ -153,7 +153,8 @@ the same is `uvx honest-cv build ~/cv-profile -v platform -l en`.
 > **You:** Here is a job post: *(paste it)*. How well do I fit, and what should I change?
 
 You get the coverage of each variant, the missing keywords split into *you have it but this CV
-doesn't show it*, *familiarity only* and *you don't have it*, a tailored variant to approve, and
+doesn't show it*, *familiarity only* and *you don't have it*, plus the ones you marked in your
+checklist but haven't backed with evidence yet (it asks where you used them), a tailored variant to approve, and
 the build. Then it can draft a cover letter, which `check_claims` checks before it is built, and
 log the application with the post's text and what to prepare for the interview.
 

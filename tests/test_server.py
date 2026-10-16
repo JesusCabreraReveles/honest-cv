@@ -384,3 +384,11 @@ async def test_only_main_p_skills_are_asked_now_the_rest_wait_for_a_post(profile
         err, gaps = await call(c, "gap_report", profile=profile, variant="backend",
                                keywords=["Terraform", "Kafka"], preferred=["Elixir"])
     assert not err and gaps["no_achievement"] == ["Terraform", "Elixir"]
+
+
+async def test_gap_report_names_keywords_marked_in_the_checklist(profile):
+    (Path(profile) / "checklist.md").write_text("- [P] Scrum\n- [X] Scala\n", encoding="utf-8")
+    async with Client(server) as c:
+        err, gaps = await call(c, "gap_report", profile=profile, variant="backend", keywords=["Scrum", "Scala"])
+    assert not err and [g["keyword"] for g in gaps["not_in_inventory"]] == ["Scrum", "Scala"]
+    assert gaps["marked_in_checklist"] == [{"keyword": "Scrum", "name": "Scrum", "mark": "P", "line": 1, "level": None}]

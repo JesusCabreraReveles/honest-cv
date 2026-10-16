@@ -318,6 +318,7 @@ def cmd_score(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps([s.to_dict() for s in scores], ensure_ascii=False, indent=2))
         return 0
+    marked = {m["keyword"]: m for m in checklist.marked_pending(source, [k.term for k in keywords])}
     for s in scores:
         print(f"{s.variant} [{s.lang}]  required {s.required_coverage:.0%}  overall {s.coverage:.0%}")
         for r in s.keywords:
@@ -325,7 +326,10 @@ def cmd_score(args: argparse.Namespace) -> int:
             line = f"  {mark} {r.keyword}{'' if r.required else ' (preferred)'}"
             if r.matched_as and r.matched_as != r.keyword:
                 line += f"  as '{r.matched_as}'"
-            if r.gap:
+            if r.gap and r.keyword in marked:
+                m = marked[r.keyword]
+                line += f"  — you marked it {m['mark']} in checklist.md (line {m['line']}): add where you used it"
+            elif r.gap:
                 line += f"  — {GAP_HINT[r.gap]}"
             if r.unused_bullets:
                 line += f" (bullets: {', '.join(r.unused_bullets)})"

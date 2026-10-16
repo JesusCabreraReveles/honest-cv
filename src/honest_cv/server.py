@@ -922,11 +922,16 @@ def gap_report(
     if that list is empty, the term only needs to appear in the summary or competencies),
     familiarity_only (only claim it as familiarity), not_in_inventory (do not claim it).
     `no_achievement`: skills the post asks for that the person has at P or L but no bullet
-    shows; this is the moment to ask for one real achievement each."""
+    shows; this is the moment to ask for one real achievement each.
+    `marked_in_checklist`: keywords the person already marked in <profile>/checklist.md, still
+    pending evidence, so they appear above as missing or familiarity. Ask where they used each
+    one instead of treating it as new; it is saved only with evidence and their confirmation."""
     source = _load(profile)
     groups = score_mod.gap_report(source, variant, lang, _keywords(keywords, preferred))
     out = {k: [r.__dict__ for r in v] for k, v in groups.items()}
-    return {**out, "no_achievement": checklist.unbacked(source, [*keywords, *(preferred or [])])}
+    names = [*keywords, *(preferred or [])]
+    return {**out, "no_achievement": checklist.unbacked(source, names),
+            "marked_in_checklist": checklist.marked_pending(source, names)}
 
 
 PROMPTS = Path(__file__).parent / "prompts"

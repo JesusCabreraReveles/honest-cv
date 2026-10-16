@@ -318,3 +318,39 @@ def test_spaces_around_the_mark_are_fine(line):
 def test_an_unreadable_mark_is_a_problem_not_a_skip(line):
     parsed = checklist.parse(line)
     assert not parsed.items and parsed.problems and "use P, L, F or X" in parsed.problems[0]
+
+
+MARKED = """\
+## Leadership
+- [P] Liderazgo de equipos
+- [P] Scrum
+## Languages
+- [P] Rust
+- [P] Kafka
+- [L] Terraform — a side project
+- [ ] Elixir
+"""
+
+
+def test_post_keywords_marked_in_the_checklist_but_still_pending(profile):
+    (profile / checklist.CHECKLIST).write_text(MARKED, encoding="utf-8")
+    found = checklist.marked_pending(load(profile), ["Scrum", "Team leadership", "rust", "Kafka",
+                                                     "Terraform", "Elixir", "Scala", "Scrum"])
+    # Kafka is already P, Terraform has evidence, Elixir and Scala are not marked: none is pending.
+    assert [(m["keyword"], m["name"], m["mark"], m["line"], m["level"]) for m in found] == [
+        ("Scrum", "Scrum", "P", 3, None),
+        ("Team leadership", "Liderazgo de equipos", "P", 2, None),
+        ("rust", "Rust", "P", 5, "F"),
+    ]
+
+
+def test_no_checklist_no_marked_keywords(profile):
+    assert checklist.marked_pending(load(profile), ["Scrum"]) == []
+
+
+def test_cli_score_says_the_keyword_was_marked(profile, capsys):
+    (profile / checklist.CHECKLIST).write_text(MARKED, encoding="utf-8")
+    assert cli.main(["score", str(profile), "-v", "backend", "-k", "Scrum,Scala"]) == 0
+    out = capsys.readouterr().out
+    assert "Scrum  — you marked it P in checklist.md (line 3): add where you used it" in out
+    assert "Scala  — you don't have it" in out

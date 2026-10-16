@@ -128,6 +128,8 @@ work from its result, instead of reading the file yourself.
 3. **Gaps.** Call `gap_report` for it and explain each group:
    - `in_inventory_not_in_cv`: add the skill, or swap in its `unused_bullets`.
    - `familiarity_only`: it stays under the Familiarity label.
+   - `marked_in_checklist`: they marked it in their checklist without evidence. Say so, and ask
+     where they used it instead of whether they have it.
    - `not_in_inventory`: do not claim it. Upgrade it only through `set_skill` with real evidence.
 4. **Edit.** Propose a new variant that `extends:` the best one (title, summary, competencies,
    bullet order). Show it, and call `save_variant` once they approve.

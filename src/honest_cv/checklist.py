@@ -460,6 +460,29 @@ CHECKLIST = "checklist.md"  # the person's checklist: <profile>/checklist.md
 BRACKETS = re.compile(r"\[[^\]]{0,8}\]")
 
 
+def marked_pending(source: Source, keywords: list[str]) -> list[dict]:
+    """Keywords the person already marked in `<profile>/checklist.md` above their inventory
+    level, still waiting for evidence. Until it arrives the gap report says they lack them;
+    this tells the assistant to ask where they used each one instead."""
+    from honest_cv.score import spellings
+
+    path = source.folder / CHECKLIST if source.folder else None
+    if path is None or not path.is_file():
+        return []
+    pending = plan(source, read(path)).pending
+    names = [(i, {s.casefold() for s in spellings(i.name, source)}) for i in pending]
+    out = []
+    for keyword in dict.fromkeys(keywords):
+        wanted = {s.casefold() for s in spellings(keyword, source)}
+        for item, spelled in names:
+            if wanted & spelled:
+                skill = find_skill(item.name, source)
+                out.append({"keyword": keyword, "name": item.name, "mark": item.mark, "line": item.line,
+                            "level": skill.level.value if skill else None})
+                break
+    return out
+
+
 def follow_downgrades(folder: Path, lowered: dict[str, Level]) -> list[int]:
     """Lower the marks of `<profile>/checklist.md` to match skills just lowered, so the file
     never proposes again an upgrade the person undid. Returns the lines changed."""
