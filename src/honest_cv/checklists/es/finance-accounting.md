@@ -11,7 +11,6 @@ same: Reconciliations = Conciliaciones
 same: Cost accounting = Contabilidad de costos
 same: Payroll = Nómina
 same: Fixed assets = Activo fijo
-same: Forecasting = Pronósticos
 same: Financial modeling = Modelado financiero
 same: Variance analysis = Análisis de variaciones
 same: Cash flow management = Gestión del flujo de efectivo

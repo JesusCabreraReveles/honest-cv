@@ -219,14 +219,16 @@ honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
 ```
 
 **Sirve para cualquier profesión.** Los checklists incluidos cubren software (backend, frontend,
-móvil, datos, platform/SRE, QA, seguridad, ML/IA, arquitectura y liderazgo de ingeniería), además de
-gestión de producto, diseño UX, marketing, ventas, finanzas y contabilidad, y recursos humanos. Una
+móvil, datos, platform/SRE, QA, seguridad, ML/IA, embebidos, videojuegos, arquitectura y liderazgo
+de ingeniería), además de análisis de datos/BI, gestión de producto y de proyectos, diseño UX,
+marketing, ventas, atención a clientes, finanzas y contabilidad, recursos humanos, cadena de
+suministro, enfermería y docencia. Una
 plantilla es solo una lista Markdown con este formato: guarda la tuya (o una que te compartan)
 en `~/cv-profile/checklists/` y aparece en `checklist list` y se combina con las demás en
 `checklist new`, que también acepta una ruta. Una plantilla puede declarar sinónimos, como
 `same: Work Breakdown Structure = WBS = EDT`, y el puntaje contra la vacante, las brechas y la
 revisión de cartas los usan, junto con sus nombres de skills. Empieza desde
-[`examples/checklists/project-management.md`](examples/checklists/project-management.md). También puedes aplicar un archivo que ya marcaste tú,
+[`examples/checklists/event-planning.md`](examples/checklists/event-planning.md). También puedes aplicar un archivo que ya marcaste tú,
 en inglés o en español (`años`, `último uso`). Al terminar, honest-cv te dice qué skills P y L no
 respalda ningún logro, y tu asistente te pide un ejemplo real de cada una.
 

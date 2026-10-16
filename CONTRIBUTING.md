@@ -62,8 +62,9 @@ Python 3.11 or newer. Code, names and comments are in English.
     and don't define them again.
 
   `tests/test_checklist.py` checks all of this.
-- **Translations of a checklist.** `src/honest_cv/checklists/<lang>/<id>.md` translates the
-  English template line by line: the same skills in the same order. Tools and products keep their
+- **Translations of a checklist.** Every built-in template has a Spanish version, and a test
+  checks it: `src/honest_cv/checklists/es/<id>.md` translates the English template line by line,
+  the same skills in the same order. If you can't write it, say so in the PR and we'll add it. Tools and products keep their
   names; for a translated concept, add a `same: English name = Translated name` line, or add the
   translation to the group the English name already has. A test checks that every translated name
   is a synonym of its English line. If the template lists technologies (frameworks,

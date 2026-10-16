@@ -1,52 +1,56 @@
 # Project management
 
 Planning and delivering projects in any industry: scope, schedule, budget, risk, people and tools.
-An example of your own template: copy it to <profile>/checklists/ and edit it.
 
-<!-- Synonyms: one group per line, the main name first. The CV, the job-post score and the
-     letter check treat them as the same skill. -->
 same: Project Management Professional = PMP
-same: Work Breakdown Structure = WBS = EDT
-same: Earned Value Management = EVM
-same: Key Performance Indicators = KPIs = KPI
+same: Work Breakdown Structure = WBS = EDT = Estructura de desglose del trabajo
+same: Earned Value Management = EVM = Gestión del valor ganado
 same: Microsoft Project = MS Project
-same: Risk management = Gestión de riesgos
+same: PRINCE2 = PRINCE 2
 
 ## ★ Main skills — years and last year used
+- [ ] Project management — years: __ · last year: ____
 - [ ] Project planning — years: __ · last year: ____
 - [ ] Budget management — years: __ · last year: ____
 - [ ] Stakeholder management — years: __ · last year: ____
 - [ ] Risk management — years: __ · last year: ____
-- [ ] Team leadership — years: __ · last year: ____
+
+## Planning and control
+- [ ] Scope management
+- [ ] Work Breakdown Structure
+- [ ] Scheduling
+- [ ] Critical path method
+- [ ] Earned Value Management
+- [ ] Resource planning
+- [ ] Change control
+- [ ] Status reporting
+- [ ] Key performance indicators
 
 ## Methods
 - [ ] Waterfall
 - [ ] Scrum
 - [ ] Kanban
-- [ ] PRINCE2
+- [ ] Hybrid project management
 - [ ] Lean
-- [ ] Critical path method
-- [ ] Earned Value Management
+- [ ] Program management
+- [ ] Portfolio management
 
-## Planning and control
-- [ ] Work Breakdown Structure
-- [ ] Scheduling
-- [ ] Resource planning
-- [ ] Change control
-- [ ] Key Performance Indicators
-- [ ] Status reporting
+## People
+- [ ] Team leadership
 - [ ] Vendor management
 - [ ] Contract negotiation
+- [ ] Executive communication
+- [ ] Change management
 
 ## Tools
 - [ ] Microsoft Project
 - [ ] Jira
 - [ ] Asana
+- [ ] Monday.com
 - [ ] Smartsheet
 - [ ] Excel
-- [ ] Power BI
 
 ## Certifications
 - [ ] Project Management Professional
-- [ ] PRINCE2 Practitioner
+- [ ] PRINCE2
 - [ ] Certified ScrumMaster

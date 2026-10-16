@@ -3,6 +3,18 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Eight more built-in checklists, each with its Spanish version (#3): `embedded`,
+  `game-development`, `data-analysis`, `project-management`, `customer-support`,
+  `supply-chain`, `nursing` and `teaching`.
+
+### Changed
+- The example of your own template is now `examples/checklists/event-planning.md`, a profession
+  without a built-in checklist; project management became a built-in one.
+- The demo GIF shows checklists for other professions next to your own.
+
 ## [0.3.0] — 2026-10-15
 
 ### Added

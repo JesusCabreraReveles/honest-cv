@@ -13,7 +13,6 @@ same: HR policies = Políticas de RR. HH.
 same: Workforce planning = Planeación de la fuerza laboral
 same: Performance management = Gestión del desempeño
 same: Succession planning = Planes de sucesión
-same: Training design = Diseño de capacitación
 same: Employee engagement = Compromiso de los empleados
 same: Organizational development = Desarrollo organizacional
 same: Change management = Gestión del cambio

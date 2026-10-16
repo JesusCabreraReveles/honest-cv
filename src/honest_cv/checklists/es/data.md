@@ -2,11 +2,8 @@
 
 Pipelines, data warehouses, streaming y la analítica que corre sobre ellos.
 
-same: Data modeling = Modelado de datos
 same: Dimensional modeling = Modelado dimensional
-same: Data quality = Calidad de datos
 same: Data governance = Gobierno de datos
-same: Statistics = Estadística
 
 ## ★ Skills principales — años y último uso
 - [ ] SQL — años: __ · último uso: ____

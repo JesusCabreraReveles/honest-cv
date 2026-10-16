@@ -46,7 +46,7 @@ NUMBER = re.compile(r"(?<![\w.])\d+(?:[.,]\d+)*\s?(?:%|x|k|K|M)?(?![\w])")
 # process, design, sales...): in a software letter, words like "mentoring" or "negotiation"
 # are not claims to check. The person's own templates always count.
 TECHNOLOGY = {"backend-go", "backend-jvm", "backend-python", "data", "frontend", "platform-sre",
-              "mobile", "qa-testing", "security", "ml-ai"}
+              "mobile", "qa-testing", "security", "ml-ai", "embedded", "game-development", "data-analysis"}
 
 GREETING: dict[Lang, str] = {"en": "Dear Hiring Team,", "es": "Estimado equipo de selección:"}
 CLOSING: dict[Lang, str] = {"en": "Sincerely,", "es": "Atentamente,"}

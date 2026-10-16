@@ -10,7 +10,7 @@ Set Theme "Catppuccin Mocha"
 Set TypingSpeed 30ms
 
 Hide
-Type "source .venv/bin/activate && export PS1='$ ' && rm -rf /tmp/hcv && mkdir -p /tmp/hcv && cp -r examples/ada /tmp/hcv/ada && mkdir /tmp/hcv/ada/checklists && cp examples/checklists/project-management.md /tmp/hcv/ada/checklists/"
+Type "source .venv/bin/activate && export PS1='$ ' && rm -rf /tmp/hcv && mkdir -p /tmp/hcv && cp -r examples/ada /tmp/hcv/ada && mkdir /tmp/hcv/ada/checklists && cp examples/checklists/event-planning.md /tmp/hcv/ada/checklists/"
 Enter
 Type `printf 'I want to join Acme as a Platform Engineer.\n\nI led a 40-service migration to Kubernetes on AWS.\n\nI have also built services in Scala for years.\n' > /tmp/hcv/letter.txt && clear`
 Enter
@@ -19,7 +19,7 @@ Show
 Type "# 1. Skill checklists for any profession: the built-in ones, and yours"
 Enter
 Sleep 300ms
-Type "honest-cv checklist list /tmp/hcv/ada | cut -c1-100 | sed -n '5,8p'"
+Type "honest-cv checklist list /tmp/hcv/ada | cut -c1-100 | grep -E '^(nursing|sales|teaching|event)'"
 Enter
 Sleep 3s
 
