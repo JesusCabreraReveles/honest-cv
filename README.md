@@ -244,6 +244,10 @@ post and its keywords.
 - **Some clients copy files to the cloud.** To edit files directly, Claude Desktop may ask for
   access to the profile folder and say that the files leave your device. honest-cv's editing tools
   make that unnecessary: decline the request and ask the assistant to use the tools.
+- **Running it on a hosted service takes it off your machine.** Directories such as Glama offer to
+  deploy honest-cv on their servers or try it in the browser. It works, but then your profile and
+  your CVs live on that service, under its terms. For your real data, run it on your own computer
+  with `uvx honest-cv`.
 - **If you want nothing to leave your machine,** use only the CLI (`build`, `verify`, `score`,
   `skill`) and edit the YAML files yourself.
 

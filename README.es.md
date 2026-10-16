@@ -255,6 +255,10 @@ vacante y sus palabras clave.
   puede pedir acceso a la carpeta del perfil y avisar que los archivos salen de tu dispositivo. Las
   herramientas de edición de honest-cv lo hacen innecesario: rechaza el acceso y pide al asistente
   que use las herramientas.
+- **Correrlo en un servicio hospedado lo saca de tu máquina.** Directorios como Glama ofrecen
+  desplegar honest-cv en sus servidores o probarlo en el navegador. Funciona, pero entonces tu
+  perfil y tus CVs viven en ese servicio, bajo sus términos. Para tus datos reales, córrelo en tu
+  computadora con `uvx honest-cv`.
 - **Si no quieres que nada salga de tu máquina,** usa solo la CLI (`build`, `verify`, `score`,
   `skill`) y edita tú los archivos YAML.
 
