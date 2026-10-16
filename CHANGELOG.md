@@ -14,6 +14,15 @@ and versions follow [Semantic Versioning](https://semver.org/).
   that back it (the ones in the CV you sent first), and where you stand. Likely questions and STAR
   answers come only from those bullets; the notes you approve are saved in `prep/`.
 - `honest-cv apps list` shows each application's id.
+- Ten new built-in checklists (#3): `mobile`, `qa-testing`, `security` and `ml-ai`, and beyond
+  software, `product-management`, `ux-design`, `marketing`, `sales`, `finance-accounting` and
+  `human-resources`.
+- A built-in checklist brings its own synonyms with `same:` lines, as your own templates do, so
+  adding one needs no code.
+
+### Changed
+- The letter check takes technology names only from the technical built-in checklists, so words
+  from other professions ("negotiation", "onboarding") are not treated as claims.
 
 ## [0.2.1] — 2026-10-15
 

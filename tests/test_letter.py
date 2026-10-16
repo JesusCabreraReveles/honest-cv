@@ -69,6 +69,15 @@ def test_practices_are_not_technologies(ada):
     assert letter.check_claims("I enjoy mentoring and hiring, and I care about code review.", ada).warnings == []
 
 
+def test_other_professions_are_not_technologies(ada):
+    # Built-in templates for sales, finance or HR don't turn ordinary words into claims.
+    text = "I led negotiation with vendors, owned budgeting and onboarding, and ran user research."
+    assert letter.check_claims(text, ada).warnings == []
+    # The technical ones still do.
+    _, warnings = kinds(letter.check_claims("I shipped apps in Flutter.", ada))
+    assert ("not_in_inventory", "Flutter") in warnings
+
+
 def test_job_keywords_are_checked_too(ada):
     _, warnings = kinds(letter.check_claims("I have run OpenStack clusters.", ada, keywords=["OpenStack"]))
     assert ("not_in_inventory", "OpenStack") in warnings

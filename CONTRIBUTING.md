@@ -50,16 +50,21 @@ Python 3.11 or newer. Code, names and comments are in English.
 
 - **Synonyms.** Add a group to `SYNONYMS` in `score.py`, with the canonical name first. Add a case
   to `tests/test_score.py`. Terms of three characters or fewer match case-sensitively.
-- **Checklists.** Add `src/honest_cv/checklists/<id>.md` for a kind of role that is missing: a
-  `# Title`, a one-line description, a `## ★ Main skills — years and last year used` section with
-  the skills that filter the most, then sections by topic. Leave every line unmarked (`- [ ] Name`)
-  and use the canonical names from `SYNONYMS`. `tests/test_checklist.py` checks all of this.
-- **Checklists for other professions.** honest-cv is not only for software. A checklist for
-  another field (nursing, accounting, sales, teaching...) goes to `examples/checklists/<id>.md`,
-  in the same format, and may declare its synonyms with `same:` lines, the main name first:
-  `same: Work Breakdown Structure = WBS = EDT`. People copy it to `<profile>/checklists/`, where
-  `checklist_list` shows it and the job score, the gaps and the letter check use its names and
-  synonyms. `tests/test_templates.py` checks the format; see `project-management.md`.
+- **Checklists, for any profession.** Add `src/honest_cv/checklists/<id>.md` for a kind of role
+  that is missing, in software or any other field (nursing, teaching, logistics...). No code
+  needed:
+  - a `# Title`, a one-line description, a `## ★ Main skills — years and last year used` section
+    with the skills that filter the most, then sections by topic;
+  - every line unmarked (`- [ ] Name`), one skill per line, without commas or " / " in the name;
+  - synonyms as `same:` lines, the main name first: `same: Work Breakdown Structure = WBS = EDT`.
+    The job score, the gaps and the letter check use them. Spanish spellings are welcome here;
+  - names already in `SYNONYMS` (score.py) or another template's `same:` line: use that main name,
+    and don't define them again.
+
+  `tests/test_checklist.py` checks all of this. If the template lists technologies (frameworks,
+  tools, platforms), add its id to `TECHNOLOGY` in `letter.py`, so cover letters are checked
+  against it; templates of practices or other professions stay out. One template per PR. See
+  `marketing.md` or `security.md`.
 - **Templates.** A new CV template must pass `verify_pdf` with the Ada profile in both languages.
   Never put text in a box aligned to the right.
 - **The demo GIF.** Regenerate it with `vhs docs/demo.tape` after the CLI output changes.

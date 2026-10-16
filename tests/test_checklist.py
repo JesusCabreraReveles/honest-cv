@@ -137,7 +137,7 @@ BUILTINS = sorted(checklist.BUILTIN.glob("*.md"))
 def test_builtin_checklists_are_well_formed(path):
     # The contract for community checklists: title, description, a ★ section,
     # unmarked lines only, canonical names and no duplicates.
-    from honest_cv.score import SYNONYMS
+    from honest_cv.score import SYNONYMS, TEMPLATE_SYNONYMS
 
     text = path.read_text(encoding="utf-8")
     parsed = checklist.parse(text)
@@ -145,11 +145,27 @@ def test_builtin_checklists_are_well_formed(path):
     assert text.startswith("# ") and checklist.available()
     assert any("★" in i.section for i in parsed.items), "needs a ★ section"
     assert {i.mark for i in parsed.items} == {""}, "built-in lines stay unmarked"
-    canonical = {g.casefold(): group[0] for group in SYNONYMS for g in group}
+    canonical = {g.casefold(): group[0] for group in SYNONYMS + TEMPLATE_SYNONYMS for g in group}
     wrong = [i.name for i in parsed.items if canonical.get(i.name.casefold(), i.name) != i.name]
     assert wrong == [], f"use the canonical name from score.SYNONYMS: {wrong}"
     keys = [canonical.get(i.name.casefold(), i.name).casefold() for i in parsed.items]
     assert len(keys) == len(set(keys)), "a skill is listed twice"
+    lines = [i.line for i in parsed.items]
+    assert len(lines) == len(set(lines)), "a line became two skills: avoid commas and ' / ' in names"
+
+
+def test_a_name_is_in_one_synonym_group_only():
+    # A template's `same:` line must not redefine a name another group already has: the
+    # first group would win silently. Add the spelling to that group instead.
+    from honest_cv.score import SYNONYMS, TEMPLATE_SYNONYMS
+
+    seen: dict[str, list[str]] = {}
+    clashes = []
+    for group in SYNONYMS + TEMPLATE_SYNONYMS:
+        for name in group:
+            if (other := seen.setdefault(name.casefold(), group)) is not group:
+                clashes.append(f"{name}: {other[0]} / {group[0]}")
+    assert clashes == []
 
 
 def test_compose_merges_without_duplicates_and_prefills(ada):
@@ -354,3 +370,9 @@ def test_cli_score_says_the_keyword_was_marked(profile, capsys):
     out = capsys.readouterr().out
     assert "Scrum  — you marked it P in checklist.md (line 3): add where you used it" in out
     assert "Scala  — you don't have it" in out
+
+
+def test_a_built_in_template_brings_its_synonyms(ada):
+    from honest_cv.score import spellings
+
+    assert "CPA" in spellings("Certified Public Accountant") and "NIIF" in spellings("IFRS", ada)

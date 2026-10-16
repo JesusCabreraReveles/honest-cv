@@ -42,9 +42,11 @@ FAMILIARITY_WORDS = re.compile(
 )
 SENTENCE = re.compile(r"(?<=[.!?;])\s+|\n+")
 NUMBER = re.compile(r"(?<![\w.])\d+(?:[.,]\d+)*\s?(?:%|x|k|K|M)?(?![\w])")
-# Checklists of practices (people, process, design), not technologies: in a letter,
-# words like "scalability" or "mentoring" are not claims to check.
-NOT_TECHNOLOGY = {"engineering-lead", "software-architecture"}
+# The built-in checklists of technologies. The others are practices or professions (people,
+# process, design, sales...): in a software letter, words like "mentoring" or "negotiation"
+# are not claims to check. The person's own templates always count.
+TECHNOLOGY = {"backend-go", "backend-jvm", "backend-python", "data", "frontend", "platform-sre",
+              "mobile", "qa-testing", "security", "ml-ai"}
 
 GREETING: dict[Lang, str] = {"en": "Dear Hiring Team,", "es": "Estimado equipo de selección:"}
 CLOSING: dict[Lang, str] = {"en": "Sincerely,", "es": "Atentamente,"}
@@ -83,7 +85,7 @@ def _vocabulary(source: Source, keywords: list[str]) -> list[str]:
     templates (any profession), the inventory and the post."""
     names = [g[0] for g in groups(source) if g not in PRACTICES]
     for b in checklist.available(source.folder):
-        if b.id not in NOT_TECHNOLOGY or b.origin == "yours":
+        if b.id in TECHNOLOGY or b.origin == "yours":
             names += [i.name for i in checklist.parse(Path(b.path).read_text("utf-8")).items]
     names += [s.name for s in source.inventory.skills] + keywords
     seen, out = set(), []

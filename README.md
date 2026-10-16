@@ -208,7 +208,9 @@ honest-cv checklist new ~/cv-profile backend-jvm engineering-lead
 honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
 ```
 
-**Any profession works.** The built-in checklists are for software roles, but a template is just a
+**Any profession works.** The built-in checklists cover software (backend, frontend, mobile, data,
+platform/SRE, QA, security, ML/AI, architecture, engineering leadership) and product management,
+UX design, marketing, sales, finance and accounting, and human resources. A template is just a
 Markdown list in this format: save your own (or one someone shared) in `~/cv-profile/checklists/`
 and it shows up in `checklist list` and combines with the others in `checklist new`, which also
 takes a path. A template can declare synonyms, such as `same: Work Breakdown Structure = WBS`,

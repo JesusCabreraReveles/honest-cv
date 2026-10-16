@@ -10,10 +10,11 @@ from __future__ import annotations
 import re
 from dataclasses import asdict, dataclass, field
 from enum import StrEnum
+from pathlib import Path
 
 from honest_cv import document
 from honest_cv.document import FAMILIARITY, Document
-from honest_cv.model import Lang, Level, Skill, Source
+from honest_cv.model import Lang, Level, Skill, Source, synonym_line, without_comments
 
 # Practices, not technologies: they count in the score like any synonym, but a letter
 # that mentions "code review" or "mentoring" is not making a claim to check.
@@ -144,9 +145,23 @@ def _pattern(term: str) -> re.Pattern:
     return re.compile(rf"(?<!\w){re.escape(term)}(?!\w)", flags)
 
 
+def _template_synonyms() -> list[list[str]]:
+    """The `same:` lines of the built-in checklists: each template brings its own synonyms."""
+    out = []
+    for path in sorted((Path(__file__).parent / "checklists").glob("*.md")):
+        for line in without_comments(path.read_text(encoding="utf-8")).splitlines():
+            if (names := synonym_line(line)) is not None:
+                out.append(names)
+    return out
+
+
+TEMPLATE_SYNONYMS = _template_synonyms()
+
+
 def groups(source: Source | None = None) -> list[list[str]]:
-    """Synonym groups: the built-in ones, then the person's own from their templates."""
-    return SYNONYMS + (source.synonyms if source is not None else [])
+    """Synonym groups: the built-in ones, those of the built-in checklists, then the
+    person's own from their templates."""
+    return SYNONYMS + TEMPLATE_SYNONYMS + (source.synonyms if source is not None else [])
 
 
 def spellings(term: str, source: Source | None = None) -> list[str]:

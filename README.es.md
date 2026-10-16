@@ -214,8 +214,10 @@ honest-cv checklist new ~/cv-profile backend-jvm engineering-lead
 honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
 ```
 
-**Sirve para cualquier profesión.** Los checklists incluidos son para puestos de software, pero
-una plantilla es solo una lista Markdown con este formato: guarda la tuya (o una que te compartan)
+**Sirve para cualquier profesión.** Los checklists incluidos cubren software (backend, frontend,
+móvil, datos, platform/SRE, QA, seguridad, ML/IA, arquitectura y liderazgo de ingeniería), además de
+gestión de producto, diseño UX, marketing, ventas, finanzas y contabilidad, y recursos humanos. Una
+plantilla es solo una lista Markdown con este formato: guarda la tuya (o una que te compartan)
 en `~/cv-profile/checklists/` y aparece en `checklist list` y se combina con las demás en
 `checklist new`, que también acepta una ruta. Una plantilla puede declarar sinónimos, como
 `same: Work Breakdown Structure = WBS = EDT`, y el puntaje contra la vacante, las brechas y la
