@@ -223,3 +223,5 @@ huecos que entraron a la v0.2:
 - Publicada la 0.2.0 el 2026-10-15 en PyPI y en el registro de MCP. Issues abiertos: preparar
   entrevistas (#2), más plantillas (#3), checklists por idioma (#4), `gap_report` con skills marcadas
   pero pendientes en el checklist (#5) y copia de los archivos enviados (#6).
+- 0.2.1 (2026-10-15): el README paso a paso. 0.3.0 (2026-10-15): cierra #2, #4, #5 y #6, y una
+  primera tanda de 10 plantillas para #3, que queda abierto a contribuciones.
