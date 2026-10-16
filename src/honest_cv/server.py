@@ -54,8 +54,8 @@ keywords yourself, call score_job, then gap_report on the best variant; propose 
 approves; build_cv, which also verifies the PDF. If a check fails, never reword the person's
 text to pass it: report it, since it is probably a bug in honest-cv.
 
-Skills: for many at once, use a checklist (checklist_list, checklist_new, checklist_apply). Any
-profession works: the person's own templates in <profile>/checklists/ are listed too, with
+Skills: for many at once, use a checklist (checklist_list, checklist_new, checklist_apply), in
+the person's language (lang). Any profession works: the person's own templates in <profile>/checklists/ are listed too, with
 their synonyms. Then ask for their biggest achievements, which usually cover several skills, and
 after that for one real achievement for each of `key_skills_without_achievements`.
 
@@ -401,7 +401,10 @@ def import_profile(
 
 @mcp.tool(annotations=READ)
 @_tool_errors
-def checklist_list(profile: Profile = None) -> dict:
+def checklist_list(
+    profile: Profile = None,
+    lang: Annotated[Lang, Field(description="The person's language: the built-in templates in it, where translated.")] = "en",
+) -> dict:
     """The skill checklist templates to combine with `checklist_new`: the built-in ones, one per
     kind of profile, and the person's own in <profile>/checklists/ (origin "yours"). Any
     profession works: a template is a Markdown list in the same format."""
@@ -409,7 +412,7 @@ def checklist_list(profile: Profile = None) -> dict:
         folder = _profile_dir(profile)
     except ToolError:
         folder = None
-    return {"checklists": [b.__dict__ for b in checklist.available(folder)]}
+    return {"checklists": [b.__dict__ for b in checklist.available(folder, lang)]}
 
 
 @mcp.tool(annotations=WRITE)
@@ -424,15 +427,19 @@ def checklist_new(
     extra: Annotated[
         list[str] | None, Field(description="More skill names to ask about, e.g. found in an imported profile.")
     ] = None,
+    lang: Annotated[
+        Lang, Field(description="The person's language: the file's headings and the built-in templates in it.")
+    ] = "en",
 ) -> dict:
     """Merge checklist templates into one Markdown file, without duplicates and prefilled from the
     inventory. The person marks it in their editor; then call `checklist_apply`. `lists` may be
-    empty when `extra` names the skills."""
+    empty when `extra` names the skills. Use the person's language: skill names in another
+    language still match job posts in English, through their synonyms."""
     out = Path(path).expanduser() if path else _profile_dir(profile) / "checklist.md"
     if out.exists() and not overwrite:
         raise ToolError(f"{out} exists; ask the person before replacing it (overwrite=true)")
     folder = _profile_dir(profile)
-    text = checklist.compose(lists, load(folder), extra, folder)
+    text = checklist.compose(lists, load(folder), extra, folder, lang)
     out.write_text(text, encoding="utf-8")
     return {"path": str(out), "skills": len(checklist.parse(text).items)}
 

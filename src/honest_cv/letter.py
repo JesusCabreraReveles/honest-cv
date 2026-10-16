@@ -28,7 +28,7 @@ from honest_cv import checklist
 from honest_cv.document import contact_items
 from honest_cv.model import Lang, Level, Source
 from honest_cv.render.pdf import FONTS
-from honest_cv.score import PRACTICES, _match, _pattern, find_skill, groups, spellings
+from honest_cv.score import PRACTICES, SYNONYMS, _match, _pattern, find_skill, spellings
 from honest_cv.verify import Check, Report, verify_pdf
 
 TEMPLATE = Path(__file__).parent / "render" / "templates" / "letter.typ"
@@ -83,7 +83,9 @@ class Claims:
 def _vocabulary(source: Source, keywords: list[str]) -> list[str]:
     """Names to look for: synonyms, the technical built-in checklists, the person's own
     templates (any profession), the inventory and the post."""
-    names = [g[0] for g in groups(source) if g not in PRACTICES]
+    # Not the built-in templates' synonym groups: their names come in with the template, if
+    # it is a technical one.
+    names = [g[0] for g in SYNONYMS + source.synonyms if g not in PRACTICES]
     for b in checklist.available(source.folder):
         if b.id in TECHNOLOGY or b.origin == "yours":
             names += [i.name for i in checklist.parse(Path(b.path).read_text("utf-8")).items]

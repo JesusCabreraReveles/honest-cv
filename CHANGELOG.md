@@ -20,6 +20,10 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - Ten new built-in checklists (#3): `mobile`, `qa-testing`, `security` and `ml-ai`, and beyond
   software, `product-management`, `ux-design`, `marketing`, `sales`, `finance-accounting` and
   `human-resources`.
+- Checklists in Spanish (#4): every built-in template has a Spanish translation in
+  `checklists/es/`, picked with `lang="es"` in `checklist_list` and `checklist_new` (`--lang es`
+  in the CLI). The file's headings, legend and ★ section come in Spanish, and each Spanish name
+  is a synonym of the English one, so a skill marked in Spanish matches a post in English.
 - A built-in checklist brings its own synonyms with `same:` lines, as your own templates do, so
   adding one needs no code.
 

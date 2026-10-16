@@ -2,8 +2,8 @@
 
 Building, training, evaluating and running models, from classic ML to LLM applications.
 
-same: Retrieval-augmented generation = RAG
-same: Machine learning operations = MLOps
+same: Retrieval-augmented generation = RAG = Generación aumentada por recuperación
+same: Machine learning operations = MLOps = Operaciones de machine learning
 same: Computer vision = Visión por computadora
 same: Prompt engineering = Ingeniería de prompts
 

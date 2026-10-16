@@ -4,8 +4,8 @@ Finding, winning and growing customers: prospecting, closing, account management
 
 same: Business development = Desarrollo de negocios
 same: Account management = Gestión de cuentas
-same: Key account management = KAM = Cuentas clave
-same: Customer relationship management = CRM
+same: Key account management = KAM = Cuentas clave = Gestión de cuentas clave
+same: Customer relationship management = CRM = Gestión de relaciones con clientes
 same: Business-to-business sales = B2B sales = Ventas B2B
 
 ## ★ Main skills — years and last year used

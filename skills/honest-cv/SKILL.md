@@ -89,8 +89,9 @@ A checklist is a Markdown list the person marks with one letter per skill:
    format, and the built-in ones are only a start. Call `checklist_list`: it also shows the
    person's own templates, saved in `<profile>/checklists/`. Ask which ones fit them (several
    combine, e.g. backend-jvm and engineering-lead), and call `checklist_new`, which also takes the
-   path to any template they share. It writes `<profile>/checklist.md`, prefilled from their
-   inventory. If they already marked a file of their own, skip to step 3 with it.
+   path to any template they share. Pass `lang` in the person's language (`es` for Spanish) to
+   both: the templates and the file come in that language, and the names still match job posts
+   in English. It writes `<profile>/checklist.md`, prefilled from their inventory. If they already marked a file of their own, skip to step 3 with it.
 
    For another profession, offer to write a template with them in `<profile>/checklists/<id>.md`,
    like https://github.com/JesusCabreraReveles/honest-cv/blob/master/examples/checklists/project-management.md:

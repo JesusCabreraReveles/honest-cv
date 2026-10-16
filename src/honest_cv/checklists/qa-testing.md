@@ -3,7 +3,7 @@
 Testing software by hand and by code: strategy, automation, performance and quality processes.
 
 same: Quality assurance = QA = Aseguramiento de calidad
-same: Behavior-Driven Development = BDD
+same: Behavior-Driven Development = BDD = Desarrollo guiado por comportamiento
 same: International Software Testing Qualifications Board = ISTQB
 
 ## ★ Main skills — years and last year used

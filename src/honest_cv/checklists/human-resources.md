@@ -3,8 +3,8 @@
 Hiring, developing and caring for people: talent acquisition, HR operations, compensation and culture.
 
 same: Talent acquisition = Adquisición de talento
-same: Human resources information system = HRIS
-same: Learning and development = L&D = Capacitación
+same: Human resources information system = HRIS = Sistema de información de RR. HH.
+same: Learning and development = L&D = Capacitación = Aprendizaje y desarrollo
 same: Employee relations = Relaciones laborales
 same: Diversity and inclusion = DEI = Diversity, equity and inclusion = Diversidad e inclusión
 

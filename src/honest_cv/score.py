@@ -21,11 +21,11 @@ from honest_cv.model import Lang, Level, Skill, Source, synonym_line, without_co
 PRACTICES: list[list[str]] = [
     ["Team leadership", "team lead", "liderazgo de equipos", "liderazgo de equipo"],
     ["People management", "gestión de personas", "gestión de personal"],
-    ["Hiring", "recruiting", "reclutamiento", "contratación de talento"],
+    ["Hiring", "recruiting", "reclutamiento", "contratación de talento", "Contratación"],
     ["Mentoring", "mentorship", "mentoría"],
     ["Project management", "gestión de proyectos", "administración de proyectos"],
     ["Stakeholder management", "gestión de stakeholders", "gestión de interesados"],
-    ["Code review culture", "code review", "code reviews", "revisión de código", "revisiones de código"],
+    ["Code review culture", "code review", "code reviews", "revisión de código", "revisiones de código", "Cultura de revisión de código"],
     ["Design patterns", "patrones de diseño"],
     ["System integration", "integración de sistemas"],
 
@@ -50,8 +50,8 @@ SYNONYMS: list[list[str]] = [
     ["Spring Boot", "SpringBoot"],
     ["Machine Learning", "ML", "aprendizaje automático"],
     ["Artificial Intelligence", "AI", "inteligencia artificial", "IA"],
-    ["Large Language Models", "LLM", "LLMs", "modelos de lenguaje"],
-    ["Natural Language Processing", "NLP"],
+    ["Large Language Models", "LLM", "LLMs", "modelos de lenguaje", "Modelos de lenguaje grandes"],
+    ["Natural Language Processing", "NLP", "Procesamiento de lenguaje natural"],
     ["C#", "CSharp", "C Sharp"],
     [".NET", "dotnet", ".NET Core"],
     ["C++", "CPP"],
@@ -71,13 +71,13 @@ SYNONYMS: list[list[str]] = [
     ["OpenTelemetry", "OTel"],
     ["Distributed Systems", "distributed system", "sistemas distribuidos"],
     ["Event-Driven Architecture", "event-driven", "EDA", "arquitectura orientada a eventos", "orientada a eventos"],
-    ["Domain-Driven Design", "DDD"],
-    ["Architecture Decision Records", "ADRs", "ADR"],
+    ["Domain-Driven Design", "DDD", "Diseño guiado por el dominio"],
+    ["Architecture Decision Records", "ADRs", "ADR", "Registros de decisiones de arquitectura"],
     ["Hexagonal architecture", "ports and adapters", "arquitectura hexagonal"],
     ["System design", "diseño de sistemas"],
-    ["Change data capture", "CDC"],
-    ["Test-Driven Development", "TDD"],
-    ["Site Reliability Engineering", "SRE"],
+    ["Change data capture", "CDC", "Captura de cambios de datos"],
+    ["Test-Driven Development", "TDD", "Desarrollo guiado por pruebas"],
+    ["Site Reliability Engineering", "SRE", "Ingeniería de confiabilidad de sitios"],
     ["Infrastructure as Code", "IaC", "infraestructura como código"],
     ["Incident management", "incident response", "on-call", "gestión de incidentes", "atención de incidentes"],
     ["On-Premises", "on-premise", "on-prem", "en sitio"],
@@ -146,9 +146,10 @@ def _pattern(term: str) -> re.Pattern:
 
 
 def _template_synonyms() -> list[list[str]]:
-    """The `same:` lines of the built-in checklists: each template brings its own synonyms."""
+    """The `same:` lines of the built-in checklists and their translations: each template
+    brings its own synonyms, and a translation maps its names to the English ones."""
     out = []
-    for path in sorted((Path(__file__).parent / "checklists").glob("*.md")):
+    for path in sorted((Path(__file__).parent / "checklists").glob("**/*.md")):
         for line in without_comments(path.read_text(encoding="utf-8")).splitlines():
             if (names := synonym_line(line)) is not None:
                 out.append(names)

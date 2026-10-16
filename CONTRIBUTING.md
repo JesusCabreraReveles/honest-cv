@@ -61,7 +61,12 @@ Python 3.11 or newer. Code, names and comments are in English.
   - names already in `SYNONYMS` (score.py) or another template's `same:` line: use that main name,
     and don't define them again.
 
-  `tests/test_checklist.py` checks all of this. If the template lists technologies (frameworks,
+  `tests/test_checklist.py` checks all of this.
+- **Translations of a checklist.** `src/honest_cv/checklists/<lang>/<id>.md` translates the
+  English template line by line: the same skills in the same order. Tools and products keep their
+  names; for a translated concept, add a `same: English name = Translated name` line, or add the
+  translation to the group the English name already has. A test checks that every translated name
+  is a synonym of its English line. If the template lists technologies (frameworks,
   tools, platforms), add its id to `TECHNOLOGY` in `letter.py`, so cover letters are checked
   against it; templates of practices or other professions stay out. One template per PR. See
   `marketing.md` or `security.md`.

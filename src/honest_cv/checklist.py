@@ -28,7 +28,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from honest_cv.model import LEVEL_RANK, TEMPLATES, Level, Source, without_comments
+from honest_cv.model import LEVEL_RANK, TEMPLATES, Lang, Level, Source, without_comments
 from honest_cv.score import find_skill
 from honest_cv.store import SkillChange
 
@@ -335,13 +335,14 @@ def read(path: str | Path) -> Parsed:
     return parse(Path(path).expanduser().read_text(encoding="utf-8"))
 
 
-def line(change: SkillChange) -> str:
+def line(change: SkillChange, lang: Lang = "en") -> str:
     """One checklist line for a change, the inverse of `parse` for a single item."""
+    words = WORDS[lang]
     parts = [change.evidence] if change.evidence else []
     if change.years is not None:
-        parts.append(f"years: {change.years:g}")
+        parts.append(f"{words['years']}: {change.years:g}")
     if change.last_used_year is not None:
-        parts.append(f"last year: {change.last_used_year}")
+        parts.append(f"{words['last']}: {change.last_used_year}")
     if change.evidence and change.evidence.rstrip().endswith(")") and len(parts) == 1:
         parts = [f"evidence: {change.evidence}"]  # so its parentheses are not read as a note
     text = f"- [{change.level.value}] {change.name}"
@@ -363,7 +364,7 @@ def write_pending(folder: str | Path, changes: list[SkillChange]) -> Path:
 
 # --- built-in checklists ------------------------------------------------------
 
-BUILTIN = Path(__file__).parent / "checklists"
+BUILTIN = Path(__file__).parent / "checklists"  # English; translations in checklists/<lang>/
 STAR = "★ Main skills — years and last year used"
 LEGEND = """\
 <!-- Mark each line between the brackets:
@@ -379,6 +380,28 @@ A line "evidence: ..." under a heading applies to every line in that section wit
 Text in (parentheses) is a private note. Years and last year are asked only in the ★ section.
 Then run: honest-cv checklist apply <profile> <this file> -->
 """
+
+# The words of a composed checklist, per language. Skill names come from the templates.
+WORDS: dict[Lang, dict[str, str]] = {
+    "en": {"star": STAR, "legend": LEGEND, "title": "Skill checklist", "years": "years",
+           "last": "last year", "imported": "Found in your imported profile",
+           "inventory": "Also in your inventory"},
+    "es": {"star": "★ Skills principales — años y último uso", "legend": """\
+<!-- Marca cada línea entre los corchetes:
+  P = la usaste en producción en un trabajo      L = proyecto propio o laboratorio
+  F = familiaridad (la probaste o leíste sobre ella)      X = no la tienes
+  [ ] = sin marcar (se omite)       [?] = no estás seguro (se omite)
+Después de " — " escribe dónde y cómo la usaste: es la evidencia que necesita una subida de nivel.
+Por ejemplo:
+  - [P] Presupuestos — Acme, 2019–2024: llevé el presupuesto anual de un equipo de 12 personas
+  - [P] Presupuestos — años: 5 · último uso: 2024 · Acme: llevé el presupuesto anual   (sección ★)
+  - [F] Pronósticos (tomé un curso, nunca lo usé en el trabajo)
+Una línea "evidencia: ..." bajo un encabezado aplica a todas las líneas de esa sección sin la suya.
+El texto entre (paréntesis) es una nota privada. Años y último uso solo se piden en la sección ★.
+Después ejecuta: honest-cv checklist apply <perfil> <este archivo> -->
+""", "title": "Checklist de skills", "years": "años", "last": "último uso",
+           "imported": "Encontradas en tu perfil importado", "inventory": "También en tu inventario"},
+}
 
 
 OWN = TEMPLATES  # the person's own templates: <profile>/checklists/*.md
@@ -404,18 +427,22 @@ def _template(path: Path, origin: str) -> Builtin:
     return Builtin(path.stem, title, description, len(parse(text).items), origin, str(path))
 
 
-def available(folder: Path | None = None) -> list[Builtin]:
-    """The built-in templates, plus the person's own in <folder>/checklists/. An own
-    template with a built-in's id replaces it: the person's file is the one they mean."""
-    out = {path.stem: _template(path, "built-in") for path in sorted(BUILTIN.glob("*.md"))}
+def available(folder: Path | None = None, lang: Lang = "en") -> list[Builtin]:
+    """The built-in templates, in `lang` where a translation exists, plus the person's own
+    in <folder>/checklists/. An own template with a built-in's id replaces it: the
+    person's file is the one they mean."""
+    out = {}
+    for path in sorted(BUILTIN.glob("*.md")):
+        translated = BUILTIN / lang / path.name
+        out[path.stem] = _template(translated if lang != "en" and translated.is_file() else path, "built-in")
     if folder is not None:
         out |= {path.stem: _template(path, "yours") for path in sorted((Path(folder) / OWN).glob("*.md"))}
     return list(out.values())
 
 
-def _resolve(ids: list[str], folder: Path | None) -> list[Builtin]:
+def _resolve(ids: list[str], folder: Path | None, lang: Lang = "en") -> list[Builtin]:
     """Template ids from `available`, or paths to any Markdown file in the checklist format."""
-    known = {b.id: b for b in available(folder)}
+    known = {b.id: b for b in available(folder, lang)}
     out, unknown = [], []
     for i in ids:
         if i in known:
@@ -450,7 +477,7 @@ def unbacked(source: Source, names: list[str],
 
 def key_skills(source: Source, items: list[Item]) -> list[str]:
     """The names that matter most now: the ★ section's and every skill a variant shows."""
-    names = [i.name for i in items if i.section == STAR]
+    names = [i.name for i in items if "★" in i.section]
     for vid in source.variants:
         names += [n for g in source.resolve(vid).skills for n in g.skills]
     return names
@@ -520,30 +547,32 @@ def _canonical(name: str, source: Source | None = None) -> str:
 
 
 def compose(ids: list[str], source: Source | None = None, extra: list[str] | None = None,
-            folder: Path | None = None) -> str:
+            folder: Path | None = None, lang: Lang = "en") -> str:
     """Merge checklist templates into one, without duplicates, prefilled from the inventory.
 
     `ids` are built-in or own templates (see `available`), or paths to .md files. Sections
     with the same heading merge. A skill keeps its first place, and the ★ sections come
     first, so a key skill is asked once with its years. Marks in a template are ignored:
     the inventory prefills the lines. `extra` names skills found elsewhere, e.g. in an
-    imported LinkedIn profile."""
+    imported LinkedIn profile. `lang` picks the translated templates and the file's words."""
     if not ids and not extra:
         raise ValueError("name at least one checklist, or extra skills")
-    templates = _resolve(ids, folder)
+    words = WORDS[lang]
+    star = words["star"]
+    templates = _resolve(ids, folder, lang)
     parsed = [parse(Path(t.path).read_text(encoding="utf-8")) for t in templates]
-    sections: dict[str, list[str]] = {STAR: []}
+    sections: dict[str, list[str]] = {star: []}
     seen: set[str] = set()
     for p in parsed:
         for item in p.items:
             if "★" in item.section:
-                _add(sections, STAR, item.name, seen)
+                _add(sections, star, item.name, seen)
     for p in parsed:
         for item in p.items:
             if "★" not in item.section:
                 _add(sections, item.section, item.name, seen)
     for name in extra or []:
-        _add(sections, "Found in your imported profile", name, seen, source)
+        _add(sections, words["imported"], name, seen, source)
     if source is not None:
         # X skills in no list stay out: asking again about what they don't have is noise.
         rest = [
@@ -551,15 +580,15 @@ def compose(ids: list[str], source: Source | None = None, extra: list[str] | Non
             if _key(s.name, source) not in seen and s.level is not Level.NONE
         ]
         for name in rest:
-            _add(sections, "Also in your inventory", name, seen, source)
+            _add(sections, words["inventory"], name, seen, source)
 
     titles = [t.title for t in templates] + (["imported skills"] if extra else [])
-    out = [f"# Skill checklist: {', '.join(titles)}", "", LEGEND]
+    out = [f"# {words['title']}: {', '.join(titles)}", "", words["legend"]]
     for heading, names in sections.items():
         if not names:
             continue
         out += [f"## {heading}"]
-        out += [_render(name, heading == STAR, source) for name in names]
+        out += [_render(name, heading == star, source, lang) for name in names]
         out.append("")
     return "\n".join(out)
 
@@ -577,17 +606,18 @@ def _add(sections: dict[str, list[str]], heading: str, name: str, seen: set[str]
     sections.setdefault(heading, []).append(name)
 
 
-def _render(name: str, star: bool, source: Source | None) -> str:
+def _render(name: str, star: bool, source: Source | None, lang: Lang = "en") -> str:
+    words = WORDS[lang]
     skill = find_skill(name, source) if source is not None else None
     if skill is None:
-        return f"- [ ] {name}" + (" — years: __ · last year: ____" if star else "")
+        return f"- [ ] {name}" + (f" — {words['years']}: __ · {words['last']}: ____" if star else "")
     change = SkillChange(
         name=skill.name, level=skill.level, evidence=skill.evidence,
         years=skill.years, last_used_year=skill.last_used_year, notes=skill.notes,
     )
-    text = line(change)
+    text = line(change, lang)
     if star and skill.years is None:
-        text += (" · " if " — " in text else " — ") + "years: __"
+        text += (" · " if " — " in text else " — ") + f"{words['years']}: __"
     if star and skill.last_used_year is None:
-        text += (" · " if " — " in text else " — ") + "last year: ____"
+        text += (" · " if " — " in text else " — ") + f"{words['last']}: ____"
     return text

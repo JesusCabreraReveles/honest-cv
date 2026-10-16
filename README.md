@@ -202,6 +202,9 @@ Text after " — " is the evidence, and an `evidence:` line under a heading cove
 Lines without evidence are never saved: they come back as pending, and your assistant asks you
 about them in groups. Upgrades are confirmed once for the whole file.
 
+Checklists come in English and Spanish (`--lang es`): the Spanish names are synonyms of the
+English ones, so a skill you mark in Spanish still matches a job post in English.
+
 ```bash
 honest-cv checklist list                                     # backend-jvm, platform-sre, ...
 honest-cv checklist new ~/cv-profile backend-jvm engineering-lead

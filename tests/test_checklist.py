@@ -154,6 +154,59 @@ def test_builtin_checklists_are_well_formed(path):
     assert len(lines) == len(set(lines)), "a line became two skills: avoid commas and ' / ' in names"
 
 
+TRANSLATIONS = sorted(checklist.BUILTIN.glob("*/*.md"))
+
+
+@pytest.mark.parametrize("path", TRANSLATIONS, ids=lambda p: f"{p.parent.name}/{p.stem}")
+def test_a_translation_matches_its_english_template_line_by_line(path):
+    # Same skills in the same order, and each name is the English one or a synonym of it,
+    # so a skill marked in Spanish still matches a job post in English.
+    from honest_cv.score import spellings
+
+    english = checklist.BUILTIN / path.name
+    assert english.is_file(), f"{path.name} translates no English template"
+    text = path.read_text(encoding="utf-8")
+    parsed, en = checklist.parse(text), checklist.parse(english.read_text(encoding="utf-8"))
+    assert parsed.problems == [] and text.startswith("# ")
+    assert {i.mark for i in parsed.items} == {""}
+    assert len(parsed.items) == len(en.items)
+    for mine, theirs in zip(parsed.items, en.items):
+        assert ("★" in mine.section) == ("★" in theirs.section), mine.name
+        assert theirs.name.casefold() in {x.casefold() for x in spellings(mine.name)}, (mine.name, theirs.name)
+
+
+def test_every_template_is_translated_to_spanish():
+    english = {p.name for p in checklist.BUILTIN.glob("*.md")}
+    assert {p.name for p in (checklist.BUILTIN / "es").glob("*.md")} == english
+
+
+def test_checklists_in_spanish(ada):
+    names = {b.id: b for b in checklist.available(lang="es")}
+    assert names["engineering-lead"].title == "Liderazgo de ingeniería"
+    text = checklist.compose(["engineering-lead"], ada, lang="es")
+    assert text.startswith("# Checklist de skills: Liderazgo de ingeniería")
+    assert "## ★ Skills principales — años y último uso" in text
+    assert "- [ ] Liderazgo de equipos — años: __ · último uso: ____" in text
+    # Ada's own skills are prefilled with Spanish words, and her inventory names.
+    assert "## También en tu inventario" in text and "- [P] Kafka — " in text
+    items = {i.name: i for i in checklist.parse(text).items}
+    assert "★" in items["Liderazgo de equipos"].section
+    # A Spanish mark is the same skill as the English name in a post.
+    marked = text.replace("- [ ] Liderazgo de equipos — años: __ · último uso: ____",
+                          "- [P] Liderazgo de equipos — Acme, 2020–2026 · años: 6 · último uso: 2026")
+    plan = checklist.plan(ada, checklist.parse(marked))
+    (change, _), = plan.upgrades
+    assert (change.name, change.years, change.last_used_year) == ("Liderazgo de equipos", 6, 2026)
+    assert checklist.key_skills(ada, checklist.parse(marked).items)[0] == "Liderazgo de equipos"
+
+
+def test_cli_checklist_in_spanish(profile, capsys):
+    assert cli.main(["checklist", "list", "--lang", "es"]) == 0
+    assert "Gestión de producto" in capsys.readouterr().out
+    assert cli.main(["checklist", "new", str(profile), "sales", "--lang", "es"]) == 0
+    assert "## Prospección" in (profile / "checklist.md").read_text(encoding="utf-8")
+
+
 def test_a_name_is_in_one_synonym_group_only():
     # A template's `same:` line must not redefine a name another group already has: the
     # first group would win silently. Add the spelling to that group instead.

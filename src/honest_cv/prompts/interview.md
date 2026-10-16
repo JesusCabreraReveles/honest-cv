@@ -67,7 +67,9 @@ Aim for 4 to 8 bullets per recent role and 2 to 3 per older role.
 
 If they have many skills, offer a checklist first: it is much faster than asking one by one. Any
 profession works: `checklist_list` shows the built-in templates and their own, saved in
-`$profile/checklists/`, and `checklist_new` also takes the path to a template they share. Let them
+`$profile/checklists/`, and `checklist_new` also takes the path to a template they share. Pass
+`lang="es"` to both if they speak Spanish: the templates and the file come in Spanish, and the
+names still match job posts in English. Let them
 mark the file in their editor, then call `checklist_apply` and ask for the `pending_evidence` in
 groups, recording each group with `set_skills`. Ask only about those lines: unmarked lines stay for
 the person to mark in the file. Then fill in achievements as in step 3. The list

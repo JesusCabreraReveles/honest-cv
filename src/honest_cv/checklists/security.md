@@ -2,10 +2,10 @@
 
 Application, cloud and infrastructure security: finding, fixing and preventing vulnerabilities, and compliance.
 
-same: Static application security testing = SAST
-same: Dynamic application security testing = DAST
-same: Security information and event management = SIEM
-same: Identity and access management = IAM
+same: Static application security testing = SAST = Pruebas estáticas de seguridad de aplicaciones
+same: Dynamic application security testing = DAST = Pruebas dinámicas de seguridad de aplicaciones
+same: Security information and event management = SIEM = Gestión de información y eventos de seguridad
+same: Identity and access management = IAM = Gestión de identidades y accesos
 same: Penetration testing = Pentesting = Pruebas de penetración
 same: Threat modeling = Modelado de amenazas
 

@@ -3,11 +3,11 @@
 Bringing in and keeping customers: digital channels, content, brand, analytics and tools.
 
 same: SEO = Search engine optimization = Posicionamiento en buscadores
-same: Search engine marketing = SEM
-same: Pay-per-click advertising = PPC
+same: Search engine marketing = SEM = Marketing en buscadores
+same: Pay-per-click advertising = PPC = Publicidad de pago por clic
 same: Content marketing = Marketing de contenidos
 same: Social media marketing = Marketing en redes sociales
-same: Conversion rate optimization = CRO
+same: Conversion rate optimization = CRO = Optimización de la tasa de conversión
 
 ## ★ Main skills — years and last year used
 - [ ] Digital marketing — years: __ · last year: ____

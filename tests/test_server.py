@@ -392,3 +392,11 @@ async def test_gap_report_names_keywords_marked_in_the_checklist(profile):
         err, gaps = await call(c, "gap_report", profile=profile, variant="backend", keywords=["Scrum", "Scala"])
     assert not err and [g["keyword"] for g in gaps["not_in_inventory"]] == ["Scrum", "Scala"]
     assert gaps["marked_in_checklist"] == [{"keyword": "Scrum", "name": "Scrum", "mark": "P", "line": 1, "level": None}]
+
+
+async def test_checklists_in_the_persons_language(profile):
+    async with Client(server) as c:
+        err, out = await call(c, "checklist_list", profile=profile, lang="es")
+        assert not err and "Ventas" in [b["title"] for b in out["checklists"]]
+        err, out = await call(c, "checklist_new", profile=profile, lists=["sales"], lang="es")
+    assert not err and "## Prospección" in Path(out["path"]).read_text(encoding="utf-8")

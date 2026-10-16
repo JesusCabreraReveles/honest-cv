@@ -208,9 +208,13 @@ El texto después de " — " es la evidencia, y una línea `evidence:` bajo un t
 sección. Las líneas sin evidencia nunca se guardan: regresan como pendientes y tu asistente te
 pregunta por ellas en grupos. Las subidas de nivel se confirman una sola vez para todo el archivo.
 
+Los checklists vienen en inglés y en español (`--lang es`): los nombres en español son
+sinónimos de los nombres en inglés, así que una skill que marcas en español también coincide con
+una vacante en inglés.
+
 ```bash
-honest-cv checklist list                                     # backend-jvm, platform-sre, ...
-honest-cv checklist new ~/cv-profile backend-jvm engineering-lead
+honest-cv checklist list --lang es                           # backend-jvm, platform-sre, ...
+honest-cv checklist new ~/cv-profile backend-jvm engineering-lead --lang es
 honest-cv checklist apply ~/cv-profile ~/cv-profile/checklist.md
 ```
 

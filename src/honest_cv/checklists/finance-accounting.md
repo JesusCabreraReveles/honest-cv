@@ -2,14 +2,14 @@
 
 Recording, reporting, planning and controlling money: accounting, financial analysis, tax and audit.
 
-same: Financial planning and analysis = FP&A
-same: Generally Accepted Accounting Principles = GAAP
-same: International Financial Reporting Standards = IFRS = NIIF
+same: Financial planning and analysis = FP&A = Planeación y análisis financiero
+same: Generally Accepted Accounting Principles = GAAP = Principios de contabilidad generalmente aceptados
+same: International Financial Reporting Standards = IFRS = NIIF = Normas Internacionales de Información Financiera
 same: Certified Public Accountant = CPA = Contador Público
 same: Chartered Financial Analyst = CFA
 same: Accounts payable = Cuentas por pagar
 same: Accounts receivable = Cuentas por cobrar
-same: Enterprise resource planning = ERP
+same: Enterprise resource planning = ERP = Planificación de recursos empresariales
 
 ## ★ Main skills — years and last year used
 - [ ] Financial reporting — years: __ · last year: ____
