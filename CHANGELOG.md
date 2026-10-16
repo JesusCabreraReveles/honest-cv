@@ -3,7 +3,7 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.3.1] — 2026-10-15
 
 ### Added
 - Eight more built-in checklists, each with its Spanish version (#3): `embedded`,

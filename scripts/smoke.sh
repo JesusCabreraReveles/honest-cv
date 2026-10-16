@@ -40,8 +40,9 @@ echo "== cover letter"
 printf 'I am applying for the Platform Engineer role.\n\nI led a 40-service migration to Kubernetes.\n' > letter.txt
 hc letter build /examples/ada letter.txt --company "Acme" --role "Platform Engineer" -o letter-out
 echo "== own template, with its synonyms"
-cp -R /examples/ada ada && mkdir ada/checklists && cp /examples/checklists/project-management.md ada/checklists/
+cp -R /examples/ada ada && mkdir ada/checklists && cp /examples/checklists/event-planning.md ada/checklists/
 hc checklist list ada | grep yours
+hc checklist list --lang es | grep Enfermería
 printf '# SRE extras\nsame: Service Level Objectives = SLOs\n- [ ] SLOs\n' > ada/checklists/sre.md
 hc score ada -v platform -k "Service Level Objectives" | grep "as 'SLOs'"
 echo "== export, LinkedIn, applications"

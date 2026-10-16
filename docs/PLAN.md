@@ -225,3 +225,4 @@ huecos que entraron a la v0.2:
   pero pendientes en el checklist (#5) y copia de los archivos enviados (#6).
 - 0.2.1 (2026-10-15): el README paso a paso. 0.3.0 (2026-10-15): cierra #2, #4, #5 y #6, y una
   primera tanda de 10 plantillas para #3, que queda abierto a contribuciones.
+- 0.3.1 (2026-10-15): cierra #3 con 8 plantillas más; las 26 incluidas tienen versión en español.
