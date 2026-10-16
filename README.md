@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/JesusCabreraReveles/honest-cv/actions/workflows/ci.yml/badge.svg)](https://github.com/JesusCabreraReveles/honest-cv/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/JesusCabreraReveles/honest-cv/blob/master/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/honest-cv)](https://pypi.org/project/honest-cv/)
+[![Listed on mcpservers.org](https://mcpservers.org/badge.svg)](https://mcpservers.org/servers/jesuscabrerareveles/honest-cv)
 
 <!-- mcp-name: io.github.JesusCabreraReveles/honest-cv -->
 
