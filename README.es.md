@@ -163,7 +163,8 @@ este CV no la muestra*, *solo familiaridad* y *no la tienes*, además de las que
 checklist pero aún sin evidencia (te pregunta dónde las usaste), una variante adaptada para aprobar y
 el build. Después puede redactar una carta de presentación, que `check_claims` revisa antes de
 generarla, y registrar la postulación con el texto de la vacante y lo que conviene preparar para
-la entrevista.
+la entrevista. Cuando te den la entrevista, *"ayúdame a preparar la entrevista"* redacta las
+preguntas probables con respuestas tomadas de tus propios logros.
 
 **5. Regresa cuando quieras.** Di *"sigamos con la entrevista de mi CV"*: empieza por lo que falta.
 Para actualizar tu perfil de LinkedIn, di *"actualiza mi LinkedIn"*.
@@ -278,6 +279,14 @@ CV o la carta, y `list_applications` te señala las que llevan dos semanas sin n
 guarda el texto de la vacante en `posts/`, porque los enlaces caducan, y lo que te conviene preparar
 para la entrevista; pregúntale a tu asistente "¿qué tenía que preparar para Acme?".
 
+Cuando te den la entrevista, di *"ayúdame a preparar la entrevista de Acme"* (o usa el prompt
+`interview_prep`). Para cada palabra clave de la vacante guardada, honest-cv muestra tu nivel, tu
+evidencia y los bullets que la respaldan, empezando por los del CV que mandaste. Tu asistente
+redacta las preguntas probables con respuestas STAR tomadas solo de esos bullets, respuestas
+honestas para lo que solo conoces como familiaridad o no tienes, y preguntas para hacerles. Las
+notas que apruebes se guardan en `prep/`. Sin cliente de IA: `honest-cv apps prep ~/cv-profile
+acme_sre -k "Kafka,Scala"`.
+
 ## LinkedIn
 
 `honest-cv linkedin` convierte una variante en los textos de LinkedIn, cada uno dentro de su límite:
@@ -324,6 +333,7 @@ honest-cv import ~/cv-profile linkedin-export.zip --dry-run         # o resume.j
 honest-cv export ~/cv-profile -v backend -l es                       # JSON Resume
 honest-cv apps log ~/cv-profile --company Acme --role "SRE" -s applied -v platform
 honest-cv apps list ~/cv-profile                                     # la más reciente primero
+honest-cv apps prep ~/cv-profile acme_sre -k "Kafka,Scala"           # qué respalda cada palabra clave, para la entrevista
 honest-cv linkedin ~/cv-profile -v platform -l es                    # textos para pegar en LinkedIn
 honest-cv remove skill ~/cv-profile "Kafka"                          # te pide confirmar
 honest-cv letter check ~/cv-profile carta.txt -k "Kubernetes,Go"      # afirmaciones que tu perfil no respalda
@@ -369,8 +379,10 @@ parsers separan de su puesto.
 | `log_application` | Registra una postulación (empresa, puesto, variante del CV, archivos enviados, el texto de la vacante, qué preparar) o un nuevo estado, con su fecha. |
 | `linkedin_profile` | Titular, "Acerca de", descripciones de puestos y skills (solo P y L) de LinkedIn a partir de una variante, dentro de sus límites. |
 | `list_applications` | Lista las postulaciones, la más reciente primero, con un conteo por estado y las que llevan 14 días o más sin noticias. |
+| `interview_prep` | Para una postulación: la vacante guardada y, por palabra clave, tu nivel, tu evidencia y los bullets que la respaldan. Guarda las notas de preparación. |
 | prompt `import_linkedin_pdf` | Convierte el PDF de "Guardar como PDF" de LinkedIn en un perfil, sección por sección, con tu aprobación. |
 | prompt `linkedin_profile` | Pule los textos de LinkedIn de una variante sin agregar afirmaciones, revisados con `check_claims`. |
+| prompt `interview_prep` | Prepara una entrevista: preguntas probables, respuestas STAR con tus propios bullets y respuestas honestas para los huecos. |
 
 ## Garantías ATS
 

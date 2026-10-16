@@ -184,6 +184,15 @@ list on purpose: LinkedIn can't label them as familiarity. Once they approve the
 headline and About, call `linkedin_profile` again with them, so the final version is saved in
 their profile's `out/` folder and not only in the chat or a temporary file.
 
+## Flow H: interview prep
+
+When an application gets an interview, or they ask how to prepare, follow the `interview_prep`
+prompt: call `interview_prep` with the application id to get the saved post, then again with
+the post's keywords. Draft likely questions and STAR answers only from each keyword's `stories`
+(their own bullets), ask for a real example where the standing is `no_achievement`, for evidence
+where it is `marked_pending`, and give honest answers for `familiarity` and `lacking`. Once they
+approve, save it with `notes` in `prep/`.
+
 ## Checking an existing CV
 
 Call `verify_pdf` on any PDF, including one made with another tool. Explain each failed check:
@@ -194,4 +203,4 @@ Call `verify_pdf` on any PDF, including one made with another tool. Explain each
 Show the person the extracted `text`: that is what the ATS reads.
 
 The same flows exist as MCP prompts: `interview`, `tailor_for_job`, `cover_letter`,
-`import_linkedin_pdf` and `linkedin_profile`.
+`import_linkedin_pdf`, `linkedin_profile` and `interview_prep`.

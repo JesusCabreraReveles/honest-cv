@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field, ValidationError, create_model
 
 from honest_cv import __version__, applications, checklist, export, importer, letter, linkedin, store
 from honest_cv import build as build_mod
+from honest_cv import prep as prep_mod
 from honest_cv import score as score_mod
 from honest_cv.model import LEVEL_RANK, Bullet, Lang, Level, SkillGroup, Source, Text, Variant, explain, load
 from honest_cv.verify import verify_pdf as verify
@@ -63,6 +64,7 @@ number as you understood them, and let them correct you.
 
 Applications: after build_cv or build_letter, offer log_application; record news (interview,
 offer, rejection) the same way. list_applications shows the ones waiting for an answer.
+When one gets an interview, offer interview_prep: STAR answers only from the stories it returns.
 
 Also: linkedin_profile for LinkedIn texts (check any rewording with check_claims), and
 export_json_resume for other CV tools.
@@ -889,6 +891,38 @@ def list_applications(
     return applications.listing(_profile_dir(profile), status)
 
 
+@mcp.tool(annotations=WRITE)
+@_tool_errors
+def interview_prep(
+    application: Annotated[str, Field(description="Application id, from list_applications.")],
+    profile: Profile = None,
+    keywords: Annotated[
+        list[str] | None,
+        Field(description="Required keywords from the job post, in its own wording. Leave out on the "
+                          "first call to get the saved post's text."),
+    ] = None,
+    preferred: Preferred = None,
+    notes: Annotated[
+        str | None,
+        Field(description="The prep notes the person approved, in Markdown. Saved to "
+                          "<profile>/prep/<application>.md, replacing earlier notes."),
+    ] = None,
+) -> dict:
+    """What the person can honestly say in the interview for one application. Returns the
+    application, the saved job post's text and, for each keyword, their level, evidence and
+    `stories`: the bullets that show it, the ones in the CV they sent first. `standing` says
+    how to prepare it: strong (tell a story from those bullets), no_achievement (find a real
+    example), marked_pending (marked in their checklist, ask for the evidence), familiarity
+    (say it is familiarity), lacking (say so honestly). Every story must come from `stories`."""
+    folder = _profile_dir(profile)
+    source = _load(profile)
+    app = prep_mod.find(folder, application)
+    out = prep_mod.summary(source, app, _keywords(keywords or [], preferred))
+    if notes is not None:
+        out["notes_file"] = str(prep_mod.save(folder, app, notes))
+    return out
+
+
 def _keywords(keywords: list[str], preferred: list[str] | None) -> list[score_mod.Keyword]:
     return [score_mod.Keyword(k) for k in keywords] + [score_mod.Keyword(k, False) for k in preferred or []]
 
@@ -961,6 +995,13 @@ def import_linkedin_pdf(path: str, profile: str | None = None) -> str:
 def linkedin_profile_prompt(variant: str, profile: str | None = None, lang: str = "en") -> str:
     """Headline, About, positions and skills for LinkedIn, from a variant, without adding claims."""
     return _prompt("linkedin_profile", profile=_profile_label(profile), lang=lang, variant=variant)
+
+
+@mcp.prompt(name="interview_prep", title="Prepare a job interview")
+def interview_prep_prompt(application: str, profile: str | None = None) -> str:
+    """Likely questions, STAR stories from the person's own achievements and honest answers for
+    the gaps, for an application they logged."""
+    return _prompt("interview_prep", profile=_profile_label(profile), application=application)
 
 
 @mcp.prompt(title="Honest CV interview")

@@ -14,7 +14,8 @@ SNAKE = re.compile(r"`([a-z]+(?:_[a-z]+)+)`")
 NOT_TOOLS = {"text_es", "text_en", "last_used_year", "unused_bullets", "upgrades_not_asked_yet", "ats_ok", "max_pages", "in_inventory_not_in_cv",
              "familiarity_only", "not_in_inventory", "single_column", "no_ligatures", "text_extractable",
              "pending_evidence", "dry_run", "with_bullets", "skills_without_achievements", "left_out",
-             "key_skills_without_achievements", "no_achievement", "marked_in_checklist"}
+             "key_skills_without_achievements", "no_achievement", "marked_in_checklist",
+             "marked_pending", "post_text", "notes_file"}
 
 
 @pytest.fixture

@@ -9,6 +9,11 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - `gap_report` and `honest-cv score` name the post's keywords you already marked in your
   checklist but haven't backed with evidence yet, so the assistant asks where you used them
   instead of treating them as skills you lack (#5).
+- Interview prep for a logged application (#2): the `interview_prep` tool and prompt, and
+  `honest-cv apps prep`. For each keyword of the saved post: your level, evidence and the bullets
+  that back it (the ones in the CV you sent first), and where you stand. Likely questions and STAR
+  answers come only from those bullets; the notes you approve are saved in `prep/`.
+- `honest-cv apps list` shows each application's id.
 
 ## [0.2.1] — 2026-10-15
 

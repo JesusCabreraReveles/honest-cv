@@ -8,7 +8,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from honest_cv import __version__, applications, checklist, export, importer, letter, linkedin, store
+from honest_cv import __version__, applications, checklist, export, importer, letter, linkedin, prep, store
 from honest_cv.build import FORMATS, build_cv
 from honest_cv.model import LANGS, LEVEL_RANK, Level, ProfileError, explain, is_yes, load
 from honest_cv.score import Gap, Keyword, Status, score_job
@@ -236,7 +236,7 @@ def cmd_apps_list(args: argparse.Namespace) -> int:
         print("No applications yet." if not args.status else "None with that status.")
     for a in data["applications"]:
         print(f"{a['updated'] or '':<10}  {a['status']:<9}  {a['company']} — {a['role']}"
-              f"  ({a['days_since_update']} days)")
+              f"  ({a['days_since_update']} days)  id: {a['id']}")
         for point in a.get("prep", []):
             print(f"{'':<12}prepare: {point}")
         if a.get("post"):
@@ -245,6 +245,26 @@ def cmd_apps_list(args: argparse.Namespace) -> int:
         print("\n" + ", ".join(f"{n} {s}" for s, n in data["counts"].items()))
     if data["waiting"]:
         print(f"No news for 14+ days: {', '.join(data['waiting'])}")
+    return 0
+
+
+def cmd_apps_prep(args: argparse.Namespace) -> int:
+    source = load(args.profile)
+    app = prep.find(args.profile, args.application)
+    keywords = [Keyword(t) for t in _split(args.keyword)] + [Keyword(t, required=False) for t in _split(args.preferred)]
+    if args.notes:
+        print(f"Notes saved to {prep.save(args.profile, app, Path(args.notes).read_text(encoding='utf-8'))}")
+    out = prep.summary(source, app, keywords)
+    print(f"{app.company} — {app.role}  ({app.status})")
+    if not keywords:
+        print("Give the post's keywords with -k (required) and -p (preferred) to see what backs each one.")
+    for p in out["points"]:
+        level = f" [{p['level']}]" if p["level"] else ""
+        print(f"  {p['keyword']}{level}{'' if p['required'] else ' (preferred)'}: {p['standing']}")
+        for s in p["stories"]:
+            print(f"      {'*' if s['in_cv'] else '-'} {s['text']}")
+    if out["notes_file"]:
+        print(f"Notes: {out['notes_file']}")
     return 0
 
 
@@ -412,6 +432,13 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("profile")
     c.add_argument("-s", "--status", action="append", choices=[s.value for s in applications.Status])
     c.set_defaults(func=cmd_apps_list)
+    c = apps_sub.add_parser("prep", help="what backs each keyword of a post, for the interview of an application")
+    c.add_argument("profile")
+    c.add_argument("application", help="application id, as `apps list` shows it")
+    c.add_argument("-k", "--keyword", action="append", help="required keywords, comma-separated; repeatable")
+    c.add_argument("-p", "--preferred", action="append", help="nice-to-have keywords, comma-separated; repeatable")
+    c.add_argument("--notes", help="a Markdown file with your prep notes; a copy is kept in <profile>/prep/")
+    c.set_defaults(func=cmd_apps_prep)
 
     p = sub.add_parser("linkedin", help="LinkedIn headline, About, positions and skills from a variant")
     p.add_argument("profile")
