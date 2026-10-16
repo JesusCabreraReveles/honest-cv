@@ -60,6 +60,28 @@ jobs:
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
 
+  github-release:
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Release notes from the CHANGELOG
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          fence='```'
+          printf '\n%sbash\nuvx honest-cv@%s --version\n%s\n\nPyPI: https://pypi.org/project/honest-cv/%s/\n' \
+            "$fence" "$version" "$fence" "$version" >> notes.md
+          gh release create "$GITHUB_REF_NAME" --title "honest-cv $version" --notes-file notes.md --verify-tag
+
   mcp-registry:
     needs: pypi
     runs-on: ubuntu-latest
