@@ -2,6 +2,7 @@
 
 import shutil
 from datetime import date
+from pathlib import Path
 
 import pytest
 from mcp import Client
@@ -110,5 +111,5 @@ def test_cli(profile, capsys):
                      "--prep", "An example of C"]) == 0
     assert cli.main(["apps", "list", str(profile)]) == 0
     out = capsys.readouterr().out
-    assert "prepare: An example of C" in out and "posts/acme_sre.md" in out
+    assert "prepare: An example of C" in out and str(Path("posts", "acme_sre.md")) in out
     assert cli.main(["apps", "log", str(profile), "--company", "Acme", "--role", "SRE", "--date", "sept 1"]) == 1
