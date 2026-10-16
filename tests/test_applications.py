@@ -36,6 +36,24 @@ def test_logging_the_same_job_again_updates_it(profile):
     assert len(applications.read(profile).applications) == 1
 
 
+def test_a_copy_of_each_file_sent_is_kept(profile, tmp_path):
+    (profile / "out").mkdir()
+    (profile / "out" / "cv.pdf").write_bytes(b"first")
+    letter = tmp_path / "letter.pdf"
+    letter.write_bytes(b"letter")
+    app = applications.log(profile, "Acme", "SRE", files=["out/cv.pdf", str(letter), "nowhere.pdf"])
+    assert app.files == ["sent/acme_sre/cv.pdf", "sent/acme_sre/letter.pdf", "nowhere.pdf"]
+    # While it is a draft, a new build replaces the copy.
+    (profile / "out" / "cv.pdf").write_bytes(b"second")
+    applications.log(profile, "Acme", "SRE", status="applied", files=["out/cv.pdf"])
+    assert (profile / "sent" / "acme_sre" / "cv.pdf").read_bytes() == b"second"
+    # Once sent, the copy is what the company got: a later build doesn't touch it.
+    (profile / "out" / "cv.pdf").write_bytes(b"third")
+    app = applications.log(profile, "Acme", "SRE", status="interview", files=["out/cv.pdf"])
+    assert (profile / "sent" / "acme_sre" / "cv.pdf").read_bytes() == b"second"
+    assert app.files == ["sent/acme_sre/cv.pdf", "sent/acme_sre/letter.pdf", "nowhere.pdf"]
+
+
 def test_the_post_and_the_prep_are_kept(profile):
     app = applications.log(profile, "Acme", "SRE", post="Acme is hiring an SRE.\n",
                            prep=["An example of C", "  ", "Why Querétaro"])
@@ -91,7 +109,10 @@ async def test_tools(profile):
     async with Client(server) as c:
         err, out = await call(c, "log_application", profile=str(profile), company="Acme", role="SRE",
                               status="applied", date="2026-09-01", variant="platform")
-        assert not err and out["application"]["status"] == "applied"
+        assert not err and out["application"]["status"] == "applied" and "not_found" not in out
+        err, out = await call(c, "log_application", profile=str(profile), company="Acme", role="SRE",
+                              files=["out/gone.pdf"])
+        assert not err and out["not_found"] == ["out/gone.pdf"]
         err, msg = await call(c, "log_application", profile=str(profile), company="Acme", role="SRE",
                               date="1st of September")
         assert err and "YYYY-MM-DD" in msg
@@ -105,6 +126,7 @@ def test_cli(profile, capsys):
     assert cli.main(["apps", "list", str(profile)]) == 0
     out = capsys.readouterr().out
     assert "acme_sre: applied (2026-09-01)" in out and "Acme — SRE" in out and "1 applied" in out
+    assert str(Path(profile) / "out" / "cv.pdf") in out  # not found, so recorded as given
     post = profile / "post.txt"
     post.write_text("We need an SRE.", encoding="utf-8")
     assert cli.main(["apps", "log", str(profile), "--company", "Acme", "--role", "SRE", "--post", str(post),

@@ -278,7 +278,8 @@ variante y qué archivos mandaste a qué empresa, y cada estado con su fecha (`d
 `interview`, `offer`, `rejected`, `withdrawn`). Si registras otra vez la misma empresa y puesto, se
 actualiza. Con un cliente MCP, tu asistente te ofrece registrar la postulación después de generar el
 CV o la carta, y `list_applications` te señala las que llevan dos semanas sin noticias. También
-guarda el texto de la vacante en `posts/`, porque los enlaces caducan, y lo que te conviene preparar
+guarda una copia de cada archivo que enviaste en `sent/`, porque el siguiente build sobrescribe
+`out/`, y el texto de la vacante en `posts/`, porque los enlaces caducan, y lo que te conviene preparar
 para la entrevista; pregúntale a tu asistente "¿qué tenía que preparar para Acme?".
 
 Cuando te den la entrevista, di *"ayúdame a preparar la entrevista de Acme"* (o usa el prompt

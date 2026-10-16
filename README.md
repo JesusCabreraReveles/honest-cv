@@ -267,8 +267,9 @@ approve.
 files went to which company, and each status with its date (`draft`, `applied`, `interview`,
 `offer`, `rejected`, `withdrawn`). Logging the same company and role again updates it. With an MCP
 client, your assistant offers to log an application after building the CV or letter, and
-`list_applications` points out the ones with no news for two weeks. It also keeps the job post's
-text in `posts/`, since links expire, and what to prepare for the interview: ask your assistant
+`list_applications` points out the ones with no news for two weeks. It keeps a copy of each file
+you sent in `sent/`, since the next build overwrites `out/`, and the job post's text in `posts/`,
+since links expire, and what to prepare for the interview: ask your assistant
 *"what did I need to prepare for Acme?"*.
 
 When you get the interview, say *"help me prepare the Acme interview"* (or run the

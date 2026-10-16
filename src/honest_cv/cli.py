@@ -237,6 +237,8 @@ def cmd_apps_list(args: argparse.Namespace) -> int:
     for a in data["applications"]:
         print(f"{a['updated'] or '':<10}  {a['status']:<9}  {a['company']} — {a['role']}"
               f"  ({a['days_since_update']} days)  id: {a['id']}")
+        for f in a.get("files", []):
+            print(f"{'':<12}sent: {Path(args.profile) / f}")
         for point in a.get("prep", []):
             print(f"{'':<12}prepare: {point}")
         if a.get("post"):

@@ -855,7 +855,7 @@ def log_application(
     url: Annotated[str | None, Field(description="Link to the job post.")] = None,
     variant: Annotated[str | None, Field(description="Variant id of the CV sent.")] = None,
     lang: Annotated[Lang | None, Field(description="Language of the CV sent.")] = None,
-    files: Annotated[list[str] | None, Field(description="Paths of the CV and letter sent.")] = None,
+    files: Annotated[list[str] | None, Field(description="Paths of the CV and letter sent. A copy is kept in <profile>/sent/.")] = None,
     notes: Annotated[str | None, Field(description="Contact person, salary range, next step... Added to the notes already there.")] = None,
     post: Annotated[
         str | None, Field(description="The job post's full text, as the person gave it. Saved to <profile>/posts/.")
@@ -870,14 +870,19 @@ def log_application(
     given keep their value. Use it after build_cv or build_letter when the person sends them,
     and when they tell you what happened (interview, offer, rejection). Save the post's text,
     since links expire, and any advice you gave for the interview as `prep`, so the person
-    can find both later."""
+    can find both later. Each file is copied to <profile>/sent/<id>/, so the record keeps what
+    was sent even after the next build; `not_found` lists the paths it could not copy."""
     try:
         when = datetime.date.fromisoformat(date) if date else None
     except ValueError:
         raise ToolError(f"date must be YYYY-MM-DD, e.g. 2026-10-14; got {date!r}") from None
-    app = applications.log(_profile_dir(profile), company, role, status=status, when=when, url=url,
+    folder = _profile_dir(profile)
+    app = applications.log(folder, company, role, status=status, when=when, url=url,
                            variant=variant, lang=lang, files=files, notes=notes, post=post, prep=prep)
-    return {"application": app.model_dump(mode="json", exclude_defaults=True)}
+    out: dict = {"application": app.model_dump(mode="json", exclude_defaults=True)}
+    if missing := [f for f in app.files if not (folder / f).is_file()]:
+        out["not_found"] = missing
+    return out
 
 
 @mcp.tool(annotations=READ)

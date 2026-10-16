@@ -14,6 +14,9 @@ and versions follow [Semantic Versioning](https://semver.org/).
   that back it (the ones in the CV you sent first), and where you stand. Likely questions and STAR
   answers come only from those bullets; the notes you approve are saved in `prep/`.
 - `honest-cv apps list` shows each application's id.
+- A copy of each file sent with an application is kept in `<profile>/sent/<id>/`, since the next
+  build overwrites `out/` (#6). Once the application is past draft the copy is never replaced;
+  `log_application` names the files it couldn't find, and `apps list` shows the copies.
 - Ten new built-in checklists (#3): `mobile`, `qa-testing`, `security` and `ml-ai`, and beyond
   software, `product-management`, `ux-design`, `marketing`, `sales`, `finance-accounting` and
   `human-resources`.

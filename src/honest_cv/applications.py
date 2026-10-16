@@ -1,7 +1,8 @@
 """Track job applications: which CV and letter went to which post, and what happened.
 
 They live in <profile>/applications.yaml, next to the profile they were built from. The
-text of each job post is kept in <profile>/posts/<id>.md, since post links expire.
+text of each job post is kept in <profile>/posts/<id>.md, since post links expire, and a
+copy of each file sent in <profile>/sent/<id>/, since the next build overwrites out/.
 Logging the same company and role again updates that application; each status
 change is kept in its history with its date.
 """
@@ -9,6 +10,7 @@ change is kept in its history with its date.
 from __future__ import annotations
 
 import re
+import shutil
 from datetime import date
 from enum import StrEnum
 from pathlib import Path
@@ -21,6 +23,7 @@ from honest_cv.store import _write
 
 FILE = "applications.yaml"
 POSTS = "posts"
+SENT = "sent"  # copies of the files sent: <profile>/sent/<application id>/
 
 
 class Status(StrEnum):
@@ -44,7 +47,7 @@ class Application(Strict):
     url: str | None = None
     variant: str | None = None
     lang: Lang | None = None
-    files: list[str] = []
+    files: list[str] = []  # the copies in sent/<id>/, relative to the profile
     status: Status = Status.DRAFT
     history: list[Change] = []
     notes: str | None = None
@@ -79,8 +82,11 @@ def log(
 ) -> Application:
     """Add an application, or update the one for the same company and role. Fields left
     as None keep their value; files and notes add to what is there; `post` (the job post's
-    text) is saved to a file, and `prep` replaces the list. A new status goes to the
-    history, which stays in date order, so the current status is the latest one."""
+    text) is saved to a file, and `prep` replaces the list. Each file is copied to
+    sent/<id>/ and recorded as that copy; a file that can't be found is recorded as given.
+    Once the application is past draft, an existing copy is kept: it is what was sent. A new
+    status goes to the history, which stays in date order, so the current status is the
+    latest one."""
     folder = Path(folder)
     source = load(folder)
     if variant is not None and variant not in source.variants:
@@ -96,7 +102,11 @@ def log(
             setattr(app, name, value)
     if notes and notes.strip() and notes.strip() not in (app.notes or ""):
         app.notes = "\n".join(x for x in (app.notes, notes.strip()) if x)
-    app.files += [f for f in files or [] if f not in app.files]
+    sent = app.status is not Status.DRAFT
+    for f in files or []:
+        f = _keep_copy(folder, key, f, replace=not sent)
+        if f not in app.files:
+            app.files.append(f)
     if prep is not None:
         app.prep = [x.strip() for x in prep if x.strip()]
     if post and post.strip():
@@ -114,6 +124,21 @@ def log(
     Applications.model_validate(data.model_dump())  # validate before writing
     _write(folder, FILE, data.model_dump(mode="json", exclude_defaults=True))
     return app
+
+
+def _keep_copy(folder: Path, key: str, file: str, *, replace: bool) -> str:
+    """Copy a sent file into sent/<id>/ and return the copy's path, relative to the profile.
+    A relative path is looked up from the current folder, then from the profile."""
+    path = Path(file).expanduser()
+    if not path.is_absolute() and not path.is_file():
+        path = folder / path
+    if not path.is_file():
+        return file
+    target = folder / SENT / key / path.name
+    if path.resolve() != target.resolve() and (replace or not target.exists()):
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+    return target.relative_to(folder).as_posix()
 
 
 def listing(folder: str | Path, status: list[str] | None = None, today: date | None = None) -> dict:
