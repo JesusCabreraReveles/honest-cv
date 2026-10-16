@@ -3,6 +3,15 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Every tool description now says what the tool does, when to use it instead of its sibling tools,
+  and what it returns, so clients pick the right tool. `set_skills` no longer reads as if
+  `upgrades_not_asked_yet` were a parameter: it is a field of the result. Shared parameters
+  (`profile`, `lang`, `formats`, `status`) are described precisely.
+- Each release also creates its GitHub Release, with the notes from this file.
+
 ## [0.3.1] — 2026-10-15
 
 ### Added

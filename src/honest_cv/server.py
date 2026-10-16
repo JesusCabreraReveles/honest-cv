@@ -79,8 +79,8 @@ mcp = MCPServer("honest-cv", version=__version__, instructions=INSTRUCTIONS)
 
 # Parameter descriptions shared by the tools. Clients show them to the model and,
 # in tools like the MCP Inspector, to the person.
-Profile = Annotated[str | None, Field(description="Profile folder. Defaults to HONEST_CV_PROFILE.")]
-LangArg = Annotated[Lang, Field(description="Language of the CV: en or es.")]
+Profile = Annotated[str | None, Field(description="Path of the profile folder. Leave it out to use the server's default (--profile or HONEST_CV_PROFILE).")]
+LangArg = Annotated[Lang, Field(description="Language of the output: en (English) or es (Spanish).")]
 VariantId = Annotated[str, Field(description="Variant id from variants.yaml, e.g. backend.")]
 Keywords = Annotated[list[str], Field(description="Required keywords from the job post, in its own wording.")]
 Preferred = Annotated[list[str] | None, Field(description="Nice-to-have keywords from the job post.")]
@@ -131,7 +131,10 @@ def _tool_errors(fn):
 def init_profile(
     profile: Annotated[str, Field(description="Folder to create. Must not hold a profile yet.")],
 ) -> dict:
-    """Create a profile folder with empty, commented YAML templates. Refuses to overwrite."""
+    """Create a new profile folder with empty, commented YAML templates (profile, bullets,
+    skills, variants). Use it once, before anything else, when the person has no profile; to start
+    from LinkedIn or a JSON Resume, call import_profile afterwards. Refuses an existing profile and
+    overwrites nothing. Returns `created`: the files written."""
     created = store.init_profile(_profile_dir(profile))
     return {"created": [str(p) for p in created]}
 
@@ -139,7 +142,10 @@ def init_profile(
 @mcp.tool(annotations=READ)
 @_tool_errors
 def get_inventory(profile: Profile = None) -> dict:
-    """The skill inventory: level (P/L/F/X), years, last use, evidence and aliases."""
+    """Read the person's skill inventory. Use it at the start of a session and before
+    proposing skill changes; for CV content (roles, bullets, variants) use list_variants instead.
+    Returns `levels` (what P, L, F and X mean) and `skills` grouped by level, each with its
+    years, last_used_year, evidence, aliases and notes. Read-only."""
     inv = _load(profile).inventory
     by_level = {lvl.value: [] for lvl in sorted(Level, key=LEVEL_RANK.get, reverse=True)}
     for s in inv.skills:
@@ -260,8 +266,10 @@ def set_skill(
     aliases: Annotated[list[str] | None, Field(description="Other spellings, e.g. k8s for Kubernetes.")] = None,
     notes: Annotated[str | None, Field(description="Private notes; never printed on the CV.")] = None,
 ) -> dict:
-    """Add or change a skill. Raising the level (a new skill counts as coming from X) needs
-    `evidence`, and the server then asks the person to confirm. Lowering is always allowed."""
+    """Add or change one skill in the inventory. Use it for a single skill; for several at
+    once use set_skills, and for a whole marked list use checklist_apply. Raising a level (a new skill
+    counts as rising from X) needs `evidence`, and the server asks the person to confirm before saving;
+    lowering is always allowed. Returns `saved` (the stored skill) and `previous_level`."""
     folder, old, new = _upgrade(profile, name, level)
     confirmed = False
     if LEVEL_RANK[new] > LEVEL_RANK[old]:
@@ -362,9 +370,11 @@ def set_skills(
     confirmation: Annotated[ElicitationResult[ConfirmUpgrade], Resolve(confirm_skills)],
     profile: Profile = None,
 ) -> dict:
-    """Add or change several skills at once. Every upgrade needs `evidence`; the person answers
-    "sí" or "no" for each one, up to 10 per question, and only the "sí" ones are saved. Call it
-    again with `upgrades_not_asked_yet`. Use it to record skills in groups."""
+    """Add or change several skills in one call, for example a group the person just told
+    you about. Use set_skill for one skill and checklist_apply for a marked checklist. Every upgrade
+    needs `evidence`; the person confirms upgrades in a form, up to 10 per call, and only those they
+    answer "sí" are saved. Returns `saved`, `upgrades_confirmed`, `upgrades_refused` and
+    `upgrades_not_asked_yet`: when that list is not empty, call set_skills again with those skills."""
     plan = _skills_plan(profile, skills)
     if plan.missing_evidence:
         names = ", ".join(c.name for c in plan.missing_evidence)
@@ -379,13 +389,14 @@ def import_profile(
     profile: Profile = None,
     dry_run: Annotated[bool, Field(description="Report what would be added without writing.")] = False,
 ) -> dict:
-    """Import contact, roles with their achievements, education, certifications and languages.
-    Only what the profile lacks is added; nothing is overwritten. Skills come without a level, so
-    they go to <profile>/imported-skills.md, a checklist for the person to mark, never to the
-    inventory. Imported bullets are tagged `imported`: review them with the person. `path` may be
-    the folder of an unzipped LinkedIn export. Tell the person the result's `note` if there is one.
-
-    For a PDF nothing is written: its text comes back for you to organize with the editing tools
+    """Import an existing CV into the profile: a JSON Resume (.json), a LinkedIn data export
+    (.zip or its unzipped folder) or a LinkedIn profile PDF. Use it at the start, right after
+    init_profile, instead of typing everything; run it first with `dry_run`. Adds contact, roles with
+    their achievements, education, certifications, courses, publications and languages; only what the
+    profile lacks, never overwriting. Skills arrive without a level, so they go to
+    <profile>/imported-skills.md for the person to mark, never to the inventory. Imported bullets are
+    tagged `imported`: review them with the person. Returns what was added and an optional `note` to
+    pass on. For a PDF nothing is written: it returns the `text`, to organize with the editing tools
     (see the import_linkedin_pdf prompt)."""
     file = Path(path).expanduser()
     if file.suffix.lower() == ".pdf":
@@ -405,9 +416,11 @@ def checklist_list(
     profile: Profile = None,
     lang: Annotated[Lang, Field(description="The person's language: the built-in templates in it, where translated.")] = "en",
 ) -> dict:
-    """The skill checklist templates to combine with `checklist_new`: the built-in ones, one per
-    kind of profile, and the person's own in <profile>/checklists/ (origin "yours"). Any
-    profession works: a template is a Markdown list in the same format."""
+    """List the skill checklist templates the person can combine. Use it before
+    checklist_new, to let the person pick the ones that fit their profession. Returns `checklists`:
+    each with its `id`, `title`, `description`, number of `skills` and `origin` ("built-in", or
+    "yours" for templates in <profile>/checklists/). Any profession works. Pass `lang` in the
+    person's language to get the translated templates. Read-only."""
     try:
         folder = _profile_dir(profile)
     except ToolError:
@@ -431,10 +444,12 @@ def checklist_new(
         Lang, Field(description="The person's language: the file's headings and the built-in templates in it.")
     ] = "en",
 ) -> dict:
-    """Merge checklist templates into one Markdown file, without duplicates and prefilled from the
-    inventory. The person marks it in their editor; then call `checklist_apply`. `lists` may be
-    empty when `extra` names the skills. Use the person's language: skill names in another
-    language still match job posts in English, through their synonyms."""
+    """Write a checklist file for the person to mark in their editor, merged from the
+    templates picked in checklist_list, without duplicates and prefilled from the inventory. Use it
+    when the person has many skills: it is much faster than asking one by one. Next step: once they
+    have marked it, call checklist_apply. Refuses to replace an existing file unless `overwrite`.
+    `lists` may be empty when `extra` names the skills. Returns the file's `path` and its number of
+    `skills`."""
     out = Path(path).expanduser() if path else _profile_dir(profile) / "checklist.md"
     if out.exists() and not overwrite:
         raise ToolError(f"{out} exists; ask the person before replacing it (overwrite=true)")
@@ -452,19 +467,18 @@ def checklist_apply(
     confirmation: Annotated[ElicitationResult[ConfirmUpgrade], Resolve(confirm_checklist)],
     profile: Profile = None,
 ) -> dict:
-    """Save the lines the person marked in a checklist. The person answers "sí" or "no" for each
-    upgrade with evidence, up to 10 per question: call it again while `upgrades_not_asked_yet`
-    is not empty. Lines without evidence come back as `pending_evidence`: ask where they used
-    them, in groups, and record them with `set_skills`. Ask about nothing else: unmarked lines
-    are for the person to mark in the file, not to go through in the chat. To resume a checklist,
-    call this again rather than reading the file.
+    """Save the skills the person marked in a checklist file. Use it after checklist_new,
+    once the person says they are done, and again to resume. Lines that keep or lower a level are
+    saved at once; upgrades with evidence are confirmed in a form, up to 10 per call: call again while
+    `upgrades_not_asked_yet` is not empty. Returns the counts saved, `pending_evidence` (marked lines
+    without evidence: ask where they used them, in groups, and save with set_skills),
+    `skills_without_achievements` and `key_skills_without_achievements`.
 
-    `skills_without_achievements` are P and L skills from this checklist that no bullet shows;
-    `key_skills_without_achievements` are the P ones among the ★ section and the skills a variant
-    shows. Once the checklist is done, ask for the person's biggest achievements first: one
-    usually covers several skills. Then ask about the key skills still uncovered. The rest wait
-    for a job post that asks for them (`gap_report` → `no_achievement`). Save each with
-    `add_bullet`. If there is none, leave it; never write one for them."""
+    Ask about nothing else: unmarked lines are for the person to mark in the file. After the
+    checklist, ask for the person's biggest achievements first, since one usually covers several
+    skills, then for the key skills still without one; save each with add_bullet. The rest wait for a
+    job post that asks for them (gap_report → `no_achievement`). Never write an achievement for
+    them."""
     plan = _checklist_plan(profile, path)
     result = _save_plan(ctx, profile, plan, confirmation) if plan.upgrades or plan.updates else {"saved": []}
     summary = plan.summary()
@@ -489,8 +503,10 @@ def add_bullet(
     tags: Annotated[list[str] | None, Field(description="Skills and topics it shows, e.g. Kubernetes.")] = None,
     metrics: Annotated[list[str] | None, Field(description="Numbers it claims, e.g. 40%, kept for review.")] = None,
 ) -> dict:
-    """Add an achievement to the bullet pool. `role` is a role id from profile.yaml; leave it
-    out for bullets used only in the Selected Impact section. Use only facts the person stated."""
+    """Add one achievement to the bullet pool, the material every CV variant picks from. Use it
+    after the person approves the wording, one bullet per call; to change which bullets a CV shows,
+    use save_variant. `role` is a role id from upsert_role; leave it out for bullets used only in
+    Selected Impact. Use only facts the person stated, never invented numbers. Returns `saved`."""
     text = {"en": text_en, **({"es": text_es} if text_es else {})}
     bullet = Bullet(id=id, role=role, tags=tags or [], metrics=metrics or [], text=text)
     store.add_bullet(_profile_dir(profile), bullet)
@@ -505,10 +521,12 @@ def set_contact(
     email: Annotated[str | None, Field(description="Email for the CV.")] = None,
     phone: Annotated[str | None, Field(description='Phone, e.g. "+52 442 000 0000".')] = None,
     location: TextArg = None,
-    links: Annotated[list[str] | None, Field(description="Full list of links: LinkedIn, GitHub, site.")] = None,
+    links: Annotated[list[str] | None, Field(description="All the links to show, e.g. LinkedIn, GitHub, a site. Replaces the current list.")] = None,
 ) -> dict:
-    """Change the contact details given; the others stay as they are. Pass `"clear"` to remove
-    an optional field."""
+    """Update the person's contact details on the CV. Use it for name, email, phone,
+    location and links; roles, education and the rest have their own tools. Only the fields given
+    change; pass "clear" to remove an optional one. `links` replaces the whole list. Returns the
+    `contact` as saved in profile.yaml."""
     contact = store.set_contact(
         _profile_dir(profile), name=name, email=email, phone=phone, location=location, links=links
     )
@@ -520,16 +538,20 @@ def set_contact(
 def set_profile_details(
     profile: Profile = None,
     certifications: Annotated[
-        list[Text] | None, Field(description="The full list of certifications, replacing the current one.")
+        list[Text] | None, Field(description="All the certifications, replacing the current list. Leave out to keep it.")
     ] = None,
     courses: Annotated[
         list[Text] | None,
-        Field(description="The full list of courses and trainings without an exam, replacing the current one. "
+        Field(description="All the courses and trainings without an exam, replacing the current list; leave out to keep it. "
                           "A course is never a certification."),
     ] = None,
     languages: TextArg = None,
 ) -> dict:
-    """Replace the certifications list, the courses list and/or the spoken-languages line."""
+    """Replace the certifications, courses or spoken-languages line of the profile.
+    Use it for those three lists only; roles, education and publications have their own tools. Each
+    list you pass replaces the current one in full; leave a field out to keep it. A course or
+    training without an exam goes in `courses`, never in `certifications`. Returns the saved
+    values."""
     return store.set_profile_details(
         _profile_dir(profile), certifications=certifications, courses=courses, languages=languages
     )
@@ -549,8 +571,10 @@ def upsert_role(
     location: TextArg = None,
     context: TextArg = None,
 ) -> dict:
-    """Add a role, or change the fields given on an existing one. A new role needs `title`,
-    `company` and `start`, and goes in date order, newest first. Keep the person's real title."""
+    """Add a job role, or change some fields of an existing one by its `id`. Use it while
+    interviewing the person about their work history; their achievements go in with add_bullet,
+    pointing to this id. A new role needs `title`, `company` and `start`; roles stay in date order,
+    newest first. Keep the person's real title. Returns the `role` as saved."""
     if end is not None and end.strip().casefold() in {"present", "current", "now"}:
         end = store.CLEAR
     role = store.upsert_role(
@@ -569,8 +593,10 @@ def upsert_education(
     start: Year = None,
     end: Year = None,
 ) -> dict:
-    """Add an education entry, or change the one with the same institution and degree. Say
-    honestly whether the degree was completed, e.g. "B.Sc. (unfinished)"."""
+    """Add an education entry, or change the one with the same institution and degree.
+    Use it for degrees and formal studies; courses and certifications go in set_profile_details. Say
+    honestly whether the degree was completed, e.g. "B.Sc. (unfinished)". Returns the `education`
+    entry as saved."""
     entry = store.upsert_education(_profile_dir(profile), institution, degree=degree, start=start, end=end)
     return {"education": entry.model_dump(mode="json", exclude_none=True)}
 
@@ -589,8 +615,10 @@ def upsert_publication(
     year: Year = None,
     url: Annotated[str | None, Field(description="A link to it.")] = None,
 ) -> dict:
-    """Add a book, article or paper the person wrote, or change the fields given of the one with
-    this id. Every variant shows all publications unless it lists the ones it wants."""
+    """Add a book, article or paper the person wrote, or change some fields of the one
+    with this `id`. Use it when the person mentions something they published; courses and
+    certifications go in set_profile_details. Every variant shows all publications unless it lists the
+    ones it wants (save_variant → `publications`). Returns the `publication` as saved."""
     entry = store.upsert_publication(_profile_dir(profile), id, title=title, venue=venue, year=year, url=url)
     return {"publication": entry.model_dump(mode="json", exclude_none=True)}
 
@@ -615,8 +643,11 @@ def save_variant(
     ] = None,
     max_pages: Annotated[int | None, Field(description="Page limit, usually 1 or 2.", ge=1)] = None,
 ) -> dict:
-    """Add a variant or replace it whole: pass every field it should define. A variant without
-    `extends` needs `title` and `summary`. See `list_variants` → `own` for what it defines now."""
+    """Create or replace a CV variant: the plan for one kind of role (title, summary, which
+    bullets and skills to show). Use it to set up a variant or tailor one to a job post; read the
+    current ones with list_variants first. It replaces the variant whole, so pass every field it
+    should define (list_variants → `own` shows them). A variant without `extends` needs `title` and
+    `summary`. Every reference is checked before saving. Returns `saved` and the `variant`."""
     fields = {
         "extends": extends, "title": title, "summary": summary, "competencies": competencies,
         "impact": impact, "roles": roles, "skills": skills, "publications": publications,
@@ -633,9 +664,10 @@ def remove_skill(
     name: Annotated[str, Field(description="Skill name as in the inventory.")],
     profile: Profile = None,
 ) -> dict:
-    """Delete a skill from the inventory, e.g. a duplicate or a misspelling. It also leaves the
-    variants' skill groups and same-named competencies. To say the person doesn't have a skill,
-    prefer set_skill with level X: it keeps gap reports honest. Ask the person first."""
+    """Delete a skill from the inventory, e.g. a duplicate or a misspelling, and from the
+    variants' skill groups and competencies. Use it only for mistakes: to record that the person
+    doesn't have a skill, use set_skill with level X instead, which keeps gap reports honest. Ask the
+    person first; it cannot be undone. Returns what was removed and `variants_updated`."""
     return store.remove_skill(_profile_dir(profile), name)
 
 
@@ -645,7 +677,9 @@ def remove_bullet(
     id: Annotated[str, Field(description="Bullet id.")],
     profile: Profile = None,
 ) -> dict:
-    """Delete an achievement from the pool and from every variant that uses it. Ask the person first."""
+    """Delete an achievement from the pool and from every variant that uses it. Use it when
+    the person wants it gone; to stop showing it in one CV, change that variant with save_variant
+    instead. Ask the person first; it cannot be undone. Returns what was removed and `variants_updated`."""
     return store.remove_bullet(_profile_dir(profile), id)
 
 
@@ -655,7 +689,9 @@ def remove_publication(
     id: Annotated[str, Field(description="Publication id from profile.yaml.")],
     profile: Profile = None,
 ) -> dict:
-    """Delete a publication and its place in every variant. Ask the person first."""
+    """Delete a publication from the profile and from every variant that lists it. To
+    hide it from one CV only, change that variant's `publications` with save_variant instead. Ask the
+    person first; it cannot be undone. Returns what was removed and `variants_updated`."""
     return store.remove_publication(_profile_dir(profile), id)
 
 
@@ -668,15 +704,20 @@ def remove_role(
         bool, Field(description="Also delete the role's bullets. Only if the person agreed to lose them.")
     ] = False,
 ) -> dict:
-    """Delete a role and its place in every variant. A role with bullets is refused unless
-    `with_bullets` is true. Ask the person first."""
+    """Delete a role from the profile and from every variant. A role that still has bullets
+    is refused unless `with_bullets` is true, which deletes them too. To hide a role from one CV, edit
+    that variant with save_variant instead. Ask the person first; it cannot be undone. Returns what was
+    removed and `variants_updated`."""
     return store.remove_role(_profile_dir(profile), id, with_bullets=with_bullets)
 
 
 @mcp.tool(annotations=READ)
 @_tool_errors
 def list_variants(profile: Profile = None) -> dict:
-    """Variants after `extends:` is applied, with the bullet texts each one uses."""
+    """Read every CV variant, with `extends` already applied and the text of each bullet
+    it uses. Use it before save_variant, build_cv or score_job, to know what each CV contains.
+    Returns `variants` (with `own`: the fields each one defines itself) and `unused_bullets`:
+    achievements no variant shows yet. Read-only."""
     source = _load(profile)
     out = {}
     for vid, raw in source.variants.items():
@@ -704,11 +745,15 @@ def build_cv(
     variant: VariantId,
     lang: LangArg = "en",
     profile: Profile = None,
-    formats: Annotated[list[Literal["pdf", "docx"]] | None, Field(description="Default: both.")] = None,
+    formats: Annotated[list[Literal["pdf", "docx"]] | None, Field(description="Formats to write: pdf, docx or both. Default: both.")] = None,
     out_dir: Annotated[str | None, Field(description="Output folder. Default: <profile>/out.")] = None,
 ) -> dict:
-    """Render a variant to PDF and/or DOCX (default both) and verify the PDF for ATS safety.
-    Files go to `out_dir`, default <profile>/out."""
+    """Render a CV variant to PDF and/or DOCX, then verify the PDF for ATS safety. Use it when
+    the person wants the files; for a cover letter use build_letter, and to check a PDF made
+    elsewhere use verify_pdf. Files go to `out_dir`, default <profile>/out, replacing earlier builds
+    of the same variant and language. Returns the `files`, each PDF with its pages, `ats_ok` and
+    failed checks. A failed check is probably a bug in honest-cv: report it, never reword the
+    person's text to pass it."""
     folder = _profile_dir(profile)
     out = Path(out_dir).expanduser() if out_dir else folder / "out"
     built = build_mod.build_cv(load(folder), variant, lang, out, tuple(formats or build_mod.FORMATS))
@@ -730,9 +775,12 @@ def build_cv(
 @_tool_errors
 def verify_pdf(
     path: Annotated[str, Field(description="Path to any PDF, made with honest-cv or not.")],
-    max_pages: Annotated[int | None, Field(description="Fail the page_count check above this.")] = None,
+    max_pages: Annotated[int | None, Field(description="Most pages allowed; the page_count check fails above it. Default: no limit.")] = None,
 ) -> dict:
-    """Check that any PDF is ATS-safe and return the text an ATS would extract."""
+    """Check whether any PDF is ATS-safe: one column, no ligatures, dates on their role's line,
+    text extractable, and the page count. Use it on a CV from any tool, e.g. the person's current
+    one; build_cv already runs it on the CVs it renders. Returns `ok`, `pages`, `checks` (each with
+    `name`, `ok`, `detail`) and `text`: what an ATS reads. Read-only."""
     report = verify(Path(path).expanduser(), max_pages=max_pages)
     return {
         "ok": report.ok,
@@ -751,10 +799,12 @@ def check_claims(
         list[str] | None, Field(description="Keywords of the job post, so its technologies are checked too.")
     ] = None,
 ) -> dict:
-    """Check a draft against the profile. `problems` must be fixed before `build_letter`: a skill
-    the person marked X, or a familiarity (F) skill not called familiarity in its sentence.
-    `warnings` are for the person: a technology the profile doesn't show, or a number found
-    nowhere in it. Fix them by removing or qualifying the claim, never by adding skills."""
+    """Check any text about the person against their profile before it goes anywhere: a
+    cover letter, a summary, a LinkedIn text. build_letter and linkedin_profile run it too. Returns
+    `problems`, which must be fixed (a skill marked X, or a familiarity skill not called familiarity
+    in its sentence), and `warnings` for the person (a technology the profile doesn't show, or a
+    number found nowhere in it). Fix them by removing or qualifying the claim, never by adding
+    skills. Read-only."""
     return letter.check_claims(text, _load(profile), keywords).to_dict()
 
 
@@ -767,14 +817,16 @@ def build_letter(
     lang: LangArg = "en",
     profile: Profile = None,
     recipient: Annotated[str | None, Field(description="Hiring manager or team, if the post names one.")] = None,
-    greeting: Annotated[str | None, Field(description="Default: Dear Hiring Team, / Estimado equipo de selección:")] = None,
-    closing: Annotated[str | None, Field(description="Default: Sincerely, / Atentamente,")] = None,
+    greeting: Annotated[str | None, Field(description="Opening line. Default: Dear Hiring Team, / Estimado equipo de selección:")] = None,
+    closing: Annotated[str | None, Field(description="Closing line. Default: Sincerely, / Atentamente,")] = None,
     keywords: Annotated[list[str] | None, Field(description="Keywords of the job post, for check_claims.")] = None,
-    formats: Annotated[list[Literal["pdf", "docx"]] | None, Field(description="Default: both.")] = None,
+    formats: Annotated[list[Literal["pdf", "docx"]] | None, Field(description="Formats to write: pdf, docx or both. Default: both.")] = None,
     out_dir: Annotated[str | None, Field(description="Output folder. Default: <profile>/out.")] = None,
 ) -> dict:
-    """Render a cover letter to PDF and/or DOCX, one page, with the CV's ATS checks. It runs
-    `check_claims` first and refuses while there are problems."""
+    """Render an approved cover letter to a one-page PDF and/or DOCX with the CV's ATS
+    checks. Use it after drafting the letter with the person and running check_claims; for the CV
+    itself use build_cv. It runs check_claims again and refuses while there are problems. Returns the
+    `files` and any `warnings` to show the person."""
     folder = _profile_dir(profile)
     source = load(folder)
     draft = letter.make(source, lang, company, role, paragraphs, recipient=recipient, greeting=greeting, closing=closing)
@@ -801,8 +853,10 @@ def export_json_resume(
     profile: Profile = None,
     out_dir: Annotated[str | None, Field(description="Output folder. Default: <profile>/out.")] = None,
 ) -> dict:
-    """Export a variant as JSON Resume, for other CV tools and sites. Same rules as the CV:
-    X skills never appear and F skills only in a "Familiarity" group with that level."""
+    """Export a CV variant as a JSON Resume file, for other CV tools and sites that
+    import that format. Use build_cv for a PDF or DOCX instead. Same honesty rules as the CV: X skills
+    never appear, and F skills only in a "Familiarity" group. Writes to `out_dir`, default
+    <profile>/out, and returns its `path`."""
     folder = _profile_dir(profile)
     out = Path(out_dir).expanduser() if out_dir else folder / "out"
     return {"path": str(export.export(load(folder), variant, lang, out))}
@@ -822,11 +876,12 @@ def linkedin_profile(
         str | None, Field(description="A polished About the person approved, to save instead of the draft.")
     ] = None,
 ) -> dict:
-    """LinkedIn texts from a variant, within LinkedIn's limits: headline, About, each position's
-    description from its bullets, and the skills (P and L only: LinkedIn can't label
-    familiarity). Also writes them to a Markdown file to copy from. Once the person approves a
-    polished headline or About, call it again with them: they are checked like a letter and
-    saved in that file, so the person keeps the final version."""
+    """Write the LinkedIn texts for a variant, each within LinkedIn's limit: headline,
+    About, one description per position from its bullets, and the skills (P and L only, since
+    LinkedIn can't label familiarity). Use it when the person updates their LinkedIn profile. Writes
+    them to a Markdown file to copy from and returns them with their `path`, plus `left_out`: bullets
+    that didn't fit. After the person approves a polished headline or About, call it again with them:
+    they are checked like a letter and saved in that file."""
     folder = _profile_dir(profile)
     source = load(folder)
     suggestion = linkedin.suggest(source, variant, lang)
@@ -857,7 +912,7 @@ def log_application(
     company: Annotated[str, Field(description="Company name, as in the job post.")],
     role: Annotated[str, Field(description="Job title, as in the job post.")],
     profile: Profile = None,
-    status: Annotated[StatusArg | None, Field(description="New status. A change is kept in the history.")] = None,
+    status: Annotated[StatusArg | None, Field(description="New status: draft, applied, interview, offer, rejected or withdrawn. Each change is kept in the history with its date.")] = None,
     date: Annotated[str | None, Field(description="Date of this status, YYYY-MM-DD. Default: today.")] = None,
     url: Annotated[str | None, Field(description="Link to the job post.")] = None,
     variant: Annotated[str | None, Field(description="Variant id of the CV sent.")] = None,
@@ -873,12 +928,12 @@ def log_application(
                           "explain, questions to ask. Replaces the list."),
     ] = None,
 ) -> dict:
-    """Record a job application, or update the one for the same company and role. Fields not
-    given keep their value. Use it after build_cv or build_letter when the person sends them,
-    and when they tell you what happened (interview, offer, rejection). Save the post's text,
-    since links expire, and any advice you gave for the interview as `prep`, so the person
-    can find both later. Each file is copied to <profile>/sent/<id>/, so the record keeps what
-    was sent even after the next build; `not_found` lists the paths it could not copy."""
+    """Record a job application, or update the one for the same company and role. Use it
+    when the person sends a CV or letter, and whenever they tell you what happened (interview, offer,
+    rejection); list_applications reads them back. Fields not given keep their value. Save the post's
+    full text in `post`, since links expire, and your interview advice in `prep`. Each file in `files`
+    is copied to <profile>/sent/<id>/, so the record keeps what was sent. Returns the `application`
+    and `not_found`: paths it could not copy."""
     try:
         when = datetime.date.fromisoformat(date) if date else None
     except ValueError:
@@ -896,10 +951,12 @@ def log_application(
 @_tool_errors
 def list_applications(
     profile: Profile = None,
-    status: Annotated[list[StatusArg] | None, Field(description="Only these statuses. Default: all.")] = None,
+    status: Annotated[list[StatusArg] | None, Field(description="Only applications in these statuses. Default: all.")] = None,
 ) -> dict:
-    """The person's applications, most recently updated first, with `days_since_update`, a count
-    per status, and `waiting`: open applications with no news for 14 days or more."""
+    """List the person's job applications, most recently updated first. Use it when
+    they ask how their search is going or which application to follow up; log_application records
+    changes. Returns `applications` (each with its id, status and `days_since_update`), a count per
+    status and `waiting`: open applications with no news for 14 days or more. Read-only."""
     return applications.listing(_profile_dir(profile), status)
 
 
@@ -920,12 +977,13 @@ def interview_prep(
                           "<profile>/prep/<application>.md, replacing earlier notes."),
     ] = None,
 ) -> dict:
-    """What the person can honestly say in the interview for one application. Returns the
-    application, the saved job post's text and, for each keyword, their level, evidence and
-    `stories`: the bullets that show it, the ones in the CV they sent first. `standing` says
-    how to prepare it: strong (tell a story from those bullets), no_achievement (find a real
-    example), marked_pending (marked in their checklist, ask for the evidence), familiarity
-    (say it is familiarity), lacking (say so honestly). Every story must come from `stories`."""
+    """Prepare the interview for one logged application from what the person can honestly
+    back up. Call it first with only `application` to get the saved job post (`post_text`), then again
+    with the post's keywords. For each keyword it returns their level, evidence, `stories` (the
+    bullets that show it, those in the CV they sent first) and a `standing`: strong (tell a story
+    from those bullets), no_achievement (ask for a real example), marked_pending (ask for evidence),
+    familiarity (say it is familiarity) or lacking (say so honestly). Every story must come from
+    `stories`. With `notes`, saves the approved prep to <profile>/prep/<id>.md."""
     folder = _profile_dir(profile)
     source = _load(profile)
     app = prep_mod.find(folder, application)
@@ -946,10 +1004,13 @@ def score_job(
     profile: Profile = None,
     preferred: Preferred = None,
     lang: LangArg = "en",
-    variants: Annotated[list[str] | None, Field(description="Variant ids to score. Default: all.")] = None,
+    variants: Annotated[list[str] | None, Field(description="Variant ids to score, from list_variants. Default: all.")] = None,
 ) -> dict:
-    """Keyword coverage of each variant, best first. Extract the job post's keywords yourself:
-    `keywords` are the required ones, `preferred` the nice-to-haves. Use the post's own wording."""
+    """Measure how well each CV variant covers a job post's keywords, best first. Use it first
+    when the person shares a post, to pick a variant; then call gap_report on that variant to see
+    what is missing and why. Extract the keywords yourself in the post's own wording: `keywords` are
+    the required ones, `preferred` the nice-to-haves. Returns `scores`: per variant, the required and
+    overall coverage and each keyword found, found only as familiarity, or missing. Read-only."""
     scores = score_mod.score_job(_load(profile), _keywords(keywords, preferred), lang, variants)
     return {"scores": [s.to_dict() for s in scores]}
 
@@ -963,15 +1024,13 @@ def gap_report(
     preferred: Preferred = None,
     lang: LangArg = "en",
 ) -> dict:
-    """Missing keywords grouped by what can honestly be done:
-    in_inventory_not_in_cv (a P/L skill or a pool bullet shows it: add it, see unused_bullets;
-    if that list is empty, the term only needs to appear in the summary or competencies),
-    familiarity_only (only claim it as familiarity), not_in_inventory (do not claim it).
-    `no_achievement`: skills the post asks for that the person has at P or L but no bullet
-    shows; this is the moment to ask for one real achievement each.
-    `marked_in_checklist`: keywords the person already marked in <profile>/checklist.md, still
-    pending evidence, so they appear above as missing or familiarity. Ask where they used each
-    one instead of treating it as new; it is saved only with evidence and their confirmation."""
+    """Explain the keywords a job post asks for that one variant doesn't show, grouped by what
+    can honestly be done. Use it after score_job picked the variant, before editing it with
+    save_variant. Returns: `in_inventory_not_in_cv` (the person has it: add it, using
+    `unused_bullets`, or name it in the summary or competencies), `familiarity_only` (only as
+    familiarity), `not_in_inventory` (do not claim it), `no_achievement` (P or L skills no bullet
+    shows: ask for one real achievement each) and `marked_in_checklist` (marked in their checklist,
+    still without evidence: ask where they used it). Read-only."""
     source = _load(profile)
     groups = score_mod.gap_report(source, variant, lang, _keywords(keywords, preferred))
     out = {k: [r.__dict__ for r in v] for k, v in groups.items()}

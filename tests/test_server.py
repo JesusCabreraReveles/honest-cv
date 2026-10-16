@@ -1,6 +1,7 @@
 """The MCP server, driven in-process through the SDK client."""
 
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -400,3 +401,29 @@ async def test_checklists_in_the_persons_language(profile):
         assert not err and "Ventas" in [b["title"] for b in out["checklists"]]
         err, out = await call(c, "checklist_new", profile=profile, lists=["sales"], lang="es")
     assert not err and "## Prospección" in Path(out["path"]).read_text(encoding="utf-8")
+
+
+# Fields of tool results that descriptions may name, besides tools, prompts and parameters.
+RESULT_FIELDS = {"ats_ok", "days_since_update", "familiarity_only", "in_inventory_not_in_cv",
+                 "key_skills_without_achievements", "last_used_year", "left_out", "marked_in_checklist",
+                 "marked_pending", "no_achievement", "not_found", "not_in_inventory", "pending_evidence",
+                 "post_text", "previous_level", "skills_without_achievements", "unused_bullets",
+                 "upgrades_confirmed", "upgrades_not_asked_yet", "upgrades_refused", "variants_updated"}
+
+
+async def test_tool_descriptions_only_name_real_tools_and_fields():
+    # A description that names a sibling tool or a field that doesn't exist misleads the model.
+    async with Client(server) as c:
+        tools = (await c.list_tools()).tools
+        prompts = {p.name for p in (await c.list_prompts()).prompts}
+    known = {t.name for t in tools} | prompts | RESULT_FIELDS
+    wrong = {f"{t.name}: {w}" for t in tools for w in re.findall(r"\b[a-z]+(?:_[a-z]+)+\b", t.description)
+             if w not in known and w not in t.input_schema.get("properties", {})}
+    assert wrong == set()
+
+
+async def test_tool_descriptions_start_with_what_the_tool_does():
+    async with Client(server) as c:
+        tools = (await c.list_tools()).tools
+    weak = [t.name for t in tools if not re.match(r"[A-Z][a-z]+ ", t.description) or len(t.description) < 120]
+    assert weak == []
