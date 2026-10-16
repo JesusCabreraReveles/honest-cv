@@ -3,6 +3,13 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- The interview offers to import a LinkedIn data export or a JSON Resume before asking anything.
+- README: "Your first CV, step by step", from installing to tailoring a CV to a job post, and a
+  CV preview that reads on a dark theme.
+
 ## [0.2.0] — 2026-10-15
 
 Closed on 2026-10-15 after a full test as a new user. The first release on PyPI.

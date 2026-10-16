@@ -60,15 +60,7 @@ curl -fsSL https://raw.githubusercontent.com/JesusCabreraReveles/honest-cv/maste
   -o ~/.claude/skills/honest-cv/SKILL.md
 ```
 
-Then start with *"interview me for my CV"*, or run `/mcp__honest-cv__interview`. You can answer
-by voice with your system's dictation (on macOS: System Settings → Keyboard → Dictation): the
-interview reads names and numbers back to you before saving them, since dictation mishears them.
-
-> **The first interview is long.** With a long career and many skills it can take several hours.
-> You don't have to do it in one sitting: everything is saved as you go, so stop whenever you like
-> and say *"let's continue my CV interview"* later. A good first session covers your contact
-> details, your two most recent roles and the skills checklist; with that you can already build a
-> CV, and older roles can wait.
+Then follow [Your first CV, step by step](#your-first-cv-step-by-step).
 
 ### Cursor
 
@@ -104,6 +96,69 @@ elicitation. Not every client supports it yet:
 | Claude Code | In the chat: a form with one "no / sí" field per upgrade, up to 10 at a time. Only the ones you answer "sí" are saved; Decline saves nothing. |
 | Claude Desktop | In a terminal. The server refuses the change and gives you the command to run: `uvx honest-cv skill <profile> "<name>" <level> --evidence "..."`. |
 | Other clients | In the chat if they support elicitation, otherwise in a terminal as above. |
+
+## Your first CV, step by step
+
+This walkthrough uses Claude Code; any MCP client works the same way, only the setup differs.
+
+**1. Install uv and add honest-cv.** One time only. On macOS or Linux:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh        # Windows: see docs.astral.sh/uv
+claude mcp add honest-cv -- uvx honest-cv serve --profile ~/cv-profile
+```
+
+`~/cv-profile` is the folder where your profile will live. It doesn't have to exist yet, and it should
+not be inside a public repository. Install the skill too ([Claude Code](#claude-code) above).
+
+**2. Start the interview.** Open Claude Code in any folder (`claude`) and write, in your own
+language, *"Interview me for my CV"*, or run `/mcp__honest-cv__interview`. The assistant keeps
+your language for the whole conversation. You can answer by voice with your system's dictation
+(on macOS: System Settings → Keyboard → Dictation): it reads names and numbers back to you before
+saving them, since dictation mishears them. It goes like this:
+
+> **You:** Interview me for my CV.
+>
+> **Assistant:** The folder `~/cv-profile` doesn't exist yet. Shall I create it? … The whole interview
+> can take a few hours, but everything is saved as we go. A first session with your contact
+> details, your two most recent roles and the skills checklist is enough for a first CV. Do you
+> have a LinkedIn data export or a JSON Resume to start from?
+
+- **Import, if you can** (optional). Download LinkedIn's data export (see
+  [Import](#import-what-you-already-have)) and give the assistant the path to the ZIP. Your roles,
+  education and achievements come in, and skills arrive without a level for you to mark.
+- **Contact, roles and education.** It asks a few at a time and reads names and numbers back
+  before saving. Then it asks once about certifications, courses and anything you wrote.
+- **Achievements, role by role.** For each role: what the team did, what *you* did, and what
+  changed, with numbers. It drafts a bullet and saves it only after you approve the wording.
+- **Skills.** It offers a checklist, e.g. `backend-jvm` + `engineering-lead`, or your own for any
+  profession. Open `~/cv-profile/checklist.md` in your editor, put P, L, F or X on each line, add where
+  you used it after " — ", save, and tell the assistant *"done"*. It asks for the evidence it is
+  missing, in groups. Then a form asks you to confirm the upgrades: only what you answer
+  "sí" is saved.
+- **Your biggest achievements.** One achievement usually covers several skills. It then asks
+  about your main P skills that no achievement shows yet; the rest can wait for a job post.
+
+**3. Build your first CV.** The assistant proposes one *variant* per kind of role you apply to
+(for example "platform" or "engineering manager"): title, summary and which bullets to show. Once
+you approve it:
+
+> **You:** Build my platform CV in English and Spanish.
+
+The PDF and DOCX land in `~/cv-profile/out/`, already checked for ATS safety. Without an AI client,
+the same is `uvx honest-cv build ~/cv-profile -v platform -l en`.
+
+**4. Tailor it to a job post.** Paste the post, or run `/mcp__honest-cv__tailor_for_job`:
+
+> **You:** Here is a job post: *(paste it)*. How well do I fit, and what should I change?
+
+You get the coverage of each variant, the missing keywords split into *you have it but this CV
+doesn't show it*, *familiarity only* and *you don't have it*, a tailored variant to approve, and
+the build. Then it can draft a cover letter, which `check_claims` checks before it is built, and
+log the application with the post's text and what to prepare for the interview.
+
+**5. Come back any day.** Say *"let's continue my CV interview"*: it starts from what is missing.
+When you need to update your LinkedIn profile, say *"update my LinkedIn"*.
 
 ## Your profile
 

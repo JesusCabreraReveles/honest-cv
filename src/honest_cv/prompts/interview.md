@@ -25,6 +25,10 @@ Call `get_inventory` and `list_variants` with `profile="$profile"`.
   is saved as it goes, and that they can stop at any point and continue another day. Propose a
   first session that is enough to build a CV: contact, the two most recent roles and the skills
   checklist. Older roles and the rest can wait.
+- For a new or empty profile, ask whether they have a LinkedIn data export (the ZIP from Settings
+  → Data privacy → Download your data) or a JSON Resume. If so, call `import_profile` with
+  `dry_run=true`, show what would be added, then import it: it saves most of the typing. Imported
+  skills come without a level, as a checklist for them to mark.
 - When they come back, start from what is missing instead of from the beginning. Every hour or
   so, or when answers get short, offer a break.
 
