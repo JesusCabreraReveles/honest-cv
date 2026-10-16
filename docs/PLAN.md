@@ -220,5 +220,6 @@ huecos que entraron a la v0.2:
   TestPyPI; un tag `vX.Y.Z` va a PyPI y luego al registro de MCP. Antes hace falta la cuenta de
   PyPI con un "pending publisher" para este workflow (entorno `pypi`) y, para la prueba, lo mismo
   en TestPyPI (entorno `testpypi`).
-- Después de publicar, abrir issues: preparar entrevistas, más plantillas, checklists por idioma y
-  avisar en `gap_report` cuando una skill está marcada en el checklist pero le falta evidencia.
+- Publicada la 0.2.0 el 2026-10-15 en PyPI y en el registro de MCP. Issues abiertos: preparar
+  entrevistas (#2), más plantillas (#3), checklists por idioma (#4), `gap_report` con skills marcadas
+  pero pendientes en el checklist (#5) y copia de los archivos enviados (#6).
