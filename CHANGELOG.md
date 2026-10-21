@@ -3,7 +3,7 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.3.3] — 2026-10-21
 
 ### Fixed
 - A job post that drops the vendor prefix now matches the skill: "CloudFormation" finds

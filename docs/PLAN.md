@@ -227,3 +227,4 @@ huecos que entraron a la v0.2:
   primera tanda de 10 plantillas para #3, que queda abierto a contribuciones.
 - 0.3.1 (2026-10-15): cierra #3 con 8 plantillas más; las 26 incluidas tienen versión en español.
 - 0.3.2 (2026-10-16): descripciones de herramientas reescritas tras el TDQS de Glama (3.8/5); cada release crea su GitHub Release.
+- 0.3.3 (2026-10-21): una oferta que omite el prefijo del proveedor ("CloudFormation") encuentra la skill ("AWS CloudFormation"); salió de una aplicación real.

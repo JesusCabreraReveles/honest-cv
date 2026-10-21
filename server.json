@@ -7,12 +7,12 @@
     "url": "https://github.com/JesusCabreraReveles/honest-cv",
     "source": "github"
   },
-  "version": "0.3.2",
+  "version": "0.3.3",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "honest-cv",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"
