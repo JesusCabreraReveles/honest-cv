@@ -3,6 +3,14 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- A job post that drops the vendor prefix now matches the skill: "CloudFormation" finds
+  "AWS CloudFormation" in the inventory instead of reporting it as missing. The same goes for
+  EC2, EKS, RDS, Redshift, S3, SNS, SQS, GKE, AKS, Spark, Airflow and Flink. "Lambda" and "IAM"
+  stay apart, since they also mean other things.
+
 ## [0.3.2] — 2026-10-16
 
 ### Changed

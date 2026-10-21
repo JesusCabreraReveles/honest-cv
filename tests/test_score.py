@@ -138,3 +138,44 @@ def test_architecture_synonyms(term, text):
 ])
 def test_spanish_posts_name_practices_their_own_way(keyword, skill):
     assert skill in spellings(keyword)
+
+
+def test_a_skill_with_a_vendor_prefix_is_found_without_it(make_source):
+    # A post says "CloudFormation"; the inventory has "AWS CloudFormation" at P.
+    source = make_source(lambda raw: raw["skills"]["skills"].append(
+        {"name": "AWS CloudFormation", "level": "P", "evidence": "Stacks for 40 services at Fictional Fintech"}))
+    r = by_keyword(score_variant(source, "backend", "en", [Keyword("CloudFormation")]))["CloudFormation"]
+    assert r.skill == "AWS CloudFormation" and r.gap is Gap.IN_INVENTORY_NOT_IN_CV
+
+
+@pytest.mark.parametrize("term,text", [
+    ("CloudFormation", "stacks written in AWS CloudFormation"),
+    ("AWS Lambda", "deployed with Amazon S3 and AWS Lambda"),
+    ("Amazon S3", "moved the archive to S3"),
+    ("EKS", "ran 40 services on Amazon EKS"),
+    ("Spark", "batch jobs in Apache Spark"),
+])
+def test_vendor_prefix_synonyms(term, text):
+    assert _match(spellings(term), text) is not None
+
+
+# Vendor-prefixed names whose bare form means something else, or is too common a word.
+BARE_NAME_IS_AMBIGUOUS = {
+    "AWS IAM", "AWS Lambda", "Apache Beam", "Apache Iceberg", "Google Ads", "Google Analytics",
+    "Google Classroom", "Google Play Console", "Google Sheets", "Google Tag Manager", "Microsoft Project",
+    "Microsoft Teams",
+}
+
+
+def test_every_vendor_prefixed_checklist_skill_has_a_short_spelling():
+    # The bare name, or an acronym like GKE.
+    import re
+
+    from honest_cv import checklist
+
+    names = {i.name for p in checklist.BUILTIN.glob("*.md") for i in checklist.parse(p.read_text(encoding="utf-8")).items}
+    missing = []
+    for name in sorted(names - BARE_NAME_IS_AMBIGUOUS):
+        if re.match(r"(?:AWS|Amazon|Azure|Microsoft|Google|Apache) ", name) and spellings(name) == [name]:
+            missing.append(name)
+    assert missing == [], f"add a synonym group, or list it in BARE_NAME_IS_AMBIGUOUS: {missing}"

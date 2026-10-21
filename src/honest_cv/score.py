@@ -88,6 +88,21 @@ SYNONYMS: list[list[str]] = [
     ["Amazon Bedrock", "AWS Bedrock", "Bedrock"],
     ["Amazon Cognito", "AWS Cognito", "Cognito"],
     ["Google Cloud Pub/Sub", "GCP Pub/Sub", "Pub/Sub"],
+    # Posts often drop the vendor prefix. A bare name joins only when it means nothing
+    # else: no "Lambda" (Java lambdas) or "IAM" (every cloud has one).
+    ["AWS CloudFormation", "CloudFormation", "Amazon CloudFormation"],
+    ["Amazon EC2", "EC2", "AWS EC2"],
+    ["Amazon EKS", "EKS", "AWS EKS", "Elastic Kubernetes Service"],
+    ["Amazon RDS", "RDS", "AWS RDS"],
+    ["Amazon Redshift", "Redshift", "AWS Redshift"],
+    ["Amazon S3", "S3", "AWS S3"],
+    ["Amazon SNS", "SNS", "AWS SNS"],
+    ["Amazon SQS", "SQS", "AWS SQS"],
+    ["Google Kubernetes Engine", "GKE"],
+    ["Azure Kubernetes Service", "AKS"],
+    ["Apache Spark", "Spark"],
+    ["Apache Airflow", "Airflow"],
+    ["Apache Flink", "Flink"],
     ["AI agents", "agentes de IA", "agentes de inteligencia artificial", "LLM agents"],
     *PRACTICES,
 ]
