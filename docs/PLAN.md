@@ -228,3 +228,4 @@ huecos que entraron a la v0.2:
 - 0.3.1 (2026-10-15): cierra #3 con 8 plantillas más; las 26 incluidas tienen versión en español.
 - 0.3.2 (2026-10-16): descripciones de herramientas reescritas tras el TDQS de Glama (3.8/5); cada release crea su GitHub Release.
 - 0.3.3 (2026-10-21): una oferta que omite el prefijo del proveedor ("CloudFormation") encuentra la skill ("AWS CloudFormation"); salió de una aplicación real.
+- 0.4.0 (2026-11-21): `serve --http` (Streamable HTTP en 127.0.0.1:38471) para clientes que se conectan por URL, como Nod de n8n.
