@@ -1087,5 +1087,10 @@ def tailor_for_job(job_post: str, profile: str | None = None, lang: str = "en") 
     return _prompt("tailor_for_job", profile=_profile_label(profile), lang=lang, job_post=job_post.strip())
 
 
-def main() -> None:
-    mcp.run("stdio")
+def main(port: int | None = None) -> None:
+    """Serve over stdio, or over Streamable HTTP at http://127.0.0.1:<port>/mcp when a port is given.
+    HTTP listens on loopback only, with the SDK's DNS rebinding protection."""
+    if port is None:
+        mcp.run("stdio")
+    else:
+        mcp.run("streamable-http", host="127.0.0.1", port=port)

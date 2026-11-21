@@ -88,6 +88,19 @@ Edit `claude_desktop_config.json`:
 Add the same `mcpServers` block as in the Cursor example and restart the app. If the app can't
 find `uvx`, use its absolute path (`which uvx`).
 
+### Clients that connect by URL
+
+Some clients connect to an HTTP endpoint instead of starting a command. Run the server over
+Streamable HTTP and give the client its URL:
+
+```bash
+uvx honest-cv serve --http --profile ~/cv-profile   # http://127.0.0.1:38471/mcp
+```
+
+It listens on your own machine only (127.0.0.1) and rejects requests addressed to any other host.
+Any program on your computer can still reach it while it runs, so start it when you need it and
+stop it afterwards (Ctrl+C). `--port` picks another port.
+
 ### How each client confirms a skill upgrade
 
 Raising a skill's level needs your own confirmation, which the server asks for through MCP
@@ -340,6 +353,7 @@ honest-cv remove skill ~/cv-profile "Kafka"                          # asks you 
 honest-cv letter check ~/cv-profile letter.txt -k "Kubernetes,Go"     # claims your profile doesn't support
 honest-cv letter build ~/cv-profile letter.txt --company Acme --role "Platform Engineer" -l en
 honest-cv serve --profile ~/cv-profile              # the MCP server, over stdio
+honest-cv serve --http --profile ~/cv-profile       # the same, over HTTP at 127.0.0.1:38471/mcp
 ```
 
 `verify` works on any PDF. Use `--text` to see exactly what a parser extracts. Its

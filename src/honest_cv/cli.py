@@ -308,6 +308,11 @@ def cmd_remove(args: argparse.Namespace) -> int:
     return 0
 
 
+HTTP_PORT = 38471
+"""Default port for `serve --http`: unassigned, below the ephemeral range, and away from the ports
+dev servers, databases and brokers use (3000, 5173, 8000, 8080, 5432, 9092...)."""
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     import os
 
@@ -315,7 +320,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
 
     if args.profile:
         os.environ["HONEST_CV_PROFILE"] = args.profile
-    serve()
+    serve(port=args.port if args.http else None)
     return 0
 
 
@@ -366,8 +371,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command")
 
-    p = sub.add_parser("serve", help="run the MCP server over stdio")
+    p = sub.add_parser("serve", help="run the MCP server over stdio, or over HTTP with --http")
     p.add_argument("--profile", help="default profile folder for every tool (or set HONEST_CV_PROFILE)")
+    p.add_argument(
+        "--http", action="store_true", help="serve Streamable HTTP at http://127.0.0.1:<port>/mcp (loopback only)"
+    )
+    p.add_argument("--port", type=int, default=HTTP_PORT, help=f"port for --http (default {HTTP_PORT})")
     p.set_defaults(func=cmd_serve)
 
     p = sub.add_parser("init", help="create a profile folder with commented YAML templates")

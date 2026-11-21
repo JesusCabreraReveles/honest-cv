@@ -3,6 +3,13 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `serve --http` runs the MCP server over Streamable HTTP at `http://127.0.0.1:38471/mcp`, for
+  clients that connect by URL. It listens on loopback only, with DNS rebinding protection;
+  `--port` changes the port.
+
 ## [0.3.3] — 2026-10-21
 
 ### Fixed
