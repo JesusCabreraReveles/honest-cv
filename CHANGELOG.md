@@ -3,7 +3,7 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.1] — 2026-11-21
 
 ### Security
 - `serve --http` now requires an access token: every request must send

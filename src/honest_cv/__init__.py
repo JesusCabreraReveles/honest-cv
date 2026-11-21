@@ -1,3 +1,3 @@
 """honest-cv: honest, ATS-safe CVs from a single source of truth."""
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
