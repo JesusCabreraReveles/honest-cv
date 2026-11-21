@@ -94,12 +94,16 @@ Some clients connect to an HTTP endpoint instead of starting a command. Run the 
 Streamable HTTP and give the client its URL:
 
 ```bash
+export HONEST_CV_TOKEN="$(openssl rand -hex 32)"     # once; keep it, e.g. in your shell profile
 uvx honest-cv serve --http --profile ~/cv-profile   # http://127.0.0.1:38471/mcp
 ```
 
+In the client, choose access-token (bearer) authentication and paste the value of
+`HONEST_CV_TOKEN`. Every request without it is refused. If the variable isn't set, the server makes
+a new token on each run and prints it.
+
 It listens on your own machine only (127.0.0.1) and rejects requests addressed to any other host.
-Any program on your computer can still reach it while it runs, so start it when you need it and
-stop it afterwards (Ctrl+C). `--port` picks another port.
+Start it when you need it and stop it afterwards (Ctrl+C). `--port` picks another port.
 
 ### How each client confirms a skill upgrade
 

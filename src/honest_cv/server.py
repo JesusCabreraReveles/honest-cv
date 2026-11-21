@@ -1087,10 +1087,41 @@ def tailor_for_job(job_post: str, profile: str | None = None, lang: str = "en") 
     return _prompt("tailor_for_job", profile=_profile_label(profile), lang=lang, job_post=job_post.strip())
 
 
-def main(port: int | None = None) -> None:
+def require_token(app, token: str):
+    """ASGI middleware: every HTTP request needs `Authorization: Bearer <token>`. Lifespan
+    events pass through, so the app still starts its session manager."""
+    import hmac
+
+    expected = f"Bearer {token}".encode()
+
+    async def guarded(scope, receive, send):
+        if scope["type"] == "http":
+            given = dict(scope["headers"]).get(b"authorization", b"")
+            if not hmac.compare_digest(given, expected):
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 401,
+                        "headers": [(b"content-type", b"text/plain"), (b"www-authenticate", b"Bearer")],
+                    }
+                )
+                await send({"type": "http.response.body", "body": b"missing or wrong access token"})
+                return
+        await app(scope, receive, send)
+
+    return guarded
+
+
+def main(port: int | None = None, token: str | None = None) -> None:
     """Serve over stdio, or over Streamable HTTP at http://127.0.0.1:<port>/mcp when a port is given.
-    HTTP listens on loopback only, with the SDK's DNS rebinding protection."""
+    HTTP listens on loopback only, with the SDK's DNS rebinding protection, and every request
+    needs the access token."""
     if port is None:
         mcp.run("stdio")
-    else:
-        mcp.run("streamable-http", host="127.0.0.1", port=port)
+        return
+    if not token:
+        raise ValueError("serving over HTTP needs an access token")
+    import uvicorn
+
+    app = require_token(mcp.streamable_http_app(host="127.0.0.1"), token)
+    uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")

@@ -3,6 +3,13 @@
 All notable changes to honest-cv. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Security
+- `serve --http` now requires an access token: every request must send
+  `Authorization: Bearer <token>`, from `HONEST_CV_TOKEN` or, if unset, a token made at start-up
+  and printed. Before, any program on the machine could use the server while it ran.
+
 ## [0.4.0] — 2026-11-21
 
 ### Added

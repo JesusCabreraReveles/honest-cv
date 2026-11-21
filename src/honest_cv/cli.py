@@ -320,7 +320,21 @@ def cmd_serve(args: argparse.Namespace) -> int:
 
     if args.profile:
         os.environ["HONEST_CV_PROFILE"] = args.profile
-    serve(port=args.port if args.http else None)
+    if not args.http:
+        serve()
+        return 0
+    token = os.environ.get("HONEST_CV_TOKEN")
+    if not token:
+        import secrets
+
+        token = secrets.token_urlsafe(32)
+        print(
+            f"Access token for this run: {token}\n"
+            "Set HONEST_CV_TOKEN to keep the same token between runs.",
+            file=sys.stderr,
+        )
+    print(f"honest-cv MCP server at http://127.0.0.1:{args.port}/mcp", file=sys.stderr)
+    serve(port=args.port, token=token)
     return 0
 
 
@@ -374,7 +388,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("serve", help="run the MCP server over stdio, or over HTTP with --http")
     p.add_argument("--profile", help="default profile folder for every tool (or set HONEST_CV_PROFILE)")
     p.add_argument(
-        "--http", action="store_true", help="serve Streamable HTTP at http://127.0.0.1:<port>/mcp (loopback only)"
+        "--http", action="store_true", help="serve Streamable HTTP at http://127.0.0.1:<port>/mcp (loopback only); clients send the token in HONEST_CV_TOKEN"
     )
     p.add_argument("--port", type=int, default=HTTP_PORT, help=f"port for --http (default {HTTP_PORT})")
     p.set_defaults(func=cmd_serve)
